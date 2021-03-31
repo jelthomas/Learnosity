@@ -15,6 +15,13 @@ const userSchema = new Schema({
         type: String,
         minLength: 8,
         required: true
+    },
+    email: {
+        type: String, 
+        minLength: 5, 
+        match: /^\w+@\w+\.\w+$/, 
+        required: true, 
+        unique: true
     }
 }, {
     timestamps: true,
