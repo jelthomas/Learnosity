@@ -27,6 +27,12 @@ const userSchema = new Schema({
         type: String, 
         required: true
     },
+    security_answer: {
+        
+    },
+    is_admin: {
+        
+    }
 }, {
     timestamps: true,
 });
