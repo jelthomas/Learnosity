@@ -28,10 +28,17 @@ const userSchema = new Schema({
         required: true
     },
     security_answer: {
-        
+        type: String,
+        required: true
     },
     is_admin: {
-        
+        type: Boolean,
+        default: false
+    },
+    created_platforms: [{type: ObjectId}],
+    learned_platforms: [{type: ObjectId}],
+    profile_picture: {
+        type: String
     },
     total_time_played: {
         type: Number, 
@@ -42,7 +49,16 @@ const userSchema = new Schema({
         type: Number, 
         required: true, 
         default: 0
+    },
+    experience_points: {
+        type: Number, 
+        require: true,
+        default: 0
     }
 }, {
     timestamps: true,
 });
+
+const User = mongoose.model('User', userSchema);
+
+module.exports = User;
