@@ -15,6 +15,10 @@ const userSchema = new Schema({
         type: String,
         minLength: 8,
         required: true
+    },
+    security_question: { 
+        type: String, 
+        required: true
     }
 }, {
     timestamps: true,
