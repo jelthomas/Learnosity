@@ -39,7 +39,9 @@ const userSchema = new Schema({
         default: 0
     },
    completed_platforms: {
-       
+        type: Number, 
+        required: true, 
+        default: 0
     }
 }, {
     timestamps: true,
