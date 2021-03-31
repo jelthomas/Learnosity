@@ -34,7 +34,9 @@ const userSchema = new Schema({
         
     },
     total_time_played: {
-
+        type: Number, 
+        required: true, 
+        default: 0
     },
    completed_platforms: {
        
