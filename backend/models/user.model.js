@@ -32,6 +32,12 @@ const userSchema = new Schema({
     },
     is_admin: {
         
+    },
+    total_time_played: {
+
+    },
+   completed_platforms: {
+       
     }
 }, {
     timestamps: true,
