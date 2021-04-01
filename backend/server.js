@@ -19,10 +19,16 @@ connection.once('open', () => {
 });
 
 const platformDataRouter = require('./routes/platformData');
+<<<<<<< HEAD
 const userRouter = require('./routes/user');
+=======
+const pageFormatRouter = require('./routes/pageFormat');
+>>>>>>> Rob
 
 app.use('/platformData', platformDataRouter);
 app.use('/user', userRouter);
+
+app.use('/pageFormat', pageFormatRouter);
 
 app.listen(port, () => {
     console.log(`Server is running on port: ${port}`);
