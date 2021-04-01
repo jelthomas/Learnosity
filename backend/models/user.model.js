@@ -38,7 +38,8 @@ const userSchema = new Schema({
     created_platforms: [{type: mongoose.Schema.Types.ObjectId}],
     learned_platforms: [{type: mongoose.Schema.Types.ObjectId}],
     profile_picture: {
-        type: String
+        type: String,
+        default:""
     },
     total_time_played: {
         type: Number, 
