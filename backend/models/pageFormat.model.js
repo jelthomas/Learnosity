@@ -20,13 +20,14 @@ const pageFormatSchema = new Schema({
           required: true, 
           minLength: 1
      }, 
-     page_title : {
-          type: String, 
-          required: true, 
-          minLength: 1
-     }, 
      multiple_choices : {
-          type: [{type: String, minLength: 1, trim: true}], 
+          type: {
+               answer: {
+                    type: String, 
+                    minLength: 1, 
+                    trim: true
+               }
+          }, 
           required:  function() {
                return this.type === "Multiple Choice";
      }},
@@ -52,13 +53,19 @@ const pageFormatSchema = new Schema({
           min: 1, 
           max: 600,
           required: function() {
-          return this.type == "Timer";
+          return this.type === "Timer";
      }},
-     timer_answers: {
-          type: [{type: String, minLength: 1, trim: true}], 
-          required: function() {
-          return this.type == "Timer";
-        }}
+     timer_answers: { 
+          type: {
+               answer: { 
+                    type: String,
+                    minLength: 1, 
+                    trim: true
+                    } 
+               }, 
+               required: function() {
+               return this.type === "Timer";
+     }}
 },
      {
           timestamps: true

@@ -19,8 +19,11 @@ connection.once('open', () => {
 });
 
 const platformDataRouter = require('./routes/platformData');
+const pageFormatRouter = require('./routes/pageFormat');
 
 app.use('/platformData', platformDataRouter);
+
+app.use('/pageFormat', pageFormatRouter);
 
 app.listen(port, () => {
     console.log(`Server is running on port: ${port}`);
