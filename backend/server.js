@@ -19,8 +19,10 @@ connection.once('open', () => {
 });
 
 const platformDataRouter = require('./routes/platformData');
+const userRouter = require('./routes/user');
 
 app.use('/platformData', platformDataRouter);
+app.use('/user', userRouter);
 
 app.listen(port, () => {
     console.log(`Server is running on port: ${port}`);

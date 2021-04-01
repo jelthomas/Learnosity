@@ -19,7 +19,7 @@ const userSchema = new Schema({
     email: {
         type: String, 
         minLength: 5, 
-        match: /^\w+@\w+\.\w+$/, 
+        match: /^[\w|\.]+@\w+\.\w+$/, 
         required: true, 
         unique: true
     },
@@ -35,8 +35,8 @@ const userSchema = new Schema({
         type: Boolean,
         default: false
     },
-    created_platforms: [{type: ObjectId}],
-    learned_platforms: [{type: ObjectId}],
+    created_platforms: [{type: mongoose.Schema.Types.ObjectId}],
+    learned_platforms: [{type: mongoose.Schema.Types.ObjectId}],
     profile_picture: {
         type: String
     },
