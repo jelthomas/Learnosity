@@ -7,6 +7,18 @@ router.route('/').get((req, res) => {
     .catch(err => res.status(400).json('Error: ' + err));
 });
 
+router.route('/:id').get((req, res) => {
+  platformData.findById(req.params.id)
+    .then(platformData => res.json(platformData))
+    .catch(err => res.status(400).json('Error: ' + err));
+});
+
+router.route('/:id').delete((req, res) => {
+  platformData.findByIdAndDelete(req.params.id)
+      .then(() => res.json('Platform Data deleted.'))
+      .catch(err => res.status(400).json('Error: ' + err));
+});
+
 router.route('/add').post((req, res) => {
   const user_id = req.body.user_id;
   const platform_id = req.body.platform_id;
@@ -29,5 +41,21 @@ router.route('/add').post((req, res) => {
   .catch(err => res.status(400).json('Error: ' + err));
 });
 
+
+router.route('/update/:id').post((req, res) => {
+  platformData.findById(req.params.id)
+      .then(platformData => {
+        platformData.user_id = req.body.user_id;
+        platformData.platform_id = req.body.platform_id;
+        platformData.completed_pages = req.body.completed_pages;
+        platformData.is_favorited = req.body.is_favorited;
+        platformData.is_completed = req.body.is_completed;
+        platformData.recently_played = req.body.recently_played;
+          platformData.save()
+              .then(() => res.json('Platform Data Updated!'))
+              .catch(err => res.status(400).json('Error: ' + err));
+      })
+      .catch(err => res.status(400).json('Error: ' + err));
+})
 
 module.exports = router;

@@ -21,10 +21,10 @@ connection.once('open', () => {
 const platformDataRouter = require('./routes/platformData');
 const userRouter = require('./routes/user');
 const pageFormatRouter = require('./routes/pageFormat');
-
+const platformFormatRouter = require('./routes/platformFormat')
 app.use('/platformData', platformDataRouter);
 app.use('/user', userRouter);
-
+app.use('/platformFormat', platformFormatRouter)
 app.use('/pageFormat', pageFormatRouter);
 
 app.listen(port, () => {

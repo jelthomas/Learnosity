@@ -28,7 +28,7 @@ const platformFormatSchema = new Schema({
     cover_photo: {
         type: String
     },
-    pages: [{type: ObjectId}],
+    pages: [mongoose.Schema.Types.ObjectId],
     is_published: {
         type: Boolean,
         default: false,

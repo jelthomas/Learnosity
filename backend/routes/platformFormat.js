@@ -19,55 +19,46 @@ router.route('/:id').delete((req, res) => {
         .catch(err => res.status(400).json('Error: ' + err));
 });
 
-// router.route('/add').post((req, res) => {
-//    const type = req.body.type;
-//    const prompt = req.body.prompt;
-//    const audio_file = req.body.audio_file;
-//    const page_title = req.body.page_title;
-//    const multiple_choices = req.body.multiple_choices;
-//    const multiple_choice_answer = req.body.multiple_choice_answer;
-//    const matching_pairs = req.body.matching_pairs;
-//    const fill_in_the_blank_answers = req.body.fill_in_the_blank_answers;
-//    const clock = req.body.clock;
-//    const timer_answers = req.body.timer_answers;
+ router.route('/add').post((req, res) => {
+    const plat_name = req.body.plat_name;
+    const owner = req.body.owner;
+    const is_public = req.body.is_public;
+    const privacy_password = req.body.privacy_password;
+    const cover_photo = req.body.cover_photo;
+    const pages = req.body.pages;
+    const is_published = req.body.is_published;
     
-//    const newpageFormat = new pageFormat({
-//     type,
-//     prompt,
-//     audio_file,
-//     page_title,
-//     multiple_choices,
-//     multiple_choice_answer,
-//     matching_pairs,
-//     fill_in_the_blank_answers,
-//     clock,
-//     timer_answers
-//    });
+    const newplatformFormat = new platformFormat({
+     plat_name,
+     owner,
+     is_public,
+     privacy_password,
+     cover_photo,
+     pages,
+     is_published,
+    });
 
-//    newpageFormat.save()
-//    .then(() => res.json('PageFormat added!'))
-//    .catch(err => res.status(400).json('Error: ' + err));
-// });
+    newplatformFormat.save()
+    .then(() => res.json('Platform Format added!'))
+    .catch(err => res.status(400).json('Error: ' + err));
+ });
 
-// router.route('/update/:id').post((req, res) => {
-//     pageFormat.findById(req.params.id)
-//         .then(pageFormat => {
-//             pageFormat.type = req.body.type;
-//             pageFormat.prompt = req.body.prompt;
-//             pageFormat.audio_file = req.body.audio_file;
-//             pageFormat.page_title = req.body.page_title;
-//             pageFormat.multiple_choices = req.body.multiple_choices;
-//             pageFormat.multiple_choice_answer = req.body.multiple_choice_answer;
-//             pageFormat.matching_pairs = req.body.matching_pairs;
-//             pageFormat.fill_in_the_blank_answers = req.body.fill_in_the_blank_answers;
-//             pageFormat.clock = req.body.clock;
-//             pageFormat.timer_answers = req.body.timer_answers;
+ router.route('/update/:id').post((req, res) => {
+     platformFormat.findById(req.params.id)
+         .then(platformFormat => {
+          platformFormat.plat_name = req.body.plat_name;
+          platformFormat.owner = req.body.owner;
+          platformFormat.is_public = req.body.is_public;
+          platformFormat.privacy_password = req.body.privacy_password;
+          platformFormat.cover_photo = req.body.cover_photo;
+          platformFormat.pages = req.body.pages;
+          platformFormat.is_published = req.body.is_published;
 
-//             pageFormat.save()
-//                 .then(() => res.json('Page Format Updated!'))
-//                 .catch(err => res.status(400).json('Error: ' + err));
-//         })
-//         .catch(err => res.status(400).json('Error: ' + err));
-// })
+          platformFormat.save()
+                 .then(() => res.json('Platform Format Updated!'))
+                 .catch(err => res.status(400).json('Error: ' + err));
+         })
+         .catch(err => res.status(400).json('Error: ' + err));
+ })
 
 module.exports = router;
