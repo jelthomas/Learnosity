@@ -15,6 +15,6 @@ jobs:
         with:
           node-version: 12.18.3
       - name: Install Packages
-        run: yarn install
+        run: npm install
       - name: Run Tests
         run: npm build
