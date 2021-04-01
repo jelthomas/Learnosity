@@ -7,6 +7,14 @@ router.route('/').get((req, res) => {
     .catch(err => res.status(400).json('Error: ' + err));
 });
 
+// gets Security Question for a User or Email
+// specifically selects just the one value 
+router.route('/getSecurityQuestion').get((req, res) => {
+  user.find({$or:[{username: req.body.identifier},{email:req.body.identifier}]}).select('security_question -_id')
+    .then(user => res.json(user))
+    .catch(err => res.status(400).json('Error: ' + err));
+});
+
 router.route('/:id').get((req, res) => {
   user.findById(req.params.id)
     .then(user => res.json(user))
@@ -68,5 +76,15 @@ router.route('/update/:id').post((req, res) => {
       .catch(err => res.status(400).json('Error: ' + err));
 })
 
+router.route('/updateProfilePicture/:id').post((req, res) => {
+  user.findById(req.params.id)
+      .then(user => {
+        user.profile_picture = req.body.profile_picture;
 
+          user.save()
+              .then(() => res.json('User Profile Picture Updated!'))
+              .catch(err => res.status(400).json('Error: ' + err));
+      })
+      .catch(err => res.status(400).json('Error: ' + err));
+})
 module.exports = router;
