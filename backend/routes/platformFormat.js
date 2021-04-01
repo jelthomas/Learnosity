@@ -5,7 +5,14 @@ router.route('/').get((req, res) => {
     platformFormat.find()
       .then(platformFormats => res.json(platformFormats))
       .catch(err => res.status(400).json('Error: ' + err));
-  });
+});
+
+//This route is for My Platform and Dashboard when we need to retrieve the array of PlatformFormat schemas for all the user's created and learned platforms
+router.route('/getArrayof').get((req, res) => {
+    platformFormat.find({ _id: {$in : req.body.platformFormat_ids}})
+      .then(platformFormats => res.json(platformFormats))
+      .catch(err => res.status(400).json('Error: ' + err));
+});
 
 router.route('/:id').get((req, res) => {
     platformFormat.findById(req.params.id)
@@ -47,12 +54,9 @@ router.route('/:id').delete((req, res) => {
      platformFormat.findById(req.params.id)
          .then(platformFormat => {
           platformFormat.plat_name = req.body.plat_name;
-          platformFormat.owner = req.body.owner;
           platformFormat.is_public = req.body.is_public;
           platformFormat.privacy_password = req.body.privacy_password;
-          platformFormat.cover_photo = req.body.cover_photo;
           platformFormat.pages = req.body.pages;
-          platformFormat.is_published = req.body.is_published;
 
           platformFormat.save()
                  .then(() => res.json('Platform Format Updated!'))
@@ -60,5 +64,29 @@ router.route('/:id').delete((req, res) => {
          })
          .catch(err => res.status(400).json('Error: ' + err));
  })
+
+ //Specifically used for updating Platform's is_published status
+ router.route('/update_published/:id').post((req, res) => {
+    platformFormat.findById(req.params.id)
+        .then(platformFormat => {
+         platformFormat.is_published = req.body.is_published;
+         platformFormat.save()
+                .then(() => res.json('Platform Format Updated!'))
+                .catch(err => res.status(400).json('Error: ' + err));
+        })
+        .catch(err => res.status(400).json('Error: ' + err));
+})
+
+//Specifically used for updating Platform's cover photo
+router.route('/update_cover_photo/:id').post((req, res) => {
+    platformFormat.findById(req.params.id)
+        .then(platformFormat => {
+         platformFormat.cover_photo = req.body.cover_photo;
+         platformFormat.save()
+                .then(() => res.json('Platform Format Updated!'))
+                .catch(err => res.status(400).json('Error: ' + err));
+        })
+        .catch(err => res.status(400).json('Error: ' + err));
+})
 
 module.exports = router;
