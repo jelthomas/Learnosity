@@ -18,7 +18,7 @@ function App() {
           Learn React
         </a>
       </header> */}
-      Hello Rob!!
+      Please Auto Deploy!!
     </div>
   );
 }
