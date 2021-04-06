@@ -18,3 +18,5 @@ jobs:
         run: npm install
       - name: Run Tests
         run: npm build
+      - name: Run Backend Tests
+        run: npm test 
