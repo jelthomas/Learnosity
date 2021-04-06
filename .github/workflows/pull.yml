@@ -18,3 +18,4 @@ jobs:
         run: npm install
       - name: Run Tests
         run: npm build
+             npm test
