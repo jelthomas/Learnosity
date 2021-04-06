@@ -24,7 +24,7 @@ describe('delete', () => {
     await users.insertOne(mockUser);
 
     const insertedUser = await users.findOne({username: 'TestJohn'});
-    await users.delete(mockUser);
+    await users.deleteOne(mockUser);
     const user = await users.find({username: 'TestJohn'});
     expect(user).toEqual([]);
   });
