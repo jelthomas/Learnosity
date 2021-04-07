@@ -19,9 +19,8 @@ describe('hash', () => {
   });
 
   it('should hash a password and use compareSynch to verify password', async () => {
-    const mockUser = {username: 'TestJohn', password: 'test_password'};
-    hashed_password = bcrypt.hash(mockUser.password, 10);
+    hashed_password = bcrypt.hash('test_password', 10);
     
-    expect(bcrypt.compareSync(mockUser.password, hashed_password)).toEqual(true);
+    expect(bcrypt.compareSync('test_password', hashed_password)).toEqual(true);
   });
 });
