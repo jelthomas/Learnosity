@@ -15,7 +15,7 @@ export default class Home extends Component {
     onSubmit(e){
         e.preventDefault();
         console.log("Here");
-        axios.get('https://learnosity-project.herokuapp.com/user')
+        axios.get('/user')
             .then(res => console.log(res.data));
         // window.location = "/";
     }
