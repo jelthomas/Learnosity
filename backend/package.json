@@ -8,7 +8,7 @@
     "build": "cd mern-learnosity && npm run build",
     "install-client": "cd mern-learnosity && npm install",
     "heroku-postbuild": "npm run install-client && npm run build",
-    "start": "node backend/server.js",
+    "start": "node ./server.js",
     "client": "cd mern-learnosity && npm start"
   },
   "keywords": [],
