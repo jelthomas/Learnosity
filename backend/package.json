@@ -4,7 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "cd mern-learnosity && npm run build",
+    "install-client": "cd mern-learnosity && npm install",
+    "heroku-postbuild": "npm run install-client && npm run build",
+    "start": "node backend/server.js",
+    "client": "cd mern-learnosity && npm start"
   },
   "keywords": [],
   "author": "",
