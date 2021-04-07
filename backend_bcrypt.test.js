@@ -19,8 +19,12 @@ describe('hash', () => {
   });
 
   it('should hash a password and use compareSynch to verify password', async () => {
-    hashed_password = bcrypt.hash('test_password', 10);
-    
+    hashed_password = bcrypt.hash('test_password', 10, (error, newHash) => {
+                            if (error) {
+                                return '';
+                            }
+                            return newHash;
+                        })
     expect(bcrypt.compareSync('test_password', hashed_password)).toEqual(true);
   });
 });
