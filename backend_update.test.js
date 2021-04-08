@@ -1,6 +1,6 @@
 const {MongoClient} = require('mongodb');
 
-describe('delete', () => {
+describe('update', () => {
   let connection;
   let db;
 
@@ -17,15 +17,16 @@ describe('delete', () => {
     await db.close();
   });
 
-  it('should delete a doc from the collection', async () => {
+  it('should update a doc from the collection', async () => {
     const users = db.collection('users');
 
-    const mockUser = {username: 'TestJohn'};
-    await users.insertOne(mockUser);
-
-    const insertedUser = await users.findOne({username: 'TestJohn'});
-    await users.deleteOne(mockUser);
-    const user = await users.findOne({username: 'TestJohn'});
-    expect(user).toEqual(null);
+    const testUser = {username: 'TestJohn'};
+    await users.insertOne(testUser);
+    const mockUser = {username: 'Newname'};
+    const testUser2 = await users.findOne({username: 'TestJohn'})
+        .then(testUser2 => {
+            testUser2.username = "Newname";
+            expect(testUser2.username).toEqual(mockUser.username);
+        })
   });
 });
