@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import axios from 'axios';
+import {api} from "../axios_api.js";
 
 export default class Home extends Component {
     constructor(props){
@@ -15,7 +16,7 @@ export default class Home extends Component {
     onSubmit(e){
         e.preventDefault();
         console.log("Here");
-        axios.get('/user')
+        api.get('/user')
             .then(res => console.log(res.data));
         // window.location = "/";
     }
