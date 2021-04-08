@@ -1,7 +1,6 @@
 const {MongoClient} = require('mongodb');
 const ATLAS_URI= "mongodb+srv://jelthomas:learnosity_proj@learnositydata.hvfbn.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
-
-const user = require('./backend/models/user.model');
+const user = require('../backend/models/user.model');
 
 describe('insert', () => {
   let connection;
