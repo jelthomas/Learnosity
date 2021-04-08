@@ -1,6 +1,5 @@
 const {MongoClient} = require('mongodb');
 const ATLAS_URI= "mongodb+srv://jelthomas:learnosity_proj@learnositydata.hvfbn.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
-//import axios from 'axios';
 
 const user = require('./backend/models/user.model');
 
