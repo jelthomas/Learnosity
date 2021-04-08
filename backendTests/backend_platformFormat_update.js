@@ -1,7 +1,6 @@
 const {MongoClient} = require('mongodb');
 const ATLAS_URI= "mongodb+srv://jelthomas:learnosity_proj@learnositydata.hvfbn.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
-
-const user = require('./backend/models/user.model');
+const platformFormat = require('../backend/models/platformFormat.model');
 
 describe('update', () => {
   let connection;
@@ -20,12 +19,12 @@ describe('update', () => {
     await db.close();
   });
 
-  it('should update a user from the collection', async () => {
-    const users = db.collection('users');
+  it('should update a platformFormat from a collection', async () => {
+    const platformFormats = db.collection('platformFormats');
 
-    await users.updateOne({username:'test name'},{$set:{password:'newPass'}})
-    const insertedUser = await users.findOne({username:'test name'})
-    expect(insertedUser.password).toEqual("newPass");
+    await platformFormats.updateOne({plat_name: "Test platform name"},{$set:{is_public: false, privacy_password: "JBuckets"}})
 
+    const insertedPlatFormat = await platformFormats.findOne({plat_name:'Test platform name', owner: "test name"});
+    expect(insertedPlatFormat.is_public).toEqual(false);
   });
 });
