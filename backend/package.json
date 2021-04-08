@@ -8,7 +8,7 @@
     "build": "npm run build",
     "install-client": "npm install",
     "heroku-postbuild": "npm run install-client && npm run build",
-    "start": "node backend/server.js",
+    "start": "cd backend && nodemon server",
     "client": "npm start"
   },
   "keywords": [],
