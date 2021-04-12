@@ -28,7 +28,7 @@ export default class Login extends Component {
             username: this.state.identifier,
             password: this.state.password
         }
-        api.post('/user/login')
+        api.post('/user/login', (user))
             .then(res => {
                 if(res){
                     //Successfully logged in
