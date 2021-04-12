@@ -25,7 +25,7 @@ export default class Login extends Component {
     handleLogin(e){
         e.preventDefault();
         const user = {
-            username: this.state.identifier,
+            username: this.state.identifier.toLowerCase(),
             password: this.state.password
         }
         api.post('/user/login', (user))
@@ -38,6 +38,8 @@ export default class Login extends Component {
                     this.props.history.push(`/${id}`);
                 }
                 else{
+                    console.log("No user found...");
+                    console.log(res);
                     localStorage.removeItem('usertoken');
                     this.setState({identifier: "", password: "", message: "Login failed. Incorrect username or password"});
                 }
