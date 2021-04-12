@@ -1,14 +1,11 @@
 import React, { Component } from 'react';
-import axios from 'axios';
-import {api} from "../axios_api.js";
+//import axios from 'axios';
+//import {api} from "../axios_api.js";
 
 export default class ForgotPassword extends Component {
-    constructor(props){
-        super(props);
-    }
-
-    
-
+    // constructor(props){
+    //     super(props);
+    // }
 
     render() {
         return (

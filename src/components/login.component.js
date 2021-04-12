@@ -23,11 +23,31 @@ export default class Login extends Component {
       }
 
     handleLogin(e){
-        // e.preventDefault();
-        // console.log("Here");
-        // api.get('/user')
-        //     .then(res => console.log(res.data));
-        // // window.location = "/";
+        e.preventDefault();
+        const user = {
+            username: this.state.identifier,
+            password: this.state.password
+        }
+        api.post('/user/login')
+            .then(res => {
+                if(res){
+                    //Successfully logged in
+                    const token = localStorage.usertoken;
+                    const decoded = jwt_decode(token);
+                    var id = decoded._id;
+                    this.props.history.push(`/${id}`);
+                }
+                else{
+                    localStorage.removeItem('usertoken');
+                    this.setState({identifier: "", password: "", message: "Login failed. Incorrect username or password"});
+                }
+            })
+            .catch(err => {
+                console.log("Login error: " + err);
+                localStorage.removeItem('usertoken');
+                this.props.history.push('/login');
+            });
+        // window.location = "/";
     }
 
 
