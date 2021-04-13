@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import {api} from "../axios_api.js";
-import jwt_decode from 'jwt-decode'
+import jwt from 'jsonwebtoken';
 import { Link } from 'react-router-dom';
 import Logo from "../images/LearnLogo.png"
 
@@ -25,17 +25,20 @@ export default class Login extends Component {
     handleLogin(e){
         e.preventDefault();
         const user = {
-            username: this.state.identifier.toLowerCase(),
+            identifier: this.state.identifier.toLowerCase(),
             password: this.state.password
         }
-        api.post('/user/login', (user))
+        api.post('/user/login', user)
             .then(res => {
-                if(res){
+                if(res.data.payload){
                     //Successfully logged in
-                    const token = localStorage.usertoken;
-                    const decoded = jwt_decode(token);
-                    var id = decoded._id;
-                    this.props.history.push(`/${id}`);
+                    console.log(res.data.payload);
+                    console.log(process.env.SECRET_KEY);
+                    let user_token = jwt.sign(res.data.payload, "jwt_key", {
+                        algorithm: "HS256"
+                    })      
+                    localStorage.setItem('usertoken', user_token);
+                    this.props.history.push(`/${res.data.payload._id}`);
                 }
                 else{
                     console.log("No user found...");
