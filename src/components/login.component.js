@@ -3,6 +3,7 @@ import {api} from "../axios_api.js";
 import jwt from 'jsonwebtoken';
 import { Link } from 'react-router-dom';
 import Logo from "../images/LearnLogo.png"
+import jwt_decode from 'jwt-decode'
 
 export default class Login extends Component {
     constructor(props){
@@ -15,6 +16,56 @@ export default class Login extends Component {
             identifier: '',
             password: '',
             message: 'Incorrect Password!'
+        }
+    }
+
+    componentDidMount(){
+        var token = localStorage.getItem('usertoken');
+        var validToken = false;
+        if(token){
+            //Token in session storage
+            console.log("Token found");
+            jwt.verify(token, "jwt_key", function(err,res) {
+                if(err){
+                    //Improper JWT format 
+                    //Remove token and redirect back to home
+                    console.log("Improper format");
+                    localStorage.removeItem('usertoken');
+                }
+                else{
+                    //Properly formatted JWT
+                    console.log("Proper format");
+                    validToken = true;
+                }});
+        }
+        if(validToken){
+            //Check if ID is in token and ID exists as a user
+            const decoded = jwt_decode(token);
+            if (decoded._id){
+                //ID exists in token
+                //Check if ID exists as a user
+                console.log("ID exists");
+                console.log(decoded);
+                api.get('/user/'+ decoded._id)
+                .then(response => {
+                    console.log(response.data);
+                    if (response) {
+                        //Valid user
+                        this.props.history.push(`/dashboard`);
+                    }
+                    else{
+                        //Fake ID...
+                        console.log("Fake ID");
+                        localStorage.removeItem('usertoken');
+                    }
+                })
+                .catch(err => console.log("User Error: " + err));
+            }
+        }  
+        else{
+            //Not a Valid Token
+            console.log("Not valid token");
+            localStorage.removeItem('usertoken');
         }
     }
 
@@ -38,7 +89,7 @@ export default class Login extends Component {
                         algorithm: "HS256"
                     })      
                     localStorage.setItem('usertoken', user_token);
-                    this.props.history.push(`/${res.data.payload._id}`);
+                    this.props.history.push(`/dashboard`);
                 }
                 else{
                     console.log("No user found...");
