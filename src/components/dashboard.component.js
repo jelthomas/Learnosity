@@ -16,6 +16,7 @@ export default class Dashboard extends Component {
         api.get('/users:'+this.props.match.params.id)
             .then(response => {
                 if (response) {
+                    console.log(response);
                     this.setState({
                         username: response.username
                     })

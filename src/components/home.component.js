@@ -5,6 +5,8 @@ import Carousel from 'react-bootstrap/Carousel'
 import Carousel1 from "../images/Carousel1.jpg"
 import Logo from "../images/LearnLogo.png"
 import Penguin from "../images/Penguin.jpg"
+import jwt_decode from 'jwt-decode'
+import jwt from 'jsonwebtoken';
 //import "bootstrap/dist/css/bootstrap.min.css";
 // import 'bootstrap/js/dist/util';
 
@@ -16,6 +18,25 @@ export default class Home extends Component {
         
         this.state = {
             username: '',
+        }
+    }
+
+    componentDidMount(){
+        var token = localStorage.getItem('usertoken');
+        if(token){
+            console.log("Has token");
+            jwt.verify(token, "jwt_key", function(err,res) {
+                if(err){
+                    console.log("FAKE TOKEN!");
+                }
+                else{
+                    console.log("Real token");
+                    console.log(jwt_decode(token));
+                }
+            });
+        }
+        else{
+            console.log("No token")
         }
     }
 
