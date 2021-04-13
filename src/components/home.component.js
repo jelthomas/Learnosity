@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-//import axios from 'axios';
 import {api} from "../axios_api.js";
 import Carousel from 'react-bootstrap/Carousel'
 import Carousel1 from "../images/Carousel1.jpg"
@@ -23,20 +22,51 @@ export default class Home extends Component {
 
     componentDidMount(){
         var token = localStorage.getItem('usertoken');
+        var validToken = false;
         if(token){
-            console.log("Has token");
+            //Token in session storage
+            console.log("Token found");
             jwt.verify(token, "jwt_key", function(err,res) {
                 if(err){
-                    console.log("FAKE TOKEN!");
+                    //Improper JWT format 
+                    //Remove token and redirect back to home
+                    console.log("Improper format");
+                    localStorage.removeItem('usertoken');
                 }
                 else{
-                    console.log("Real token");
-                    console.log(jwt_decode(token));
-                }
-            });
+                    //Properly formatted JWT
+                    console.log("Proper format");
+                    validToken = true;
+                }});
         }
+        if(validToken){
+            //Check if ID is in token and ID exists as a user
+            const decoded = jwt_decode(token);
+            if (decoded._id){
+                //ID exists in token
+                //Check if ID exists as a user
+                console.log("ID exists");
+                console.log(decoded);
+                api.get('/user/'+ decoded._id)
+                .then(response => {
+                    console.log(response.data);
+                    if (response) {
+                        //Valid user
+                        this.props.history.push(`/dashboard`);
+                    }
+                    else{
+                        //Fake ID...
+                        console.log("Fake ID");
+                        localStorage.removeItem('usertoken');
+                    }
+                })
+                .catch(err => console.log("User Error: " + err));
+            }
+        }  
         else{
-            console.log("No token")
+            //Not a Valid Token
+            console.log("Not valid token");
+            localStorage.removeItem('usertoken');
         }
     }
 

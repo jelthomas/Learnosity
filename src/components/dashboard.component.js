@@ -1,31 +1,75 @@
 import React, { Component } from 'react';
-//import axios from 'axios';
 import {api} from "../axios_api.js";
+import jwt from 'jsonwebtoken';
+import jwt_decode from 'jwt-decode'
 
 export default class Dashboard extends Component {
     constructor(props){
         super(props);
 
         this.state = {
-            username: ""
+            username: "",
+            id: ""
         }
 
     }
 
     componentDidMount() {
-        api.get('/users:'+this.props.match.params.id)
-            .then(response => {
-                if (response) {
-                    console.log(response);
-                    this.setState({
-                        username: response.username
-                    })
+        var token = localStorage.getItem('usertoken');
+        var validToken = false;
+        if(token){
+            //Token in session storage
+            console.log("Token found");
+            jwt.verify(token, "jwt_key", function(err,res) {
+                if(err){
+                    //Improper JWT format 
+                    //Remove token and redirect back to home
+                    console.log("Improper format");
+                    localStorage.removeItem('usertoken');
+                    this.props.history.push(`/`);
                 }
                 else{
-                    console.log("Could not find User with id: " + this.props.match.params.id);
-                }
-            })
-            .catch(err => console.log("User Error: " + err));
+                    //Properly formatted JWT
+                    console.log("Proper format");
+                    validToken = true;
+                }});
+        }
+        if(validToken){
+            //Check if ID is in token and ID exists as a user
+            const decoded = jwt_decode(token);
+            if (decoded._id){
+                //ID exists in token
+                //Check if ID exists as a user
+                console.log("ID exists");
+                console.log(decoded);
+                api.get('/user/'+ decoded._id)
+                .then(response => {
+                    console.log(response.data);
+                    if (response) {
+                        //Valid user
+                        this.setState({username: response.data.username, id: decoded._id });
+                    }
+                    else{
+                        //Fake ID...
+                        console.log("Fake ID");
+                        localStorage.removeItem('usertoken');
+                        this.props.history.push(`/`);
+                    }
+                })
+                .catch(err => {
+                    //Fake ID...
+                    console.log("Fake ID");
+                    localStorage.removeItem('usertoken');
+                    this.props.history.push(`/`);
+                });
+            }
+        }  
+        else{
+            //Not a Valid Token
+            console.log("Not valid token");
+            localStorage.removeItem('usertoken');
+            this.props.history.push(`/`);
+        }
     }
 
     render() {
