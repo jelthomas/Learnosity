@@ -1,26 +1,51 @@
 import React, { Component } from 'react';
-//import {api} from "../axios_api.js";
+import {api} from "../axios_api.js";
 import { Link } from 'react-router-dom';
 import Logo from "../images/LearnLogo.png"
 import Form from "react-bootstrap/Form"
+import Button from "react-bootstrap/Button"
 export default class SignUp extends Component {
     constructor(props){
         super(props);
 
         this.onChange = this.onChange.bind(this);
+        this.onDropdown = this.onDropdown.bind(this);
+        this.handleRegister = this.handleRegister.bind(this);
         this.state = {
             username: '',
             email:'',
             password: '',
-            confirmPassword:''
+            confirmPassword:'',
+            securityQuestion:'What was your first car?',
+            securityAnswer:''
         }
     }
 
     onChange(e){
         this.setState({[e.target.name]: e.target.value})
-        console.log("TESTING " + e.target.name + " " + e.target.value)
+        //console.log("TESTING " + e.target.name + " " + e.target.value)
     }
 
+    onDropdown(e)
+    {
+        this.setState({securityQuestion: e.target.value})
+        //console.log(e.target.value)
+    }
+
+    handleRegister(e)
+    {
+        e.preventDefault();
+        console.log(this.state.username)
+        const user={
+            username: this.state.username,
+            email: this.state.email,
+            password: this.state.password,
+            security_question: this.state.securityQuestion,
+            security_answer:    this.state.securityAnswer
+        }
+
+        api.post('/user/signup',(user))
+    }
 
     render() {
         return (
@@ -41,6 +66,10 @@ export default class SignUp extends Component {
                                     <input type = "username" style = {{width: "90%", borderColor: "black"}} className = "form-control" name = "username" placeholder = "Username" value = {this.state.username} onChange = {this.onChange} required/>
                                 </div>
                                 <div className = "form-group" style={{marginLeft: "10%"}}>
+                                    <label style = {{color: "black"}}> Email:</label>
+                                    <input type = "email" style = {{width: "90%", borderColor: "black"}} className = "form-control" name = "email" placeholder = "Email Address" value = {this.state.email} onChange = {this.onChange} required/>
+                                </div>
+                                <div className = "form-group" style={{marginLeft: "10%"}}>
                                     <label style = {{color: "black"}}> Password:</label>
                                     <input type = "password" style = {{width: "90%", borderColor: "black"}} className = "form-control" name = "password" placeholder = "Password" value = {this.state.password} onChange = {this.onChange} required/>
                                 </div>
@@ -48,31 +77,25 @@ export default class SignUp extends Component {
                                     <label style = {{color: "black"}}> Confirm Password:</label>
                                     <input type = "password" style = {{width: "90%", borderColor: "black"}} className = "form-control" name = "confirmPassword" placeholder = "Enter Password Again" value = {this.state.confirmPassword} onChange = {this.onChange} required/>
                                 </div>
-                                <Form style={{marginLeft: "10%",marginRight: "10%"}}>
+                                <Form style={{marginLeft: "10%"}}>
                                     <Form.Group controlId="exampleForm.ControlSelect1">
-                                        <Form.Label>Security Question</Form.Label>
-                                        <Form.Control as="select">
+                                        <Form.Label>Security Question:</Form.Label>
+                                        <Form.Control as="select" style = {{width: "90%", borderColor: "black"}} onChange={this.onDropdown}>
                                         <option>What was your first car?</option>
                                         <option>What was the name of your first pet?</option>
+                                        <option>What was the street you lived on during your childhood?</option>
                                         </Form.Control>
                                     </Form.Group>
                                 </Form>
-                                {/* <div className = "form-group" style={{marginLeft: "10%"}}>
-                                    <label style = {{color: "black"}}> Username:</label>
-                                    <input type = "email" style = {{width: "90%", borderColor: "black"}} className = "form-control" name = "identifier" placeholder = "Email address or username" value = {this.state.identifier} onChange = {this.onChange} required/>
-                                </div>
                                 <div className = "form-group" style={{marginLeft: "10%"}}>
-                                    <label style = {{color: "black"}}> Password:</label>
-                                    <input type = "password" style = {{width: "90%", borderColor: "black"}} className = "form-control" name = "password" placeholder = "Password" value = {this.state.password} onChange = {this.onChange} required/>
+                                    <label style = {{color: "black"}}> Security Answer:</label>
+                                    <input type = "securityAnswer" style = {{width: "90%", borderColor: "black"}} className = "form-control" name = "securityAnswer" placeholder = "Security Answer" value = {this.state.securityAnswer} onChange = {this.onChange} required/>
                                 </div>
-                                <Link to="/forgot" style={{color: "blue", justifyContent: "center", display: "flex"}}>Forgot Password?</Link>
-                                <button onClick={this.handleLogin} style = {{margin: "auto", marginTop: "10px", display: "block", backgroundColor: "limegreen", fontSize: "25px", borderStyle: "solid", borderRadius: "20px", borderColor: "grey", borderWidth: "1px", width: "45%", paddingBottom: "1.5%", paddingTop: "0.5%", color: "white"}}>
-                                    Login
-                                </button>
-                                <div style = {{color: "black", textAlign: "center", fontSize: "15px", marginTop: "10px"}} className = "form-group">
-                                    Don't have an account?
+                                <Button variant="light" style={{marginLeft: "40%"}} onClick={this.handleRegister}>Register</Button>
+                                <div>
+                                    <p>Have an account already?</p>
+                                    <Link to="/login" style={{color: "limegreen", justifyContent: "center", display: "flex"}}>Login</Link>
                                 </div>
-                                <Link to="/signup" className="btn btn-primary" style = {{justifyContent: "center", display: "flex", color: "black", background: "white", width: "45%", borderStyle: "solid", borderRadius: "20px", margin: "auto", fontSize: "18px", borderColor: "grey"}}>Sign Up</Link> */}
                             </div>
                         </div>
                     </div>
