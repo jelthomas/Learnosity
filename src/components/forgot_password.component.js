@@ -65,19 +65,21 @@ export default class ForgotPassword extends Component {
             showModal: false
         })
     }
-
+    
     handleSubmit(e) {
-        if (this.state.new_password.length < 8 || this.state.new_password.toLowerCase() === this.state.new_password || this.state.new_password.toUpperCase() === this.state.new_password){
+        if (this.state.new_password.match(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/) === null){
             this.setState({
                 showAlert3: true
             })
+            return
         }
         
         //Checking if fields are blank does not work for some reason
-        else if (this.state.new_password !== this.state.confirm_password || this.state.security_answer === "" || this.state.new_password === "" || this.state.confirm_password === ""){
+        else if (this.state.new_password !== this.state.confirm_password || this.state.security_answer.length === 0 || this.state.new_password.length === 0 || this.state.confirm_password.length === 0){
             this.setState({
                 showAlert2: true
             })
+            return
         }
 
         api.get('/user/getSecurityAnswer/'+this.state.identifier)
@@ -88,13 +90,13 @@ export default class ForgotPassword extends Component {
                 api.get('/user/getID/'+this.state.identifier)
                 .then((response) => {
                     if (response.data.length > 0) {
-                        api.put('/user/updatePassword/'+response.data[0]._id, {
+                        api.post('/user/updatePassword/'+response.data[0]._id, {
                             password: this.state.new_password
                         })
                         .then((response) => {
-                            console.log("HERE",response);
+                            console.log(response);
                         }, (error) => {
-                            console.log("Here1234",error);
+                            console.log(error);
                         })
                     }
                 })
