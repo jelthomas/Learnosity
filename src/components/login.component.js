@@ -60,6 +60,13 @@ export default class Login extends Component {
             //Not a Valid Token
             localStorage.removeItem('usertoken');
         }
+        console.log(this.props.value)
+        if (this.props.value !== null) {
+            
+            this.setState({
+                message: this.props.value
+            })
+        }
     }
 
     onChange(e){
