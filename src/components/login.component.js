@@ -25,17 +25,14 @@ export default class Login extends Component {
         var validToken = false;
         if(token){
             //Token in session storage
-            console.log("Token found");
             jwt.verify(token, "jwt_key", function(err,res) {
                 if(err){
                     //Improper JWT format 
                     //Remove token and redirect back to home
-                    console.log("Improper format");
                     localStorage.removeItem('usertoken');
                 }
                 else{
                     //Properly formatted JWT
-                    console.log("Proper format");
                     validToken = true;
                 }});
         }
@@ -45,18 +42,14 @@ export default class Login extends Component {
             if (decoded._id){
                 //ID exists in token
                 //Check if ID exists as a user
-                console.log("ID exists");
-                console.log(decoded);
                 api.get('/user/'+ decoded._id)
                 .then(response => {
-                    console.log(response.data);
                     if (response) {
                         //Valid user
                         this.props.history.push(`/dashboard`);
                     }
                     else{
                         //Fake ID...
-                        console.log("Fake ID");
                         localStorage.removeItem('usertoken');
                     }
                 })
@@ -65,7 +58,6 @@ export default class Login extends Component {
         }  
         else{
             //Not a Valid Token
-            console.log("Not valid token");
             localStorage.removeItem('usertoken');
         }
     }
@@ -77,15 +69,13 @@ export default class Login extends Component {
     handleLogin(e){
         e.preventDefault();
         const user = {
-            identifier: this.state.identifier.toLowerCase(),
+            identifier: this.state.identifier,
             password: this.state.password
         }
         api.post('/user/login', user)
             .then(res => {
                 if(res.data.payload){
                     //Successfully logged in
-                    console.log(res.data.payload);
-                    console.log(process.env.SECRET_KEY);
                     let user_token = jwt.sign(res.data.payload, "jwt_key", {
                         algorithm: "HS256"
                     })      
@@ -93,14 +83,11 @@ export default class Login extends Component {
                     this.props.history.push(`/dashboard`);
                 }
                 else{
-                    console.log("No user found...");
-                    console.log(res);
                     localStorage.removeItem('usertoken');
                     this.setState({identifier: "", password: "", message: "Login failed. Incorrect username or password"});
                 }
             })
             .catch(err => {
-                console.log("Login error: " + err);
                 localStorage.removeItem('usertoken');
                 this.props.history.push('/login');
             });
@@ -113,7 +100,7 @@ export default class Login extends Component {
             <div className ="custom_container" style={{background: "rgb(59, 59, 59)"}}>
                 <div className = "custom_col mt-5 mx-auto">
                     <form onSubmit={this.handleLogin} style = {{backgroundColor: "white", padding: "0px 20px 20px 20px", borderStyle: "solid", borderRadius: "28px"}}> 
-                        <Link to="/" className="navbar-brand" id="image">
+                        <Link to="/" className="navbar-brand">
                             <img width = {60} src = {Logo} alt =""/>
                         </Link>
                         <div style = {{textAlign: "center", color: 'rgb(0, 219, 0)', width: "max-content", margin: "auto", fontSize: "55px", padding: "3px", marginTop:"-75px"}}>
