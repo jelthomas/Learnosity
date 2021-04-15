@@ -14,7 +14,14 @@ export default class Dashboard extends Component {
 
         this.state = {
             username: "",
-            id: ""
+            id: "",
+            search: '',
+            sort_by: '',
+            privacy_filter: '',
+            recent_platforms: [],
+            all_platforms: [],
+            paginate_rec_index: 0,
+            paginate_all_index: 0
         }
 
     }
@@ -66,6 +73,35 @@ export default class Dashboard extends Component {
             localStorage.removeItem('usertoken');
             this.props.history.push(`/`);
         }
+
+        //Token Validated
+        //Grab data from backend
+
+        //CHANGE THIS TO BEGIN GRABBING LEARNED PLATFORM DATA 
+
+        // api.get('/user/getSecurityAnswer/'+this.state.identifier)
+        // .then((response) => {
+        //   console.log(response);
+        //   if (response.data.length > 0){
+        //     if (response.data[0].security_answer === this.state.security_answer) {
+        //         api.put('/user/updatePassword/'+response.data[0]._id, {
+        //             password: this.state.new_password
+        //         })
+        //         .then((response) => {
+        //             console.log("HERE",response);
+        //         }, (error) => {
+        //             console.log("Here1234",error);
+        //         })
+        //     }
+        //     else{
+        //         this.setState({
+        //             showAlert4: true
+        //         })
+        //     }
+        //   }
+        // }, (error) => {
+        //     console.log(error);
+        // });
     }
 
     render() {
