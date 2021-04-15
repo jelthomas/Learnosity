@@ -65,19 +65,21 @@ export default class ForgotPassword extends Component {
             showModal: false
         })
     }
-
+    
     handleSubmit(e) {
-        if (this.state.new_password.length < 8 || this.state.new_password.toLowerCase() === this.state.new_password || this.state.new_password.toUpperCase() === this.state.new_password){
+        if (this.state.new_password.match(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/) === null){
             this.setState({
                 showAlert3: true
             })
+            return
         }
         
         //Checking if fields are blank does not work for some reason
-        else if (this.state.new_password !== this.state.confirm_password || this.state.security_answer === "" || this.state.new_password === "" || this.state.confirm_password === ""){
+        else if (this.state.new_password !== this.state.confirm_password || this.state.security_answer.length === 0 || this.state.new_password.length === 0 || this.state.confirm_password.length === 0){
             this.setState({
                 showAlert2: true
             })
+            return
         }
 
         api.get('/user/getSecurityAnswer/'+this.state.identifier)
@@ -88,13 +90,13 @@ export default class ForgotPassword extends Component {
                 api.get('/user/getID/'+this.state.identifier)
                 .then((response) => {
                     if (response.data.length > 0) {
-                        api.put('/user/updatePassword/'+response.data[0]._id, {
+                        api.post('/user/updatePassword/'+response.data[0]._id, {
                             password: this.state.new_password
                         })
                         .then((response) => {
-                            console.log("HERE",response);
+                            console.log(response);
                         }, (error) => {
-                            console.log("Here1234",error);
+                            console.log(error);
                         })
                     }
                 })
@@ -114,10 +116,9 @@ export default class ForgotPassword extends Component {
     }
     render() {
         return (
-            <div style={{background: "rgb(59, 59, 59)"}}>
-                <div className ="container">
+                <div className ="container" style={{background: "rgb(59, 59, 59)"}}>
                     <div className = "row">
-                        <div className = "col-md-6 mt-5 mx-auto">
+                        <div className = "custom_col-md-6 mt-5 mx-auto" style={{width: "50%", minWidth: "405px"}}>
                             <div style = {{backgroundColor: "white", padding: "0px 20px 20px 20px", borderStyle: "solid", borderRadius: "28px"}}> 
                                 <div style = {{textAlign: "center", color: 'rgb(0, 219, 0)', width: "max-content", margin: "auto", fontSize: "55px", padding: "3px"}}>
                                     <Link to="/" className="navbar-brand">
@@ -183,7 +184,6 @@ export default class ForgotPassword extends Component {
                         </div>
                     </div>
                 </div>
-            </div>
         )
     }
 }
