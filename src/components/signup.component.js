@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import Logo from "../images/LearnLogo.png"
 import Form from "react-bootstrap/Form"
 import Button from "react-bootstrap/Button"
+import Alert from "react-bootstrap/Alert"
 export default class SignUp extends Component {
     constructor(props){
         super(props);
@@ -11,18 +12,57 @@ export default class SignUp extends Component {
         this.onChange = this.onChange.bind(this);
         this.onDropdown = this.onDropdown.bind(this);
         this.handleRegister = this.handleRegister.bind(this);
+        this.showUserAlert = this.showUserAlert.bind(this);
+        this.showEmailAlert = this.showEmailAlert.bind(this);
+        this.showPassAlert = this.showPassAlert.bind(this);
+        this.showConfirmPassAlert = this.showConfirmPassAlert.bind(this);
+        this.showSecurityAnswerAlert = this.showSecurityAnswerAlert.bind(this);
         this.state = {
             username: '',
             email:'',
             password: '',
             confirmPassword:'',
             securityQuestion:'What was your first car?',
-            securityAnswer:''
+            securityAnswer:'',
+            userAlert: false,
+            emailAlert: false,
+            passAlert: false,
+            confirmPassAlert: false,
+            securityAnswerAlert: false
         }
     }
 
+    showUserAlert(){
+        this.setState({userAlert: true})
+        //setTimeout(() => {this.setState({userAlert: false})}, 4000)
+    }
+
+    showEmailAlert(){
+        this.setState({emailAlert: true})
+        //setTimeout(() => {this.setState({emailAlert: false})}, 4000)
+    }
+
+    showPassAlert(){
+        this.setState({passAlert: true})
+        //setTimeout(() => {this.setState({passAlert: false})}, 4000)
+    }
+
+    showConfirmPassAlert(){
+        this.setState({confirmPassAlert: true})
+        //setTimeout(() => {this.setState({confirmPassAlert: false})}, 4000)
+    }
+    
+    showSecurityAnswerAlert(){
+        this.setState({securityAnswerAlert: true})
+        //setTimeout(() => {this.setState({securityAnswerAlert: false})}, 4000)
+    }
     onChange(e){
         this.setState({[e.target.name]: e.target.value})
+        this.setState({userAlert: false})
+        this.setState({emailAlert: false})
+        this.setState({passAlert: false})
+        this.setState({confirmPassAlert: false})
+        this.setState({securityAnswerAlert: false})
         //console.log("TESTING " + e.target.name + " " + e.target.value)
     }
 
@@ -34,8 +74,39 @@ export default class SignUp extends Component {
 
     handleRegister(e)
     {
+        console.log("ENTERS APP")
         e.preventDefault();
-        console.log(this.state.username)
+        //Check Username
+        if(this.state.username.length === 0 || this.state.username.match(/^[a-z0-9_-]{3,16}$/) === null)
+        {
+            this.showUserAlert()
+            return
+        }
+        //Check Email
+        if(this.state.email.length ===  0 || this.state.email.match(/[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/) === null)
+        {
+            this.showEmailAlert()
+            return
+        }
+        //Check Password
+        if(this.state.password.length === 0 || this.state.password.match(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/) === null)
+        {
+            this.showPassAlert()
+            return
+        }
+        //Check Confirm Password and Password 
+        if((this.state.password) !== (this.state.confirmPassword))
+        {
+            this.showConfirmPassAlert()
+            return
+        }
+        //Check Security Answer
+        if(this.state.securityAnswer.length < 3)
+        {
+            this.showSecurityAnswerAlert()
+            return 
+        }
+        console.log("GETS PAST RETURN")
         const user={
             username: this.state.username,
             email: this.state.email,
@@ -96,6 +167,23 @@ export default class SignUp extends Component {
                                     <p>Have an account already?</p>
                                     <Link to="/login" style={{color: "limegreen", justifyContent: "center", display: "flex"}}>Login</Link>
                                 </div>
+                                <Alert show = {this.state.userAlert} variant = 'danger'>
+                                    User conditions not met.
+                                    Alphanumeric string that may include _ and – having a length of 3 to 16 characters.
+                                </Alert>
+                                <Alert show = {this.state.emailAlert} variant = 'danger' style={{textAlign:"center"}}>
+                                    Email conditions not met 
+                                </Alert>
+                                <Alert show = {this.state.passAlert} variant = 'danger'>
+                                    Password needs a minimum of eight characters.
+                                    It must include at least one lowercase letter, one uppercase letter and one number.
+                                </Alert>
+                                <Alert show = {this.state.confirmPassAlert} variant = 'danger'>
+                                    Passwords do not match 
+                                </Alert>
+                                <Alert show = {this.state.securityAnswerAlert} variant = 'danger'>
+                                    Security Answer conditions not met 
+                                </Alert>
                             </div>
                         </div>
                     </div>
