@@ -82,47 +82,56 @@ export default class Dashboard extends Component {
                         </div>
                     </div>
                     <div style={{display: "flex"}}>
-                        <Card style={{width: "15rem", height: "200px", marginLeft: "3%"}}>
-                            <Card.Img variant="top" src={Penguin} style={{height: "120px"}}/>
-                            <Card.Body style={{padding: "0.25rem"}}>
-                                <Card.Title style={{textAlign: "center", marginBottom: "0"}}>History of the NBA</Card.Title>
-                                <Card.Text style={{textAlign: "center", marginBottom: "0"}}>
+                        <Card className = "card_top">
+                            <Card.Img variant="top" src={Penguin} className = "card_image"/>
+                            <Card.Body className = "card_body">
+                                <Card.Title className = "card_info">History of the NBA</Card.Title>
+                                <Card.Text className = "card_info">
                                 JBuckets
                                 </Card.Text>
-                                <button id="favorite_button"><FontAwesomeIcon icon={faStar} /></button>
+                                <button className = "favorite_button"><FontAwesomeIcon icon={faStar} /></button>
                             </Card.Body>
                         </Card>
-                        <Card style={{width: "15rem", height: "200px", marginLeft: "3%"}}>
-                            <Card.Img variant="top" src={Penguin} style={{height: "120px"}}/>
-                            <Card.Body style={{padding: "0.25rem"}}>
-                                <Card.Title style={{textAlign: "center", marginBottom: "0"}}>History of the NBA</Card.Title>
-                                <Card.Text style={{textAlign: "center", marginBottom: "0"}}>
+                        <Card className = "card_top">
+                            <Card.Img variant="top" src={Penguin} className = "card_image"/>
+                            <Card.Body className = "card_body">
+                                <Card.Title className = "card_info">History of the NBA</Card.Title>
+                                <Card.Text className = "card_info">
                                 JBuckets
                                 </Card.Text>
-                                <button id="favorite_button"><FontAwesomeIcon icon={faStar} /></button>
+                                <button className = "favorite_button"><FontAwesomeIcon icon={faStar} /></button>
                             </Card.Body>
                         </Card>
-                        <Card style={{width: "15rem", height: "200px", marginLeft: "3%"}}>
-                            <Card.Img variant="top" src={Penguin} style={{height: "120px"}}/>
-                            <Card.Body style={{padding: "0.25rem"}}>
-                                <Card.Title style={{textAlign: "center", marginBottom: "0"}}>History of the NBA</Card.Title>
-                                <Card.Text style={{textAlign: "center", marginBottom: "0"}}>
+                        <Card className = "card_top">
+                            <Card.Img variant="top" src={Penguin} className = "card_image"/>
+                            <Card.Body className = "card_body">
+                                <Card.Title className = "card_info">History of the NBA</Card.Title>
+                                <Card.Text className = "card_info">
                                 JBuckets
                                 </Card.Text>
-                                <button id="favorite_button"><FontAwesomeIcon icon={faStar} /></button>
+                                <button className = "favorite_button"><FontAwesomeIcon icon={faStar} /></button>
                             </Card.Body>
                         </Card>
-                        <Card style={{width: "15rem", height: "200px", marginLeft: "3%"}}>
-                            <Card.Img variant="top" src={Penguin} style={{height: "120px"}}/>
-                            <Card.Body style={{padding: "0.25rem"}}>
-                                <Card.Title style={{textAlign: "center", marginBottom: "0"}}>History of the NBA</Card.Title>
-                                <Card.Text style={{textAlign: "center", marginBottom: "0"}}>
+                        <Card className = "card_top">
+                            <Card.Img variant="top" src={Penguin} className = "card_image"/>
+                            <Card.Body className = "card_body">
+                                <Card.Title className = "card_info">History of the NBA</Card.Title>
+                                <Card.Text className = "card_info">
                                 JBuckets
                                 </Card.Text>
-                                <button id="favorite_button"><FontAwesomeIcon icon={faStar} /></button>
+                                <button className = "favorite_button"><FontAwesomeIcon icon={faStar} /></button>
                             </Card.Body>
                         </Card>
-                        
+                        <Card className = "card_top">
+                            <Card.Img variant="top" src={Penguin} className = "card_image"/>
+                            <Card.Body className = "card_body">
+                                <Card.Title className = "card_info">History of the NBA</Card.Title>
+                                <Card.Text className = "card_info">
+                                JBuckets
+                                </Card.Text>
+                                <button className = "favorite_button"><FontAwesomeIcon icon={faStar} /></button>
+                            </Card.Body>
+                        </Card>
                     </div>
                 </div>
             </div>
