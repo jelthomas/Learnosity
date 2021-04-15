@@ -2,9 +2,10 @@ import React, { Component } from 'react';
 import {api} from "../axios_api.js";
 import Carousel from 'react-bootstrap/Carousel'
 import Carousel1 from "../images/Carousel1.jpg"
-import Carousel2 from "../images/neural net.jpg"
+import Carousel2 from "../images/LearnosityPage2.png"
 import jwt_decode from 'jwt-decode'
 import jwt from 'jsonwebtoken';
+import loggedInNav from "./loggedInNav.component.js"
 //import "bootstrap/dist/css/bootstrap.min.css";
 // import 'bootstrap/js/dist/util';
 
@@ -80,6 +81,8 @@ export default class Home extends Component {
 
     render() {
         return (
+            <div>
+            <loggedInNav/>
             <div class="container">
                 {/* <div id="homeCarousel" class="carousel slide" data-bs-ride="carousel">
                     <div class="carousel-indicators">
@@ -124,6 +127,7 @@ export default class Home extends Component {
                     />
                 </Carousel.Item>
                 </Carousel>
+            </div>
             </div>
         )
     }
