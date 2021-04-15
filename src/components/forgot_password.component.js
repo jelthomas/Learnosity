@@ -81,12 +81,14 @@ export default class ForgotPassword extends Component {
             })
             return
         }
+        const sq = {
+            security_answer: this.state.security_answer
+        }
 
-        api.get('/user/getSecurityAnswer/'+this.state.identifier)
+        api.post('/user/compareSecurityAnswer/'+this.state.identifier, sq)
         .then((response) => {
           console.log(response);
-          if (response.data.length > 0){
-            if (response.data[0].security_answer === this.state.security_answer) {
+            if (response.data.answer === true) {
                 api.get('/user/getID/'+this.state.identifier)
                 .then((response) => {
                     if (response.data.length > 0) {
@@ -106,7 +108,7 @@ export default class ForgotPassword extends Component {
                     showAlert4: true
                 })
             }
-          }
+     
         }, (error) => {
             console.log(error);
         });
