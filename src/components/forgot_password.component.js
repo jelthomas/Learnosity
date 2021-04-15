@@ -6,6 +6,8 @@ import Button from "react-bootstrap/Button"
 import Alert from "react-bootstrap/Alert"
 import {api} from "../axios_api.js";
 
+export let myObject = {value: ""};
+
 export default class ForgotPassword extends Component {
     constructor(props){
         super(props);
@@ -92,6 +94,7 @@ export default class ForgotPassword extends Component {
                     password: this.state.new_password
                 })
                 .then((response) => {
+                    myObject.value = "You successfully changed your password."
                     this.props.history.push("/login")
                 }, (error) => {
                     console.log(error);
