@@ -4,7 +4,6 @@ import Logo from "../images/LearnLogo.png"
 import Modal from "react-bootstrap/Modal"
 import Button from "react-bootstrap/Button"
 import Alert from "react-bootstrap/Alert"
-import axios from 'axios';
 import {api} from "../axios_api.js";
 
 export default class ForgotPassword extends Component {
@@ -89,18 +88,13 @@ export default class ForgotPassword extends Component {
         .then((response) => {
           console.log(response);
             if (response.data.answer === true) {
-                api.get('/user/getID/'+this.state.identifier)
+                api.post('/user/updatePassword/'+this.state.identifier, {
+                    password: this.state.new_password
+                })
                 .then((response) => {
-                    if (response.data.length > 0) {
-                        api.post('/user/updatePassword/'+response.data[0]._id, {
-                            password: this.state.new_password
-                        })
-                        .then((response) => {
-                            console.log(response);
-                        }, (error) => {
-                            console.log(error);
-                        })
-                    }
+                    this.props.history.push("/login")
+                }, (error) => {
+                    console.log(error);
                 })
             }
             else{
@@ -186,6 +180,7 @@ export default class ForgotPassword extends Component {
                         </div>
                     </div>
                 </div>
+                
         )
     }
 }
