@@ -116,10 +116,9 @@ export default class ForgotPassword extends Component {
     }
     render() {
         return (
-            <div style={{background: "rgb(59, 59, 59)"}}>
-                <div className ="container">
+                <div className ="container" style={{background: "rgb(59, 59, 59)"}}>
                     <div className = "row">
-                        <div className = "col-md-6 mt-5 mx-auto">
+                        <div className = "custom_col-md-6 mt-5 mx-auto" style={{width: "50%", minWidth: "405px"}}>
                             <div style = {{backgroundColor: "white", padding: "0px 20px 20px 20px", borderStyle: "solid", borderRadius: "28px"}}> 
                                 <div style = {{textAlign: "center", color: 'rgb(0, 219, 0)', width: "max-content", margin: "auto", fontSize: "55px", padding: "3px"}}>
                                     <Link to="/" className="navbar-brand">
@@ -185,7 +184,6 @@ export default class ForgotPassword extends Component {
                         </div>
                     </div>
                 </div>
-            </div>
         )
     }
 }
