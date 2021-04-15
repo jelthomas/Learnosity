@@ -2,8 +2,7 @@ import React, { Component } from 'react';
 import {api} from "../axios_api.js";
 import Carousel from 'react-bootstrap/Carousel'
 import Carousel1 from "../images/Carousel1.jpg"
-import Logo from "../images/LearnLogo.png"
-import Penguin from "../images/Penguin.jpg"
+import Carousel2 from "../images/neural net.jpg"
 import jwt_decode from 'jwt-decode'
 import jwt from 'jsonwebtoken';
 //import "bootstrap/dist/css/bootstrap.min.css";
@@ -120,15 +119,8 @@ export default class Home extends Component {
                 <Carousel.Item>
                     <img
                     className="d-block w-100"
-                    src={Logo}
+                    src={Carousel2}
                     alt="Second slide"
-                    />
-                </Carousel.Item>
-                <Carousel.Item>
-                    <img
-                    className="d-block w-100"
-                    src={Penguin}
-                    alt="Third slide"
                     />
                 </Carousel.Item>
                 </Carousel>
