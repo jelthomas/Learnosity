@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import Logo from "../images/LearnLogo.png";
 import jwt_decode from 'jwt-decode';
 import "../format.css";
+import { myObject } from "./forgot_password.component"
 
 export default class Login extends Component {
     constructor(props){
@@ -60,11 +61,9 @@ export default class Login extends Component {
             //Not a Valid Token
             localStorage.removeItem('usertoken');
         }
-        console.log(this.props.value)
-        if (this.props.value !== null) {
-            
+        if (myObject.value !== "") {
             this.setState({
-                message: this.props.value
+                message: myObject.value
             })
         }
     }
