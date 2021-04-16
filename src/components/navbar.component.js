@@ -8,7 +8,7 @@ export default class Navbar extends Component {
     return (
 
       <nav class="navbar navbar-light bg-light navbar-expand-lg">
-    <div class="navbar-collapse collapse w-100 order-1 order-md-0 dual-collapse2">
+    <div class="navbar-collapse w-100 order-1 order-md-0 dual-collapse2">
         <ul class="navbar-nav mr-auto">
             <Link to="/" className="navbar-brand">
                 <img width = {60} src = {Logo} alt =""/>
@@ -18,7 +18,7 @@ export default class Navbar extends Component {
     <div class="mx-auto order-0">
       <p class="font-weight-normal" style={{padding: '5px',color:'#00db00',fontFamily:"Quando",fontSize:'25px'}} > Learnosity</p>
     </div>
-    <div class="navbar-collapse collapse w-100 order-3 dual-collapse2">
+    <div class="navbar-collapse w-100 order-3 dual-collapse2">
         <ul class="navbar-nav ml-auto">
             <li className="navbar-item">
               <Link to="/signup" className="nav-link" style={{padding: '5px',color:'#00db00',fontFamily:"Quando",fontSize:'25px'}}>Sign Up</Link>
