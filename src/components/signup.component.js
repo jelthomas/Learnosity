@@ -126,7 +126,7 @@ export default class SignUp extends Component {
         e.preventDefault();
 
         //Check Username
-        if(this.state.username.length === 0 || this.state.username.match(/^[a-z0-9_-]{3,15}$/) === null)
+        if(this.state.username.length === 0 || this.state.username.match(/^[a-zA-Z0-9_-]{3,15}$/) === null)
         {
             this.showUserAlert()
             return
