@@ -5,6 +5,7 @@ import Logo from "../images/LearnLogo.png"
 import Form from "react-bootstrap/Form"
 import Button from "react-bootstrap/Button"
 import Alert from "react-bootstrap/Alert"
+import Navbar from "./navbar.component";
 export default class SignUp extends Component {
     constructor(props){
         super(props);
@@ -120,6 +121,8 @@ export default class SignUp extends Component {
 
     render() {
         return (
+                <div>
+                    <Navbar/>
                 <div style={{background: "rgb(59, 59, 59)"}}>
                 
                 <div className ="container">
@@ -188,6 +191,7 @@ export default class SignUp extends Component {
                         </div>
                     </div>
                 </div>
+            </div>
             </div>
         )
     }

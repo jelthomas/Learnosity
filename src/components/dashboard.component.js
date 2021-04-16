@@ -7,7 +7,7 @@ import Card from "react-bootstrap/Card"
 import Penguin from "../images/Penguin.jpg"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faStar } from "@fortawesome/free-solid-svg-icons";
-
+import LoggedInNav from "./loggedInNav.component";
 export default class Dashboard extends Component {
     constructor(props){
         super(props);
@@ -132,6 +132,7 @@ export default class Dashboard extends Component {
     render() {
         return (
             <div>
+                <LoggedInNav props={this.props}/>
                 <div style={{display:"flex", marginLeft: "5%", marginRight: "5%"}}>
                     <div id="dash">Dashboard</div>
                     <div id="greeting">Welcome {this.state.username}!</div>

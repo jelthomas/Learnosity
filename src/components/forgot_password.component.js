@@ -5,6 +5,7 @@ import Modal from "react-bootstrap/Modal"
 import Button from "react-bootstrap/Button"
 import Alert from "react-bootstrap/Alert"
 import {api} from "../axios_api.js";
+import Navbar from "./navbar.component";
 
 export let myObject = {value: ""};
 
@@ -115,6 +116,8 @@ export default class ForgotPassword extends Component {
     }
     render() {
         return (
+                <div>
+                    <Navbar/>
                 <div className ="container" style={{background: "rgb(59, 59, 59)"}}>
                     <div className = "row">
                         <div className = "custom_col-md-6 mt-5 mx-auto" style={{width: "50%", minWidth: "405px"}}>
@@ -183,7 +186,7 @@ export default class ForgotPassword extends Component {
                         </div>
                     </div>
                 </div>
-                
+                </div>      
         )
     }
 }
