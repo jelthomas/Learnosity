@@ -60,7 +60,7 @@ export default class LoggedInNav extends Component {
       <nav class="navbar navbar-light bg-light navbar-expand-lg" style={{height: "65px"}}>
     <div class="navbar-collapse w-100 order-1 order-md-0 dual-collapse2">
         
-            <Link to="/" className="navbar-brand">
+            <Link to="/dashboard" className="navbar-brand">
                 <img width = {60} src = {Logo} alt =""/>
             </Link>
             <p class="font-weight-normal navbarDropdown" style={{padding: '5px',color:'#00db00',fontFamily:"Quando",fontSize:'25px', marginTop: '0px', marginBottom: '0px'}} > Learnosity</p>
