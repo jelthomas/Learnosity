@@ -19,6 +19,7 @@ export default class Dashboard extends Component {
             sort_by: '',
             privacy_filter: '',
             recent_platforms: [],
+            get_recent: true,
             all_platforms: [],
             paginate_rec_index: 0,
             paginate_all_index: 0
@@ -74,34 +75,58 @@ export default class Dashboard extends Component {
             this.props.history.push(`/`);
         }
 
-        //Token Validated
-        //Grab data from backend
+    }
 
-        //CHANGE THIS TO BEGIN GRABBING LEARNED PLATFORM DATA 
+    componentDidUpdate() {
+        //If statement to avoid infinite loop
+        if(this.state.get_recent){
+            //First grab user's learned platforms
+            api.get('/user/getLearnedPlatforms/' + this.state.id)
+            .then(response => {
+                var learned_plats_ids = response.data; 
+                learned_plats_ids = response.data;
+                //Received array of learned platformData IDs
 
-        // api.get('/user/getSecurityAnswer/'+this.state.identifier)
-        // .then((response) => {
-        //   console.log(response);
-        //   if (response.data.length > 0){
-        //     if (response.data[0].security_answer === this.state.security_answer) {
-        //         api.put('/user/updatePassword/'+response.data[0]._id, {
-        //             password: this.state.new_password
-        //         })
-        //         .then((response) => {
-        //             console.log("HERE",response);
-        //         }, (error) => {
-        //             console.log("Here1234",error);
-        //         })
-        //     }
-        //     else{
-        //         this.setState({
-        //             showAlert4: true
-        //         })
-        //     }
-        //   }
-        // }, (error) => {
-        //     console.log(error);
-        // });
+                //Now (if the array isn't empty) use these IDs to find the recent learned platforms
+                if(learned_plats_ids.length > 0){
+                    api.post('/platformData/getRecentPlatforms', {platformDatas_id: learned_plats_ids, user_id: this.state.id})
+                    .then(recent_plats => {
+                        var recent_platforms = recent_plats.data;
+                        var platform_format_ids = [];
+                        var index_dict = {};
+                        for(var i = 0; i < recent_platforms.length; i++){
+                            var specific_id = recent_platforms[i].platform_id;
+                            index_dict[specific_id] = i;
+                            platform_format_ids.push(specific_id);
+                        }
+                        console.log(recent_platforms);
+                        //Received array of {completed_pages, is_favorited, platform_id}
+                        //For every platform_id, we need to get the platformFormat information (pages, is_published, plat_name, owner, is_public, cover_photo, privacy_password)
+                        api.post('/platformFormat/getRecentPlatformFormatData', {platformFormat_ids: platform_format_ids})
+                        .then(recent_platformformats_info => {
+                            var recent_platforms_platFormat = recent_platformformats_info.data;
+                            //Received array of {pages, is_published, plat_name, owner, is_public, cover_photo, privacy_password, _id}
+                            for(var i = 0; i < recent_platforms_platFormat.length; i++){
+                                var specific_platform_format_id = recent_platforms_platFormat[i]._id;
+                                var correct_index = index_dict[specific_platform_format_id];
+                                recent_platforms[correct_index].pages = recent_platforms_platFormat[i].pages;
+                                recent_platforms[correct_index].is_published = recent_platforms_platFormat[i].is_published;
+                                recent_platforms[correct_index].plat_name = recent_platforms_platFormat[i].plat_name;
+                                recent_platforms[correct_index].owner = recent_platforms_platFormat[i].owner;
+                                recent_platforms[correct_index].is_public = recent_platforms_platFormat[i].is_public;
+                                recent_platforms[correct_index].cover_photo = recent_platforms_platFormat[i].cover_photo;
+                                recent_platforms[correct_index].privacy_password = recent_platforms_platFormat[i].privacy_password;
+                            }
+                            
+                            this.setState({recent_platforms: recent_platforms, get_recent: false});
+                        });
+                    })
+                }
+            });
+        }
+        else{
+            console.log("Second update: " + this.state.recent_platforms)
+        }
     }
 
     render() {
@@ -118,7 +143,20 @@ export default class Dashboard extends Component {
                         </div>
                     </div>
                     <div style={{display: "flex"}}>
-                        <Card className = "card_top">
+                        
+                        {this.state.recent_platforms.map((platform, index) => (
+                            <Card className = "card_top">
+                            <Card.Img variant="top" src={platform.cover_photo} className = "card_image"/>
+                                <Card.Body className = "card_body">
+                                    <Card.Title className = "card_info">{platform.plat_name}</Card.Title>
+                                    <Card.Text className = "card_info">
+                                    {platform.owner}
+                                    </Card.Text>
+                                    <button className = "favorite_button"><FontAwesomeIcon icon={faStar} /></button>
+                                </Card.Body>
+                            </Card>
+                        ))}
+                        {/* <Card className = "card_top">
                             <Card.Img variant="top" src={Penguin} className = "card_image"/>
                             <Card.Body className = "card_body">
                                 <Card.Title className = "card_info">History of the NBA</Card.Title>
@@ -167,7 +205,7 @@ export default class Dashboard extends Component {
                                 </Card.Text>
                                 <button className = "favorite_button"><FontAwesomeIcon icon={faStar} /></button>
                             </Card.Body>
-                        </Card>
+                        </Card> */}
                     </div>
                 </div>
             </div>
