@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import Logo from "../images/LearnLogo.png"
 import jwt from 'jsonwebtoken';
 import jwt_decode from 'jwt-decode';
-import {api} from "../axios_api.js";
+//import {api} from "../axios_api.js";
 import Dropdown from "react-bootstrap/Dropdown"
 import Penguin from "../images/Penguin.jpg"
 
