@@ -11,6 +11,10 @@
     max-width: 37%;
 }
 
+.navbarDropdown {
+  -webkit-text-stroke: 0.2px black
+}
+
 #dash {
     font-size: 30px; 
     color: rgb(0, 219, 0); 

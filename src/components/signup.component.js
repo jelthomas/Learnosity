@@ -14,7 +14,9 @@ export default class SignUp extends Component {
         this.onDropdown = this.onDropdown.bind(this);
         this.handleRegister = this.handleRegister.bind(this);
         this.showUserAlert = this.showUserAlert.bind(this);
+        this.showUserExistAlert = this.showUserExistAlert.bind(this);
         this.showEmailAlert = this.showEmailAlert.bind(this);
+        this.showEmailExistAlert = this.showEmailExistAlert.bind(this);
         this.showPassAlert = this.showPassAlert.bind(this);
         this.showConfirmPassAlert = this.showConfirmPassAlert.bind(this);
         this.showSecurityAnswerAlert = this.showSecurityAnswerAlert.bind(this);
@@ -26,7 +28,11 @@ export default class SignUp extends Component {
             securityQuestion:'What was your first car?',
             securityAnswer:'',
             userAlert: false,
+            userExist:false,
+            userExistAlert:false,
             emailAlert: false,
+            emailExist:false,
+            emailExistAlert:false,
             passAlert: false,
             confirmPassAlert: false,
             securityAnswerAlert: false
@@ -38,8 +44,18 @@ export default class SignUp extends Component {
         //setTimeout(() => {this.setState({userAlert: false})}, 4000)
     }
 
+    showUserExistAlert(){
+        this.setState({userExistAlert: true})
+        //setTimeout(() => {this.setState({userAlert: false})}, 4000)
+    }
+
     showEmailAlert(){
         this.setState({emailAlert: true})
+        //setTimeout(() => {this.setState({emailAlert: false})}, 4000)
+    }
+
+    showEmailExistAlert(){
+        this.setState({emailExistAlert: true})
         //setTimeout(() => {this.setState({emailAlert: false})}, 4000)
     }
 
@@ -59,7 +75,38 @@ export default class SignUp extends Component {
     }
     onChange(e){
         this.setState({[e.target.name]: e.target.value})
+
+        if(e.target.name === "username" && e.target.value !== '')
+        {
+            this.setState({userExist:false})
+            api.get('user/getID/'+ e.target.value)
+            .then(response => {
+                if(response.data.length === 1)
+                {
+                    // console.log("EXIST")
+                    this.setState({userExist:true})
+                }           
+            })
+            .catch(err => console.log(err));
+        }
+
+        if(e.target.name === "email" && e.target.value !== '')
+        {
+            this.setState({emailExist:false})
+            api.get('user/getEmail/'+ e.target.value)
+            .then(response => {
+                if(response.data.length === 1)
+                {
+                    // console.log("EXIST")
+                    this.setState({emailExist:true})
+                }           
+            })
+            .catch(err => console.log(err));
+        }
+
         this.setState({userAlert: false})
+        this.setState({userExistAlert: false})
+        this.setState({emailExistAlert: false})
         this.setState({emailAlert: false})
         this.setState({passAlert: false})
         this.setState({confirmPassAlert: false})
@@ -77,18 +124,35 @@ export default class SignUp extends Component {
     {
         console.log("ENTERS APP")
         e.preventDefault();
+
         //Check Username
-        if(this.state.username.length === 0 || this.state.username.match(/^[a-z0-9_-]{3,16}$/) === null)
+        if(this.state.username.length === 0 || this.state.username.match(/^[a-z0-9_-]{3,15}$/) === null)
         {
             this.showUserAlert()
             return
         }
+
+        //Check if user already exists 
+        if(this.state.userExist === true)
+        {
+            this.showUserExistAlert()
+            return
+        }
+
         //Check Email
         if(this.state.email.length ===  0 || this.state.email.match(/[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/) === null)
         {
             this.showEmailAlert()
             return
         }
+
+        //Check if email already exists 
+        if(this.state.emailExist === true)
+        {
+            this.showEmailExistAlert()
+            return
+        }
+
         //Check Password
         if(this.state.password.length === 0 || this.state.password.match(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/) === null)
         {
@@ -165,17 +229,18 @@ export default class SignUp extends Component {
                                     <label style = {{color: "black"}}> Security Answer:</label>
                                     <input type = "securityAnswer" style = {{width: "90%", borderColor: "black"}} className = "form-control" name = "securityAnswer" placeholder = "Security Answer" value = {this.state.securityAnswer} onChange = {this.onChange} required/>
                                 </div>
-                                <Button variant="light" style={{marginLeft: "40%"}} onClick={this.handleRegister}>Register</Button>
-                                <div>
-                                    <p>Have an account already?</p>
-                                    <Link to="/login" style={{color: "limegreen", justifyContent: "center", display: "flex"}}>Login</Link>
-                                </div>
                                 <Alert show = {this.state.userAlert} variant = 'danger'>
                                     User conditions not met.
-                                    Alphanumeric string that may include _ and – having a length of 3 to 16 characters.
+                                    Alphanumeric string that may include _ and – having a length of 3 to 15 characters.
+                                </Alert>
+                                <Alert show = {this.state.userExistAlert} variant = 'danger'>
+                                    User already exists.
                                 </Alert>
                                 <Alert show = {this.state.emailAlert} variant = 'danger' style={{textAlign:"center"}}>
                                     Email conditions not met 
+                                </Alert>
+                                <Alert show = {this.state.emailExistAlert} variant = 'danger' style={{textAlign:"center"}}>
+                                    Email already used by another user. 
                                 </Alert>
                                 <Alert show = {this.state.passAlert} variant = 'danger'>
                                     Password needs a minimum of eight characters.
@@ -187,6 +252,11 @@ export default class SignUp extends Component {
                                 <Alert show = {this.state.securityAnswerAlert} variant = 'danger'>
                                     Security Answer conditions not met 
                                 </Alert>
+                                <Button variant="light" style={{marginLeft:"42.1%"}} onClick={this.handleRegister}>Register</Button>
+                                <div>
+                                    <p style={{textAlign:"center"}}>Have an account already?</p>
+                                    <Link to="/login" style={{color: "limegreen", justifyContent: "center", display: "flex"}}>Login</Link>
+                                </div>
                             </div>
                         </div>
                     </div>
