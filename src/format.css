@@ -8,7 +8,7 @@
 
 .custom_col {
     flex: 0 0 50%;
-    max-width: 42%;
+    max-width: 37%;
 }
 
 .navbarDropdown {
@@ -30,12 +30,22 @@
         text-align: right;
 }
 
+.dashboard_sort {
+    margin-right: 5%;
+    color: black;
+    background: white;
+    width: 16%;
+    padding: 3px;
+    border-radius: 50px;
+    height: 33px;
+}
+
 .top_block {
     color: rgb(0 255 0);
     border-bottom: solid;
     border-width: thin;
     margin-top: -55px;
-    margin-bottom: 55px;
+    margin-bottom: 20px;
 }
 
 .white_text {
@@ -49,7 +59,7 @@
     margin-top: 2%;
     border-radius: 30px;
     padding-top: 5%;
-    padding-bottom: 3%;
+    padding-bottom: 2%;
 }
 
 .favorite_button {
@@ -62,7 +72,7 @@
   }
 
   .card_top {
-    width:15rem;
+    width:14.8rem;
     height: 200px;
     margin-left: 3%;
   }

@@ -6,7 +6,7 @@ import "../format.css";
 import Card from "react-bootstrap/Card"
 import Penguin from "../images/Penguin.jpg"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faStar } from "@fortawesome/free-solid-svg-icons";
+import { faStar, faAngleLeft, faAngleRight, faAngleDown, faAngleUp } from "@fortawesome/free-solid-svg-icons";
 import LoggedInNav from "./loggedInNav.component";
 export default class Dashboard extends Component {
     constructor(props){
@@ -157,57 +157,75 @@ export default class Dashboard extends Component {
                                 </Card.Body>
                             </Card>
                         ))}
-                        {/* <Card className = "card_top">
-                            <Card.Img variant="top" src={Penguin} className = "card_image"/>
-                            <Card.Body className = "card_body">
-                                <Card.Title className = "card_info">History of the NBA</Card.Title>
-                                <Card.Text className = "card_info">
-                                JBuckets
-                                </Card.Text>
-                                <button className = "favorite_button"><FontAwesomeIcon icon={faStar} /></button>
-                            </Card.Body>
-                        </Card>
-                        <Card className = "card_top">
-                            <Card.Img variant="top" src={Penguin} className = "card_image"/>
-                            <Card.Body className = "card_body">
-                                <Card.Title className = "card_info">History of the NBA</Card.Title>
-                                <Card.Text className = "card_info">
-                                JBuckets
-                                </Card.Text>
-                                <button className = "favorite_button"><FontAwesomeIcon icon={faStar} /></button>
-                            </Card.Body>
-                        </Card>
-                        <Card className = "card_top">
-                            <Card.Img variant="top" src={Penguin} className = "card_image"/>
-                            <Card.Body className = "card_body">
-                                <Card.Title className = "card_info">History of the NBA</Card.Title>
-                                <Card.Text className = "card_info">
-                                JBuckets
-                                </Card.Text>
-                                <button className = "favorite_button"><FontAwesomeIcon icon={faStar} /></button>
-                            </Card.Body>
-                        </Card>
-                        <Card className = "card_top">
-                            <Card.Img variant="top" src={Penguin} className = "card_image"/>
-                            <Card.Body className = "card_body">
-                                <Card.Title className = "card_info">History of the NBA</Card.Title>
-                                <Card.Text className = "card_info">
-                                JBuckets
-                                </Card.Text>
-                                <button className = "favorite_button"><FontAwesomeIcon icon={faStar} /></button>
-                            </Card.Body>
-                        </Card>
-                        <Card className = "card_top">
-                            <Card.Img variant="top" src={Penguin} className = "card_image"/>
-                            <Card.Body className = "card_body">
-                                <Card.Title className = "card_info">History of the NBA</Card.Title>
-                                <Card.Text className = "card_info">
-                                JBuckets
-                                </Card.Text>
-                                <button className = "favorite_button"><FontAwesomeIcon icon={faStar} /></button>
-                            </Card.Body>
-                        </Card> */}
                     </div>
+                </div>
+                <div style={{marginLeft: "2.5%", marginRight: "2.5%"}} className="block">
+                    <div className="top_block">
+                        <div className="white_text">
+                            Explore All Learning Platforms
+                        </div>
+                    </div>
+                    <div style={{display: "flex", marginLeft: "3%", marginBottom: "2%"}}>
+                        <div className="dashboard_sort" style={{width: "26%"}}>
+                           <input type="text" placeholder="Search By Title or Creator" style={{borderRadius: "10px", background: "white", borderColor: "transparent", width: "100%", outline: "none", height: '31px', paddingBottom: "6px"}}></input>
+                        </div>
+                        <div className="dashboard_sort">
+                            
+                            <div>
+                                Sort By:
+                                <select style={{width: "70%", marginLeft: "6px", border: "transparent", borderRadius: "7px", outline:"none"}}>
+                                    <option value="volvo">Favorited</option>
+                                    <option value="saab">Recently Created</option>
+                                    <option value="opel">Most Popular</option>
+                                </select>
+                            </div>
+                         </div>
+                        <div className="dashboard_sort" style={{width: "12.5%"}}>
+                            <div>
+                                <select style={{width: "93%", marginLeft: "6px", border: "transparent", borderRadius: "7px", outline:"none"}}>
+                                    <option value="volvo">Public Only</option>
+                                    <option value="saab">Private Only</option>
+                                    <option value="opel">Public and Private</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                            <div style={{display: "flex"}}>
+                                {this.state.recent_platforms.map((platform, index) => (
+                                    <Card className = "card_top">
+                                    <Card.Img variant="top" src={platform.cover_photo} className = "card_image"/>
+                                        <Card.Body className = "card_body">
+                                            <Card.Title className = "card_info">{platform.plat_name}</Card.Title>
+                                            <Card.Text className = "card_info">
+                                            {platform.owner}
+                                            </Card.Text>
+                                            <button className = "favorite_button"><FontAwesomeIcon icon={faStar} /></button>
+                                        </Card.Body>
+                                    </Card>
+                                ))}
+                                <Card className = "card_top">
+                                <Card.Img variant="top" src={Penguin} className = "card_image"/>
+                                    <Card.Body className = "card_body">
+                                        <Card.Title className = "card_info">This is a Test Platform</Card.Title>
+                                        <Card.Text className = "card_info">
+                                        iAmDummyData
+                                        </Card.Text>
+                                        <button className = "favorite_button"><FontAwesomeIcon icon={faStar} /></button>
+                                    </Card.Body>
+                                </Card>
+                                <Card className = "card_top">
+                                <Card.Img variant="top" src={Penguin} className = "card_image"/>
+                                    <Card.Body className = "card_body">
+                                        <Card.Title className = "card_info">This is a Test Platform</Card.Title>
+                                        <Card.Text className = "card_info">
+                                        iAmDummyData
+                                        </Card.Text>
+                                        <button className = "favorite_button"><FontAwesomeIcon icon={faStar} /></button>
+                                    </Card.Body>
+                                </Card>
+                            </div>
+                        </div>
                 </div>
             </div>
         )
