@@ -153,7 +153,7 @@ export default class ForgotPassword extends Component {
                                 </div>
                                 <div className = "form-group" style={{marginLeft: "10%"}}>
                                     <label style = {{color: "black"}}> Security Answer:</label>
-                                    <input type = "username" style = {{width: "90%", borderColor: "black"}} className = "form-control" name = "security_answer" placeholder = "Enter Security Answer" value = {this.state.security_answer} onChange = {this.onChange} required/>
+                                    <input type = "password" style = {{width: "90%", borderColor: "black"}} className = "form-control" name = "security_answer" placeholder = "Enter Security Answer" value = {this.state.security_answer} onChange = {this.onChange} required/>
                                 </div>
                                 <div className = "form-group" style={{marginLeft: "10%"}}>
                                     <label style = {{color: "black"}}> New Password:</label>
