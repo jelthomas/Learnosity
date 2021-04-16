@@ -57,33 +57,39 @@ export default class LoggedInNav extends Component {
   render() {
     return (
 
-      <nav class="navbar navbar-light bg-light navbar-expand-lg">
+      <nav class="navbar navbar-light bg-light navbar-expand-lg" style={{height: "65px"}}>
     <div class="navbar-collapse w-100 order-1 order-md-0 dual-collapse2">
-        <ul class="navbar-nav mr-auto">
+        
             <Link to="/" className="navbar-brand">
                 <img width = {60} src = {Logo} alt =""/>
             </Link>
-            <p class="font-weight-normal" style={{padding: '5px',color:'#00db00',fontFamily:"Quando",fontSize:'25px'}} > Learnosity</p>
-        </ul>
+            <p class="font-weight-normal navbarDropdown" style={{padding: '5px',color:'#00db00',fontFamily:"Quando",fontSize:'25px', marginTop: '0px', marginBottom: '0px'}} > Learnosity</p>
+        
     </div>
     <div class="mx-auto order-0">
       {/* <p class="font-weight-normal" style={{padding: '5px',color:'#00db00',fontFamily:"Quando",fontSize:'25px'}} > Learnosity</p> */}
     </div>
     <div class="navbar-collapse  w-100 order-3 dual-collapse2">
         <ul class="navbar-nav ml-auto">
+          <div style={{display:'flex'}}>
             <li className="navbar-item">
-              <Link to="/signup" className="nav-link" style={{padding: '5px',color:'#00db00',fontFamily:"Quando",fontSize:'25px'}}>Sign Up</Link>
+              <Link to="/dashboard" className="nav-link navbarDropdown" style={{padding: '5px',color:'#00db00',fontFamily:"Quando",fontSize:'25px'}}>Create Platform</Link>
             </li>
             <li className="navbar-item">
-              <Link to ="/login" className="nav-link"  style={{padding: '5px',color:'#00db00',fontFamily:"Quando",fontSize:'25px'}}  >Log In</Link>
+              <Link to ="/dashboard" className="nav-link navbarDropdown"  style={{padding: '5px',color:'#00db00',fontFamily:"Quando",fontSize:'25px'}}  >Leaderboard</Link>
             </li>
-            <Dropdown>
-              <Dropdown.Toggle variant="success" id="dropdown-basic">
+            <li className="navbar-item">
+              <Link to ="/dashboard" className="nav-link navbarDropdown"  style={{padding: '5px',color:'#00db00',fontFamily:"Quando",fontSize:'25px'}}  >My Platforms</Link>
+            </li>
+          </div>
+            <Dropdown style={{marginTop:'.7%'}}>
+              <Dropdown.Toggle className="navbarDropdown" variant="success" id="dropdown-basic" style= {{backgroundColor: "#FFFFFF", borderColor: "#000000", borderRadius: "50px", color: "#00DB00", fontSize: '18px'}}>
                         {this.state.loggedInUser}
                         <img className="thumbnail-image" 
                             src={Penguin} 
-                            width = {100}
+                            width = {30}
                             alt="user pic"
+                            
                         />
               </Dropdown.Toggle>
 
@@ -92,6 +98,8 @@ export default class LoggedInNav extends Component {
                 <Dropdown.Item onClick ={this.logOut}>Log Out</Dropdown.Item>
               </Dropdown.Menu>
             </Dropdown>
+
+
             {/* <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle" href="" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 Dropdown
