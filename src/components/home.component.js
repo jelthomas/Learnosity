@@ -5,7 +5,8 @@ import Carousel1 from "../images/Carousel1.jpg"
 import Carousel2 from "../images/LearnosityPage2.png"
 import jwt_decode from 'jwt-decode'
 import jwt from 'jsonwebtoken';
-import loggedInNav from "./loggedInNav.component.js"
+//import loggedInNav from "./loggedInNav.component.js"
+import Navbar from "./navbar.component";
 //import "bootstrap/dist/css/bootstrap.min.css";
 // import 'bootstrap/js/dist/util';
 
@@ -82,7 +83,7 @@ export default class Home extends Component {
     render() {
         return (
             <div>
-            <loggedInNav/>
+            <Navbar/>
             <div class="container">
                 {/* <div id="homeCarousel" class="carousel slide" data-bs-ride="carousel">
                     <div class="carousel-indicators">

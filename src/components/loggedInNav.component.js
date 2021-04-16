@@ -13,7 +13,7 @@ export default class LoggedInNav extends Component {
   constructor(props){
     super(props);
 
-    this.signOut = this.logOut.bind(this);
+    this.logOut = this.logOut.bind(this);
 
     this.state = {
         loggedInUser: '',

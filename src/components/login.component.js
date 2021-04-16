@@ -6,6 +6,7 @@ import Logo from "../images/LearnLogo.png";
 import jwt_decode from 'jwt-decode';
 import "../format.css";
 import { myObject } from "./forgot_password.component"
+import Navbar from "./navbar.component";
 
 export default class Login extends Component {
     constructor(props){
@@ -103,6 +104,8 @@ export default class Login extends Component {
 
     render() {
         return (
+            <div>
+                <Navbar/>
             <div className ="custom_container" style={{background: "rgb(59, 59, 59)"}}>
                 <div className = "custom_col mt-5 mx-auto">
                     <form onSubmit={this.handleLogin} style = {{backgroundColor: "white", padding: "0px 20px 20px 20px", borderStyle: "solid", borderRadius: "28px"}}> 
@@ -131,6 +134,7 @@ export default class Login extends Component {
                         <Link to="/signup" className="btn btn-primary" style = {{justifyContent: "center", display: "flex", color: "black", background: "white", width: "45%", borderStyle: "solid", borderRadius: "20px", margin: "auto", fontSize: "18px", borderColor: "grey"}}>Sign Up</Link>
                     </form>
                 </div>
+            </div>
             </div>
         );
     }
