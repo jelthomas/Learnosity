@@ -126,7 +126,7 @@ export default class SignUp extends Component {
         e.preventDefault();
 
         //Check Username
-        if(this.state.username.length === 0 || this.state.username.match(/^[a-z0-9_-]{3,15}$/) === null)
+        if(this.state.username.length === 0 || this.state.username.match(/^[a-zA-Z0-9_-]{3,15}$/) === null)
         {
             this.showUserAlert()
             return
@@ -140,7 +140,7 @@ export default class SignUp extends Component {
         }
 
         //Check Email
-        if(this.state.email.length ===  0 || this.state.email.match(/[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/) === null)
+        if(this.state.email.length ===  0 || this.state.email.match(/[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?/) === null)
         {
             this.showEmailAlert()
             return
@@ -180,7 +180,8 @@ export default class SignUp extends Component {
             security_answer:    this.state.securityAnswer
         }
 
-        api.post('/user/signup',(user))
+        api.post('/user/signup',(user));
+        this.props.history.push('/login');
     }
 
     render() {
@@ -227,7 +228,7 @@ export default class SignUp extends Component {
                                 </Form>
                                 <div className = "form-group" style={{marginLeft: "10%"}}>
                                     <label style = {{color: "black"}}> Security Answer:</label>
-                                    <input type = "securityAnswer" style = {{width: "90%", borderColor: "black"}} className = "form-control" name = "securityAnswer" placeholder = "Security Answer" value = {this.state.securityAnswer} onChange = {this.onChange} required/>
+                                    <input type = "password" style = {{width: "90%", borderColor: "black"}} className = "form-control" name = "securityAnswer" placeholder = "Security Answer" value = {this.state.securityAnswer} onChange = {this.onChange} required/>
                                 </div>
                                 <Alert show = {this.state.userAlert} variant = 'danger'>
                                     User conditions not met.

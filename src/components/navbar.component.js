@@ -16,15 +16,15 @@ export default class Navbar extends Component {
         </ul>
     </div>
     <div class="mx-auto order-0">
-      <p class="font-weight-normal" style={{padding: '5px',color:'#00db00',fontFamily:"Quando",fontSize:'25px'}} > Learnosity</p>
+      <p class="font-weight-normal navbarDropdown" style={{padding: '5px',color:'#00db00',fontFamily:"Quando",fontSize:'35px', marginTop: '0px', marginBottom: '0px'}} > Learnosity</p>
     </div>
     <div class="navbar-collapse w-100 order-3 dual-collapse2">
         <ul class="navbar-nav ml-auto">
             <li className="navbar-item">
-              <Link to="/signup" className="nav-link" style={{padding: '5px',color:'#00db00',fontFamily:"Quando",fontSize:'25px'}}>Sign Up</Link>
+              <Link to="/signup" className="nav-link navbarDropdown" style={{padding: '5px',color:'#00db00',fontFamily:"Quando",fontSize:'25px'}}>Sign Up</Link>
             </li>
             <li className="navbar-item">
-              <Link to ="/login" className="nav-link"  style={{padding: '5px',color:'#00db00',fontFamily:"Quando",fontSize:'25px'}}  >Log In</Link>
+              <Link to ="/login" className="nav-link navbarDropdown"  style={{padding: '5px',color:'#00db00',fontFamily:"Quando",fontSize:'25px'}}  >Log In</Link>
             </li>
         </ul>
     </div>

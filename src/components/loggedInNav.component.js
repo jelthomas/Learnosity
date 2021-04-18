@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import Logo from "../images/LearnLogo.png"
 import jwt from 'jsonwebtoken';
 import jwt_decode from 'jwt-decode';
-import {api} from "../axios_api.js";
+//import {api} from "../axios_api.js";
 import Dropdown from "react-bootstrap/Dropdown"
 import Penguin from "../images/Penguin.jpg"
 
@@ -60,7 +60,7 @@ export default class LoggedInNav extends Component {
       <nav class="navbar navbar-light bg-light navbar-expand-lg" style={{height: "65px"}}>
     <div class="navbar-collapse w-100 order-1 order-md-0 dual-collapse2">
         
-            <Link to="/" className="navbar-brand">
+            <Link to="/dashboard" className="navbar-brand">
                 <img width = {60} src = {Logo} alt =""/>
             </Link>
             <p class="font-weight-normal navbarDropdown" style={{padding: '5px',color:'#00db00',fontFamily:"Quando",fontSize:'25px', marginTop: '0px', marginBottom: '0px'}} > Learnosity</p>
