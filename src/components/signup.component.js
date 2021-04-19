@@ -6,6 +6,8 @@ import Form from "react-bootstrap/Form"
 import Button from "react-bootstrap/Button"
 import Alert from "react-bootstrap/Alert"
 import Navbar from "./navbar.component";
+import jwt from 'jsonwebtoken';
+import jwt_decode from 'jwt-decode';
 export default class SignUp extends Component {
     constructor(props){
         super(props);
@@ -122,7 +124,7 @@ export default class SignUp extends Component {
 
     handleRegister(e)
     {
-        console.log("ENTERS APP")
+        //console.log("ENTERS APP")
         e.preventDefault();
 
         //Check Username
@@ -171,7 +173,7 @@ export default class SignUp extends Component {
             this.showSecurityAnswerAlert()
             return 
         }
-        console.log("GETS PAST RETURN")
+        //console.log("GETS PAST RETURN")
         const user={
             username: this.state.username,
             email: this.state.email,
@@ -182,6 +184,48 @@ export default class SignUp extends Component {
 
         api.post('/user/signup',(user));
         this.props.history.push('/login');
+    }
+
+    componentDidMount(){
+        var token = localStorage.getItem('usertoken');
+        var validToken = false;
+        if(token){
+            //Token in session storage
+            jwt.verify(token, "jwt_key", function(err,res) {
+                if(err){
+                    //Improper JWT format 
+                    //Remove token and redirect back to home
+                    localStorage.removeItem('usertoken');
+                }
+                else{
+                    //Properly formatted JWT
+                    validToken = true;
+                }});
+        }
+        if(validToken){
+            //Check if ID is in token and ID exists as a user
+            const decoded = jwt_decode(token);
+            if (decoded._id){
+                //ID exists in token
+                //Check if ID exists as a user
+                api.get('/user/'+ decoded._id)
+                .then(response => {
+                    if (response) {
+                        //Valid user
+                        this.props.history.push(`/dashboard`);
+                    }
+                    else{
+                        //Fake ID...
+                        localStorage.removeItem('usertoken');
+                    }
+                })
+                .catch(err => console.log("User Error: " + err));
+            }
+        }  
+        else{
+            //Not a Valid Token
+            localStorage.removeItem('usertoken');
+        }
     }
 
     render() {
