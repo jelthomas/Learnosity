@@ -8,6 +8,7 @@ import Login from "./components/login.component";
 // import Navbar from "./components/navbar.component";
 import ForgotPassword from "./components/forgot_password.component";
 import Dashboard from "./components/dashboard.component";
+import UsePlatform from "./components/useplatform.component"
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
         <Route path="/login" exact component={Login} />
         <Route path="/forgot" exact component={ForgotPassword} />
         <Route path="/dashboard" exact component={Dashboard} />
+        <Route path="/useplatform/:id" component = {UsePlatform}/>
       </div>
     </Router>
   ); 

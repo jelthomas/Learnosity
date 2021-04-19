@@ -23,7 +23,8 @@ export default class Dashboard extends Component {
         super(props);
 
         this.toggleFavoriteRecent = this.toggleFavoriteRecent.bind(this);
-        
+        this.clickUsePlatform = this.clickUsePlatform.bind(this);
+
         this.state = {
             username: "",
             id: "",
@@ -116,6 +117,9 @@ export default class Dashboard extends Component {
                     for(var i = 0; i < all_platforms.length; i++){
                         var specific_platform_format_id = all_platforms[i].platform_id;
                         var correct_index = index_dict[specific_platform_format_id];
+                        console.log("GETTING ALL PLATFORM VALUES " + all_platforms[i])
+                        //platform_formats[correct_index] = all_platforms[i]
+                       // platform_formats[correct_index].platform_id = all_platforms[i].platform_id;
                         platform_formats[correct_index].completed_pages = all_platforms[i].completed_pages;
                         platform_formats[correct_index].is_favorited = all_platforms[i].is_favorited;
                         platform_formats[correct_index].recently_played = all_platforms[i].recently_played;
@@ -158,7 +162,7 @@ export default class Dashboard extends Component {
         var all_plats = this.state.all_platforms;
 
         //Check if we need to create a new platform Data object
-        var create_new = (all_plats[index] == null);
+        var create_new = (all_plats[index].is_favorited === null);
 
         if(!create_new){
             //Negatve value of currently is_favorited
@@ -172,7 +176,77 @@ export default class Dashboard extends Component {
         }
         else{
             //Create new platform data object for this platform format ID and user ID
+
+            //sets value to true
+            all_plats[index].is_favorited = true
+
+            this.setState({all_plats: all_plats});
+
+            const createPlatData = {
+                user_id : this.state.id,
+                platform_id : all_plats[index]._id,
+                completed_pages :[],
+                is_favorited : true,
+                is_completed : false
+            }
+
+            //create a platformData
+            api.post('/platformData/addFavorite',createPlatData)
+            .then(response => {
+                console.log(response)
+            })
+            .catch(error => {
+                console.log(error.response)
+            });
         }
+    }
+
+    clickUsePlatform(plat_id){
+        //use platform
+
+        const checkData = {
+            id: this.state.id,
+            platid: plat_id
+        }
+
+        api.post('/platformData/getSpecificPlatformData',checkData)
+        .then(response => {
+            if(response.data.length ===0)
+            {
+                console.log("platform Data does not exist ")
+
+                const createPlatData = {
+                    user_id : this.state.id,
+                    platform_id : plat_id,
+                    completed_pages :[],
+                    is_favorited : false,
+                    is_completed : false,
+                    recently_played : new Date()
+                }
+
+                //create a platformData
+                api.post('/platformData/add',createPlatData)
+                .then(response => {
+                    console.log(response)
+                })
+                .catch(error => {
+                    console.log(error.response)
+                });
+            }
+            else
+            {
+                //platformData already exists 
+                console.log("platform Data EXISTS")
+                console.log(response)
+            }
+        })
+        .catch(error => {
+            console.log(error.response)
+        });
+
+        //update recently played 
+
+        this.props.history.push("/useplatform/"+plat_id);
     }
 
     render() {
@@ -242,7 +316,7 @@ export default class Dashboard extends Component {
                             <div style={{display: "flex"}}>
                             {this.state.all_platforms.map((platform, index) => (
                                 <Card className = "card_top">
-                                <Card.Img variant="top" src={platform.cover_photo} className = "card_image"/>
+                                <Card.Img variant="top"  onClick={() => this.clickUsePlatform(platform._id)} src={platform.cover_photo} className = "card_image"/>
                                     <Card.Body className = "card_body">
                                         <Card.Title className = "card_info">{platform.plat_name}</Card.Title>
                                         <Card.Text className = "card_info">
