@@ -8,10 +8,22 @@ import Penguin from "../images/Penguin.jpg"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faStar, faAngleLeft, faAngleRight, faAngleDown, faAngleUp } from "@fortawesome/free-solid-svg-icons";
 import LoggedInNav from "./loggedInNav.component";
+
+
+function FavoriteButton(props) {
+    const isfavorited = props.isfavorited;
+    if (isfavorited) {
+      return <button className = "favorite_button_favorited"><FontAwesomeIcon icon={faStar} /></button>
+    }
+    return <button className = "favorite_button"><FontAwesomeIcon icon={faStar} /></button>
+  }
+
 export default class Dashboard extends Component {
     constructor(props){
         super(props);
 
+        this.toggleFavoriteRecent = this.toggleFavoriteRecent.bind(this);
+        
         this.state = {
             username: "",
             id: "",
@@ -20,13 +32,14 @@ export default class Dashboard extends Component {
             privacy_filter: '',
             recent_platforms: [],
             get_recent: true,
+            get_all: true,
             all_platforms: [],
             paginate_rec_index: 0,
             paginate_all_index: 0
         }
 
     }
-
+    
     componentDidMount() {
         var token = localStorage.getItem('usertoken');
         var validToken = false;
@@ -79,53 +92,86 @@ export default class Dashboard extends Component {
 
     componentDidUpdate() {
         //If statement to avoid infinite loop
-        if(this.state.get_recent){
-            //First grab user's learned platforms
-            api.get('/user/getLearnedPlatforms/' + this.state.id)
-            .then(response => {
-                var learned_plats_ids = response.data; 
-                learned_plats_ids = response.data;
-                //Received array of learned platformData IDs
-
-                //Now (if the array isn't empty) use these IDs to find the recent learned platforms
-                if(learned_plats_ids.length > 0){
-                    api.post('/platformData/getRecentPlatforms', {platformDatas_id: learned_plats_ids, user_id: this.state.id})
-                    .then(recent_plats => {
-                        var recent_platforms = recent_plats.data;
-                        var platform_format_ids = [];
-                        var index_dict = {};
-                        for(var i = 0; i < recent_platforms.length; i++){
-                            var specific_id = recent_platforms[i].platform_id;
-                            index_dict[specific_id] = i;
-                            platform_format_ids.push(specific_id);
-                        }
-                        console.log(recent_platforms);
-                        //Received array of {completed_pages, is_favorited, platform_id}
-                        //For every platform_id, we need to get the platformFormat information (pages, is_published, plat_name, owner, is_public, cover_photo, privacy_password)
-                        api.post('/platformFormat/getRecentPlatformFormatData', {platformFormat_ids: platform_format_ids})
-                        .then(recent_platformformats_info => {
-                            var recent_platforms_platFormat = recent_platformformats_info.data;
-                            //Received array of {pages, is_published, plat_name, owner, is_public, cover_photo, privacy_password, _id}
-                            for(var i = 0; i < recent_platforms_platFormat.length; i++){
-                                var specific_platform_format_id = recent_platforms_platFormat[i]._id;
-                                var correct_index = index_dict[specific_platform_format_id];
-                                recent_platforms[correct_index].pages = recent_platforms_platFormat[i].pages;
-                                recent_platforms[correct_index].is_published = recent_platforms_platFormat[i].is_published;
-                                recent_platforms[correct_index].plat_name = recent_platforms_platFormat[i].plat_name;
-                                recent_platforms[correct_index].owner = recent_platforms_platFormat[i].owner;
-                                recent_platforms[correct_index].is_public = recent_platforms_platFormat[i].is_public;
-                                recent_platforms[correct_index].cover_photo = recent_platforms_platFormat[i].cover_photo;
-                                recent_platforms[correct_index].privacy_password = recent_platforms_platFormat[i].privacy_password;
-                            }
-                            
-                            this.setState({recent_platforms: recent_platforms, get_recent: false});
-                        });
-                    })
+        if(this.state.get_all){
+            //Get array of PlatformFormat Ids (where owner != username and is_published = true)
+            api.get('/platformFormat/'+ this.state.username)
+            .then(all_plat_ids => {
+                //Received array of platformFormat Ids
+                var platform_formats = all_plat_ids.data;
+                var platform_format_ids = [];
+                var index_dict = {};
+                for(var i = 0; i < platform_formats.length; i++){
+                    platform_format_ids.push(platform_formats[i]._id);
+                    index_dict[platform_formats[i]._id] = i;
+                    platform_formats[i].completed_pages = null;
+                    platform_formats[i].is_favorited = null;
+                    platform_formats[i].recently_played = null;
                 }
+                //Now query to receive the platform Data information for all ids in the array for that user
+                api.post('/platformData/getAllPlatforms', {platformFormat_ids: platform_format_ids, user_id: this.state.id})
+                .then(all_plat_data_ids => {
+                    // Received all platform data info for all platforms
+                    var all_platforms = all_plat_data_ids.data;
+
+                    for(var i = 0; i < all_platforms.length; i++){
+                        var specific_platform_format_id = all_platforms[i].platform_id;
+                        var correct_index = index_dict[specific_platform_format_id];
+                        platform_formats[correct_index].completed_pages = all_platforms[i].completed_pages;
+                        platform_formats[correct_index].is_favorited = all_platforms[i].is_favorited;
+                        platform_formats[correct_index].recently_played = all_platforms[i].recently_played;
+                    }
+                    //Platform_formats now holds all platforms that are published and haven't been created by the user
+
+                    //Filter platform_formats to get the first 5 recent (within a month recently played)
+                    var recent_platforms = platform_formats.filter(function(platform) {
+                        var d = new Date();
+                        d.setMonth(d.getMonth() - 1);
+                        return platform.recently_played != null && Date.parse(platform.recently_played) >= d;
+                    });
+                    var recent_index = recent_platforms.length;
+                    if(recent_platforms.length > 5){
+                        //Only take the first 5
+                        recent_platforms = recent_platforms.slice(0,5);
+                        recent_index = 5;
+                    }
+                    this.setState({all_platforms: platform_formats, get_all: false, recent_platforms: recent_platforms, paginate_rec_index: recent_index});
+                })
             });
         }
+
+    }
+
+    toggleFavoriteRecent(index){
+        //Update is_favorited attribute for recent platform at index
+        var recent_plats = this.state.recent_platforms;
+        recent_plats[index].is_favorited = !recent_plats[index].is_favorited;
+
+        //Update value in the database using api call
+        api.post('/platformData/toggleFavorited', {id: recent_plats[index].platform_id, user_id: this.state.id, is_favorited: recent_plats[index].is_favorited})
+        .then(recent_plats => console.log(recent_plats));
+
+        this.setState({recent_platforms: recent_plats});
+    }
+
+    toggleFavoriteAll(index){
+        //Update is_favorited attribute for all platform at index
+        var all_plats = this.state.all_platforms;
+
+        //Check if we need to create a new platform Data object
+        var create_new = (all_plats[index] == null);
+
+        if(!create_new){
+            //Negatve value of currently is_favorited
+            all_plats[index].is_favorited = !all_plats[index].is_favorited;
+
+            //Update value in the database using api call
+            api.post('/platformData/toggleFavorited', {id: all_plats[index]._id, user_id: this.state.id, is_favorited: all_plats[index].is_favorited})
+            .then(all_plats => console.log(all_plats));
+
+            this.setState({all_plats: all_plats});
+        }
         else{
-            console.log("Second update: " + this.state.recent_platforms)
+            //Create new platform data object for this platform format ID and user ID
         }
     }
 
@@ -153,7 +199,9 @@ export default class Dashboard extends Component {
                                     <Card.Text className = "card_info">
                                     {platform.owner}
                                     </Card.Text>
-                                    <button className = "favorite_button"><FontAwesomeIcon icon={faStar} /></button>
+                                    <div onClick={() => this.toggleFavoriteRecent(index)}>
+                                        <FavoriteButton isfavorited={platform.is_favorited}/>
+                                    </div>
                                 </Card.Body>
                             </Card>
                         ))}
@@ -192,38 +240,20 @@ export default class Dashboard extends Component {
                     </div>
                     <div>
                             <div style={{display: "flex"}}>
-                                {this.state.recent_platforms.map((platform, index) => (
-                                    <Card className = "card_top">
-                                    <Card.Img variant="top" src={platform.cover_photo} className = "card_image"/>
-                                        <Card.Body className = "card_body">
-                                            <Card.Title className = "card_info">{platform.plat_name}</Card.Title>
-                                            <Card.Text className = "card_info">
-                                            {platform.owner}
-                                            </Card.Text>
-                                            <button className = "favorite_button"><FontAwesomeIcon icon={faStar} /></button>
-                                        </Card.Body>
-                                    </Card>
-                                ))}
+                            {this.state.all_platforms.map((platform, index) => (
                                 <Card className = "card_top">
-                                <Card.Img variant="top" src={Penguin} className = "card_image"/>
+                                <Card.Img variant="top" src={platform.cover_photo} className = "card_image"/>
                                     <Card.Body className = "card_body">
-                                        <Card.Title className = "card_info">This is a Test Platform</Card.Title>
+                                        <Card.Title className = "card_info">{platform.plat_name}</Card.Title>
                                         <Card.Text className = "card_info">
-                                        iAmDummyData
+                                        {platform.owner}
                                         </Card.Text>
-                                        <button className = "favorite_button"><FontAwesomeIcon icon={faStar} /></button>
+                                        <div onClick={() => this.toggleFavoriteAll(index)}>
+                                            <FavoriteButton isfavorited={platform.is_favorited}/>
+                                        </div>
                                     </Card.Body>
                                 </Card>
-                                <Card className = "card_top">
-                                <Card.Img variant="top" src={Penguin} className = "card_image"/>
-                                    <Card.Body className = "card_body">
-                                        <Card.Title className = "card_info">This is a Test Platform</Card.Title>
-                                        <Card.Text className = "card_info">
-                                        iAmDummyData
-                                        </Card.Text>
-                                        <button className = "favorite_button"><FontAwesomeIcon icon={faStar} /></button>
-                                    </Card.Body>
-                                </Card>
+                            ))}
                             </div>
                         </div>
                 </div>

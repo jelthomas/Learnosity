@@ -71,22 +71,31 @@
     color: lightgrey;
   }
 
-  .card_top {
-    width:14.8rem;
-    height: 200px;
-    margin-left: 3%;
-  }
+.favorite_button_favorited {
+  background: transparent;
+  border-color: transparent;
+  font-size: x-large;
+  margin-top: -10px;
+  margin-left: -5px;
+  color: rgb(230, 207, 4);
+}
 
-  .card_image {
-    height: 120px;
-    filter: brightness(.95);
-  }
+.card_top {
+  width:14.8rem;
+  height: 200px;
+  margin-left: 3%;
+}
 
-  .card_body {
-    padding: 0.25rem;
-  }
+.card_image {
+  height: 120px;
+  filter: brightness(.95);
+}
 
-  .card_info {
-    text-align: center; 
-    margin-bottom: 0;
-  }
+.card_body {
+  padding: 0.25rem;
+}
+
+.card_info {
+  text-align: center; 
+  margin-bottom: 0;
+}
