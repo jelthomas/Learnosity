@@ -151,7 +151,7 @@ export default class Dashboard extends Component {
         recent_plats[index].is_favorited = !recent_plats[index].is_favorited;
 
         //Update value in the database using api call
-        api.post('/platformData/toggleFavorited', {id: recent_plats[index].platform_id, user_id: this.state.id, is_favorited: recent_plats[index].is_favorited})
+        api.post('/platformData/toggleFavorited', {id: recent_plats[index]._id, user_id: this.state.id, is_favorited: recent_plats[index].is_favorited})
         .then(recent_plats => console.log(recent_plats));
 
         this.setState({recent_platforms: recent_plats});
@@ -227,7 +227,7 @@ export default class Dashboard extends Component {
                 //create a platformData
                 api.post('/platformData/add',createPlatData)
                 .then(response => {
-                    console.log(response)
+                    this.props.history.push("/useplatform/"+plat_id);
                 })
                 .catch(error => {
                     console.log(error.response)
@@ -236,17 +236,16 @@ export default class Dashboard extends Component {
             else
             {
                 //platformData already exists 
+                //update recently played
                 console.log("platform Data EXISTS")
                 console.log(response)
+                this.props.history.push("/useplatform/"+plat_id);
             }
         })
         .catch(error => {
             console.log(error.response)
         });
-
-        //update recently played 
-
-        this.props.history.push("/useplatform/"+plat_id);
+ 
     }
 
     render() {

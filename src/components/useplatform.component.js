@@ -14,7 +14,8 @@ export default class UsePlatform extends Component {
         
 
         this.state = {
-            user_id: ''
+            user_id: '',
+            username: ''
         }
     }
 
@@ -44,6 +45,12 @@ export default class UsePlatform extends Component {
                 .then(response => {
                     if (response) {
                         //Valid user
+                        
+                        //Use platform format ID to grab all data
+                        this.props.location.pathname.substring(13)
+
+
+                        this.setState({username: response.data.username, user_id: decoded._id });
                     }
                     else{
                         //Fake ID...
@@ -60,8 +67,6 @@ export default class UsePlatform extends Component {
             this.props.history.push(`/`);
         }
 
-        //check if user has a platform data for this platform format 
-        // console.log(this.props.location.pathname.substring(13))
 
     }
 
