@@ -45,9 +45,38 @@ export default class UsePlatform extends Component {
                 .then(response => {
                     if (response) {
                         //Valid user
-                        
+                        var user_id = response.data._id;
+                        var username = response.data.username;
                         //Use platform format ID to grab all data
-                        this.props.location.pathname.substring(13)
+                        var platform_format_id = this.props.location.pathname.substring(13);
+
+                        api.get('platformFormat/getPages/'+platform_format_id)
+                        .then(response => {
+                            //Successfully received pages_array
+                            var pages_array = response.data.pages;
+                            
+                            //Now receive all pageFormat info ordered by its order attribute
+                            api.post('/pageFormat/getAllPages',{pages_id: pages_array})
+                            .then(response => {
+                                //Successfully received all pages information ordered by the order attribute
+                                var page_info_arr = response.data;
+                                console.log(page_info_arr);
+                                //Now receive platformData completed_pages for specific platform_format_id and user_id
+                                api.post('/platformData/getPlatformDataCompletedPages', {id: user_id, platid: platform_format_id})
+                                .then(response => {
+                                    //Successfully received completed_pages array
+                                    var completed_pages = response.data.completed_pages;
+
+                                    //Now filter pages array by removing objects that contain page_ids that are in the completed_pages array
+                                    var filtered_page_info = page_info_arr.slice();
+
+                                    // filtered_page_info = filtered_page_info.filter(function(page_obj){
+                                    //     page_obj.
+                                    // })
+                                })
+                            })
+                        })
+                        .catch(err => console.log("Error receiving platform format pages array: " + err));
 
 
                         this.setState({username: response.data.username, user_id: decoded._id });
