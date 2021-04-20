@@ -239,6 +239,20 @@ export default class Dashboard extends Component {
                 //update recently played
                 console.log("platform Data EXISTS")
                 console.log(response)
+
+                const recentPlay = {
+                    user_id : this.state.id,
+                    platform_id : plat_id,
+                    newRecentlyPlayed : new Date()
+                }
+
+                api.post('/platformData/updateRecentlyPlayed',recentPlay)
+                .then(response => {
+                    console.log(response)
+                })
+                .catch(error => {
+                    console.log(error.response)
+                });
                 this.props.history.push("/useplatform/"+plat_id);
             }
         })
@@ -266,7 +280,7 @@ export default class Dashboard extends Component {
                         
                         {this.state.recent_platforms.map((platform, index) => (
                             <Card className = "card_top">
-                            <Card.Img variant="top" src={platform.cover_photo} className = "card_image"/>
+                            <Card.Img variant="top" onClick={() => this.clickUsePlatform(platform._id)} src={platform.cover_photo} className = "card_image"/>
                                 <Card.Body className = "card_body">
                                     <Card.Title className = "card_info">{platform.plat_name}</Card.Title>
                                     <Card.Text className = "card_info">
