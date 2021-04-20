@@ -131,8 +131,9 @@ export default class Dashboard extends Component {
                         var d = new Date();
                         d.setMonth(d.getMonth() - 1);
                         return platform.recently_played != null && Date.parse(platform.recently_played) >= d;
-                    });
+                    }).sort((a, b) => (a.recently_played < b.recently_played) ? 1 : -1);
                     var recent_index = recent_platforms.length;
+                    console.log(recent_platforms);
                     if(recent_platforms.length > 5){
                         //Only take the first 5
                         recent_platforms = recent_platforms.slice(0,5);
