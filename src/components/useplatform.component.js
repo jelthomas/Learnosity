@@ -8,6 +8,7 @@ import Card from 'react-bootstrap/Card'
 import { myObject } from "./forgot_password.component"
 import Navbar from "./navbar.component";
 import Button from 'react-bootstrap/Button'
+import ProgressBar from 'react-bootstrap/ProgressBar'
 
 export default class UsePlatform extends Component {
     constructor(props){
@@ -23,7 +24,9 @@ export default class UsePlatform extends Component {
             pageIndex:'',
             filterPages:'',
             currentPage:'',
-            completedPlatform:false
+            completedPlatform:false,
+            progress: 0,
+            all_pages: ''
         }
     }
 
@@ -69,15 +72,11 @@ export default class UsePlatform extends Component {
                                 //Successfully received all pages information ordered by the order attribute
                                 var page_info_arr = response.data;
 
-                                console.log(page_info_arr);
                                 //Now receive platformData completed_pages for specific platform_format_id and user_id
                                 api.post('/platformData/getPlatformDataCompletedPages', {id: user_id, platid: platform_format_id})
                                 .then(response => {
                                     //Successfully received completed_pages array
                                     var completed_pages = response.data.completed_pages;
-
-                                    //console.log(page_info_arr)
-                                    console.log(completed_pages)
 
                                     //Now filter pages array by removing objects that contain page_ids that are in the completed_pages array
                                     var filtered_page_info = page_info_arr.slice();
@@ -88,14 +87,12 @@ export default class UsePlatform extends Component {
                                         return completed_pages.indexOf(element._id) === -1;
                                     }); 
 
-                                    
-                                    console.log(filtered_page_info)
+                                    //Calculate progress by (length of pages_arr - length of filtered_page_info) / length of pages_arr
+                                    var progress = ((page_info_arr.length - filtered_page_info.length) / page_info_arr.length) * 100;
 
                                     //select a page to display
-                                
-                                    this.setState({filterPages:filtered_page_info})
-                                    this.setState({pageIndex:0})
-                                    this.setState({currentPage:filtered_page_info[0]})
+                                    
+                                    this.setState({filterPages:filtered_page_info, pageIndex:0, currentPage: filtered_page_info[0], progress: progress, all_pages: page_info_arr});
 
                                     // filtered_page_info = filtered_page_info.filter(function(page_obj){
                                     //     page_obj.
@@ -145,8 +142,6 @@ export default class UsePlatform extends Component {
         }
 
         if(this.state.pageIndex + 1 >= this.state.filterPages.length){
-            //set is_completed to true 
-            console.log("COMPLETED PLATFORM")
             this.setState({completedPlatform:true})
             //set the platformData  is_completed to true in database
             
@@ -161,13 +156,14 @@ export default class UsePlatform extends Component {
         }
         else
         {
-            console.log("NOT COMPLETED CHANGED PAGE")
-            console.log(this.state.filterPages)
             this.setState({currentPage:this.state.filterPages[this.state.pageIndex + 1]})
         }
 
-
-        this.setState({pageIndex: this.state.pageIndex + 1});
+        console.log(this.state.pageIndex);
+        var progress = ((this.state.pageIndex + 1) / this.state.all_pages.length) * 100;
+        console.log("Progress");
+        console.log(progress);
+        this.setState({pageIndex: this.state.pageIndex + 1, progress: progress});
 
         api.post('/platformData/updateCompletedPage/',info)
         
@@ -176,6 +172,7 @@ export default class UsePlatform extends Component {
     render() {
         return (
             <div>
+                <ProgressBar style={{background: "rgb(0, 219, 0)"}} now={this.state.progress}/>
                 <Card style={{ width: '18rem' }}>
                     <Card.Img variant="top" src="holder.js/100px180" />
                     <Card.Body>
