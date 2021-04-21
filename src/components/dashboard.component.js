@@ -248,12 +248,43 @@ export default class Dashboard extends Component {
                 }
 
                 api.post('/platformData/updateRecentlyPlayed',recentPlay)
-                .then(response => {
-                    console.log(response)
+                // .then(response => {
+                //     console.log(response)
+                // })
+                // .catch(error => {
+                //     console.log(error.response)
+                // });
+
+                //clearing the completed_pages 
+                const info = {
+                    id : plat_id
+                }
+
+                api.post('/platformFormat/getSpecificPlatformFormat/',info)
+                .then(resp => {
+                    // console.log(resp.data[0].pages.length)
+                    // console.log(response.data[0].completed_pages.length)
+                    if(response.data[0].is_completed === true && (response.data[0].completed_pages.length === resp.data[0].pages.length)){
+                        console.log("EQUAL PAGE AMOUNTS")
+
+                        const values = {
+                            user_id : this.state.id,
+                            platform_id : plat_id,
+                        }
+                        //clears the array to be empty 
+                        api.post('/platformData/clearCompletedPage/',values)
+                        .then(resp2 =>{
+                            console.log(resp2)
+                        })
+                        .catch(err=>{
+                            console.log(err.response)
+                        })
+                    }
                 })
                 .catch(error => {
                     console.log(error.response)
                 });
+
                 this.props.history.push("/useplatform/"+plat_id);
             }
         })
