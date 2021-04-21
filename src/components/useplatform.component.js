@@ -26,16 +26,10 @@ export default class UsePlatform extends Component {
             pageIndex:'',
             filterPages:'',
             currentPage:'',
-<<<<<<< HEAD
-            completedPlatform:false,
-            progress: 0,
-            all_pages: ''
-=======
             progressVal:0,
             progressIncrement:0,
             completedPlatform:false,
             submittedAnswer:false
->>>>>>> e3b5ff48fdc846f82fcab55409f2c755e49f5c2f
         }
     }
 
@@ -106,10 +100,6 @@ export default class UsePlatform extends Component {
                                     // var completedPlat = (filtered_page_info.length === 0)
 
                                     //select a page to display
-<<<<<<< HEAD
-                                    
-                                    this.setState({filterPages:filtered_page_info, pageIndex:0, currentPage: filtered_page_info[0], progress: progress, all_pages: page_info_arr});
-=======
                                 
                                     this.setState({filterPages:filtered_page_info})
                                     this.setState({pageIndex:0})
@@ -117,7 +107,6 @@ export default class UsePlatform extends Component {
                                     this.setState({progressVal:((page_info_arr.length-filtered_page_info.length+1)/page_info_arr.length) *100})
                                     this.setState({progressIncrement:(1/page_info_arr.length) *100})
                                     // this.setState({completedPlatform : completedPlat})
->>>>>>> e3b5ff48fdc846f82fcab55409f2c755e49f5c2f
 
                                     // filtered_page_info = filtered_page_info.filter(function(page_obj){
                                     //     page_obj.
@@ -177,18 +166,10 @@ export default class UsePlatform extends Component {
             this.setState({currentPage:this.state.filterPages[this.state.pageIndex + 1]})
         }
 
-<<<<<<< HEAD
-        console.log(this.state.pageIndex);
-        var progress = ((this.state.pageIndex + 1) / this.state.all_pages.length) * 100;
-        console.log("Progress");
-        console.log(progress);
-        this.setState({pageIndex: this.state.pageIndex + 1, progress: progress});
-=======
 
         this.setState({progressVal:this.state.progressVal + this.state.progressIncrement})
 
         this.setState({pageIndex: this.state.pageIndex + 1});
->>>>>>> e3b5ff48fdc846f82fcab55409f2c755e49f5c2f
 
         const info = {
             user_id : this.state.user_id,
