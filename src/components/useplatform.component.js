@@ -91,26 +91,12 @@ export default class UsePlatform extends Component {
                                     }); 
 
                                     //Calculate progress by (length of pages_arr - length of filtered_page_info) / length of pages_arr
-                                    var progress = ((page_info_arr.length - filtered_page_info.length) / page_info_arr.length) * 100;
-
-                                    if(filtered_page_info.length === 0)
-                                    {
-                                        this.setState({completedPlatform:true})
-                                    }
-                                    // var completedPlat = (filtered_page_info.length === 0)
+                                   
+                                    var completedPlat = (filtered_page_info.length === 0);
 
                                     //select a page to display
                                 
-                                    this.setState({filterPages:filtered_page_info})
-                                    this.setState({pageIndex:0})
-                                    this.setState({currentPage:filtered_page_info[0]})
-                                    this.setState({progressVal:((page_info_arr.length-filtered_page_info.length+1)/page_info_arr.length) *100})
-                                    this.setState({progressIncrement:(1/page_info_arr.length) *100})
-                                    // this.setState({completedPlatform : completedPlat})
-
-                                    // filtered_page_info = filtered_page_info.filter(function(page_obj){
-                                    //     page_obj.
-                                    // })
+                                    this.setState({filterPages: filtered_page_info, pageIndex: 0, currentPage: filtered_page_info[0], progressVal:((page_info_arr.length - filtered_page_info.length + 1)/page_info_arr.length) *100, progressIncrement:(1/page_info_arr.length) *100, completedPlatform: completedPlat})
                                 })
                             })
                         })
@@ -221,15 +207,7 @@ export default class UsePlatform extends Component {
         }
         return (
             <div>
-                <ProgressBar style={{background: "rgb(0, 219, 0)"}} now={this.state.progress}/>
-                <Card style={{ width: '18rem' }}>
-                    <Card.Img variant="top" src="holder.js/100px180" />
-                    <Card.Body>
-                        <Card.Title>Card Title</Card.Title>
-                        <Card.Text>
-                        </Card.Text>
-                    </Card.Body>
-                </Card>
+                <ProgressBar style={{background: "rgb(139 139 139)"}} now={this.state.progressVal} />
 
                 {this.state.completedPlatform === true
                     ?
@@ -242,7 +220,6 @@ export default class UsePlatform extends Component {
                             (this.state.currentPage.type === "Multiple Choice" 
                             ?
                                 <div style={{verticalAlign:"middle"}}>
-                                <ProgressBar now={this.state.progressVal} />
                                 <p style={{color:"white"}}>{this.state.currentPage.prompt}</p>
                                 {
                                 (arr.map((choice) =>
