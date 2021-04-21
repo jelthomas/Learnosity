@@ -15,6 +15,8 @@ export default class UsePlatform extends Component {
         super(props);
 
         this.continueButton = this.continueButton.bind(this);
+        this.shuffleArray = this.shuffleArray.bind(this);
+        this.submitMC = this.submitMC.bind(this);
         
         this.state = {
             user_id: '',
@@ -24,9 +26,16 @@ export default class UsePlatform extends Component {
             pageIndex:'',
             filterPages:'',
             currentPage:'',
+<<<<<<< HEAD
             completedPlatform:false,
             progress: 0,
             all_pages: ''
+=======
+            progressVal:0,
+            progressIncrement:0,
+            completedPlatform:false,
+            submittedAnswer:false
+>>>>>>> e3b5ff48fdc846f82fcab55409f2c755e49f5c2f
         }
     }
 
@@ -90,9 +99,25 @@ export default class UsePlatform extends Component {
                                     //Calculate progress by (length of pages_arr - length of filtered_page_info) / length of pages_arr
                                     var progress = ((page_info_arr.length - filtered_page_info.length) / page_info_arr.length) * 100;
 
+                                    if(filtered_page_info.length === 0)
+                                    {
+                                        this.setState({completedPlatform:true})
+                                    }
+                                    // var completedPlat = (filtered_page_info.length === 0)
+
                                     //select a page to display
+<<<<<<< HEAD
                                     
                                     this.setState({filterPages:filtered_page_info, pageIndex:0, currentPage: filtered_page_info[0], progress: progress, all_pages: page_info_arr});
+=======
+                                
+                                    this.setState({filterPages:filtered_page_info})
+                                    this.setState({pageIndex:0})
+                                    this.setState({currentPage:filtered_page_info[0]})
+                                    this.setState({progressVal:((page_info_arr.length-filtered_page_info.length+1)/page_info_arr.length) *100})
+                                    this.setState({progressIncrement:(1/page_info_arr.length) *100})
+                                    // this.setState({completedPlatform : completedPlat})
+>>>>>>> e3b5ff48fdc846f82fcab55409f2c755e49f5c2f
 
                                     // filtered_page_info = filtered_page_info.filter(function(page_obj){
                                     //     page_obj.
@@ -134,13 +159,6 @@ export default class UsePlatform extends Component {
     continueButton(){
         //temporary continue button 
 
-        //increase index
-        const info = {
-            user_id : this.state.user_id,
-            platform_id : this.state.plat_id,
-            page_id : this.state.currentPage._id,
-        }
-
         if(this.state.pageIndex + 1 >= this.state.filterPages.length){
             this.setState({completedPlatform:true})
             //set the platformData  is_completed to true in database
@@ -159,17 +177,67 @@ export default class UsePlatform extends Component {
             this.setState({currentPage:this.state.filterPages[this.state.pageIndex + 1]})
         }
 
+<<<<<<< HEAD
         console.log(this.state.pageIndex);
         var progress = ((this.state.pageIndex + 1) / this.state.all_pages.length) * 100;
         console.log("Progress");
         console.log(progress);
         this.setState({pageIndex: this.state.pageIndex + 1, progress: progress});
+=======
+
+        this.setState({progressVal:this.state.progressVal + this.state.progressIncrement})
+
+        this.setState({pageIndex: this.state.pageIndex + 1});
+>>>>>>> e3b5ff48fdc846f82fcab55409f2c755e49f5c2f
+
+        const info = {
+            user_id : this.state.user_id,
+            platform_id : this.state.plat_id,
+            page_id : this.state.currentPage._id,
+        }
+
+        this.setState({submittedAnswer:false})
 
         api.post('/platformData/updateCompletedPage/',info)
-        
     }
 
+    shuffleArray(array) {
+        for (var i = array.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var temp = array[i];
+            array[i] = array[j];
+            array[j] = temp;
+        }
+    }
+
+    submitMC(val) {
+        //check if platform has been completed 
+
+        //check if answer submitted is correct 
+        if(val === this.state.currentPage.multiple_choice_answer)
+        {
+            console.log("CORRECT ANSWER SELECTED")
+        }
+        else
+        {
+            console.log("INCORRECT ANSWER SELECTED")
+        }
+        //if platform has not been completed award expierience 
+
+        //else  
+        console.log(val)
+        this.setState({submittedAnswer:true})
+    }
     render() {
+        if(this.state.completedPlatform === false && this.state.currentPage !=='' && this.state.currentPage.type === "Multiple Choice")
+        {
+            //creates array and adds the answer to it 
+            var arr = this.state.currentPage.multiple_choices.slice()
+            console.log(arr)
+            arr.push(this.state.currentPage.multiple_choice_answer)
+
+            this.shuffleArray(arr)
+        }
         return (
             <div>
                 <ProgressBar style={{background: "rgb(0, 219, 0)"}} now={this.state.progress}/>
@@ -190,16 +258,61 @@ export default class UsePlatform extends Component {
                     :
                         (this.state.currentPage !== ''
                         ?
-                            <div>
-                            <p style={{color:"white"}}>{this.state.currentPage.prompt}</p>
-                            {
-                            (this.state.currentPage.multiple_choices.map((choice) =>
+                            (this.state.currentPage.type === "Multiple Choice" 
+                            ?
+                                <div style={{verticalAlign:"middle"}}>
+                                <ProgressBar now={this.state.progressVal} />
+                                <p style={{color:"white"}}>{this.state.currentPage.prompt}</p>
+                                {
+                                (arr.map((choice) =>
+                                
+                                <Button onClick={() => this.submitMC(choice)}>{choice}</Button>
+                                ))
+                                }
+                                    {
+                                        (this.state.submittedAnswer === false
+                                        ?
+                                            <p></p>
+                                        :
+                                            <Button onClick={() => this.continueButton()}>Continue</Button>
+                                        )
+                                    }   
+                                </div>
+                            :
+                                (this.state.currentPage.type === "Fill in the Blank"
+                                ?
+                                    <div>
+                                        <p style={{color: "white"}}>Fill in the Blank</p>
+                                    </div>
+                                :
+                                    (this.state.currentPage.type === "Matching Pair"
+                                    ?
+                                        <div>
+                                            <p style={{color: "white"}}>Matching Pair</p>
+                                        </div>
+                                    :
+                                        (this.state.currentPage.type === "Timer"
+                                        ?
+                                            <div>
+                                                <p style={{color: "white"}}>Timer</p>
+                                            </div>
+                                        :
+                                            <p style={{color: "white"}}>IMPOSSIBLE</p>
+                                        )
+                                    )
+                                )
+                            )
+                            // <div>
+                            // <ProgressBar now={this.state.progressVal} />
+                            // <p style={{color:"white"}}>{this.state.currentPage.prompt}</p>
+                            // {
+                            // (this.state.currentPage.multiple_choices.map((choice) =>
                             
-                            <p style={{color:"white"}}>{choice}</p>
-                            ))
-                            }
-                            <Button onClick={() => this.continueButton()}>Continue</Button>
-                            </div>
+                            // <p style={{color:"white"}}>{choice}</p>
+                            // ))
+                            // }
+                            // <Button onClick={() => this.continueButton()}>Continue</Button>
+                            // </div>
                         :
                             <p style={{color: "white"}}>EMPTY CURRENT PAGE</p>
                         )
