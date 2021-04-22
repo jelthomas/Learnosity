@@ -226,6 +226,7 @@
     color: white;
     margin-left: 3%;
     font-size: 25px;
+    margin-bottom: 10px;
 }
 
 .block {
@@ -234,6 +235,7 @@
     border-radius: 30px;
     padding-top: 5%;
     padding-bottom: 2%;
+    box-shadow: 1px 1px 3px rgb(18 118 18);
 }
 
 .favorite_button {
@@ -254,6 +256,29 @@
   color: rgb(230, 207, 4);
 }
 
+.card_top:hover .play_button {
+  display: inline;
+}
+
+.card_image:hover {
+  opacity: 0.35;
+}
+
+.play_button:hover .card_top{
+  opacity: 0.35;
+}
+
+
+.play_button {
+  position: absolute;
+  top: 43px;
+  left: 107px;
+  font-size: 33px;
+  color: rgb(2, 0, 0);
+  display: none;
+  opacity: 1 im !important;
+}
+
 .card_top {
   width:14.8rem;
   height: 200px;
@@ -263,6 +288,7 @@
 .card_image {
   height: 120px;
   filter: brightness(.95);
+  cursor: pointer;
 }
 
 .card_body {
