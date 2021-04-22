@@ -41,11 +41,100 @@
   border-color: rgb(0, 219, 0);
 } */
 
+.continue_correct {
+  position: fixed;
+  width: 100%;
+  bottom: 0;
+  display: flex;
+  background-color: rgb(0, 219, 0);
+  padding: 2%;
+}
+
+.correct {
+  margin: auto;
+  align-self: center;
+  color: white;
+  font-size: 25px;
+}
+
+.report_button:active{
+  box-shadow: 0;
+  background: rgb(207, 207, 207);
+}
+
+
+.report_button {
+    margin-top: 15px;
+    background: white;
+    border: transparent;
+    color: red;
+    font-size: 25px;
+    font-weight: 500;
+    border-radius: 15px;
+    padding: 5px;
+    box-shadow: 1px 1px 5px black;
+}
+
+
+.continue_button_incorrect:active{
+  box-shadow: 0;
+  background: rgb(228, 11, 11);
+}
+
+
+.continue_button_incorrect {
+  margin-top: 15px;
+  background: red;
+  border: transparent;
+  color: white;
+  font-size: 25px;
+  font-weight: 500;
+  border-radius: 15px;
+  padding: 5px;
+  box-shadow: 1px 1px 5px black;
+}
+
+.continue_button_correct:active{
+  box-shadow: 0;
+  background: rgb(5, 197, 5);
+}
+
+
+.continue_button_correct {
+  margin-top: 15px;
+  background: rgb(0, 219, 0);
+  border: transparent;
+  color: white;
+  font-size: 25px;
+  font-weight: 500;
+  border-radius: 15px;
+  padding: 5px;
+  box-shadow: 1px 1px 5px black;
+}
+
+.continue_incorrect {
+  position: fixed;
+  width: 100%;
+  bottom: 0;
+  display: flex;
+  background: red;
+  padding: 2%;
+}
 
 .mc_button:active{
   color: #fff;
-  background-color: rgb(0, 219, 0);
-  border-color: rgb(0, 219, 0);
+  background-color: rgb(9, 197, 9);
+  border-color: rgb(9, 197, 9);
+}
+
+.x_button{
+  font-size: 25px;
+  padding-left: 15px;
+  padding-top: 5px;
+  font-weight: 700;
+  color:red;
+  background: transparent;
+  border: transparent;
 }
 
 .mc_button:hover {
@@ -56,8 +145,41 @@
 
 .mc_button:focus {
   color: #fff;
-  background-color: rgb(0, 219, 0);
-  border-color: rgb(0, 219, 0);
+  background-color: rgb(9, 197, 9);
+  border-color: rgb(9, 197, 9);
+}
+
+.mc_button_submitted {
+  margin-top: 15px;
+  background: rgb(9, 197, 9);
+  border: transparent;
+  color: white;
+  font-size: 25px;
+  font-weight: 500;
+  border-radius: 15px;
+  padding: 5px;
+}
+
+.mc_button {
+  margin-top: 15px;
+  background: transparent;
+  border: transparent;
+  color: black;
+  font-size: 25px;
+  font-weight: 500;
+  border-radius: 15px;
+  padding: 5px;
+}
+
+.no_hover {
+  margin-top: 15px;
+  background: transparent;
+  border: transparent;
+  color: black;
+  font-size: 25px;
+  font-weight: 500;
+  border-radius: 15px;
+  padding: 5px;
 }
 
 .mc_prompt {
@@ -71,17 +193,6 @@
   margin-left: 30%;
   width: fit-content;
   margin-top: 4%;
-}
-
-.mc_button {
-  margin-top: 15px;
-  background: transparent;
-  border: transparent;
-  color: black;
-  font-size: 25px;
-  font-weight: 500;
-  border-radius: 15px;
-  padding: 5px;
 }
 
 
