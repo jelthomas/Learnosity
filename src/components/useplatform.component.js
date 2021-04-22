@@ -2,13 +2,11 @@ import React, { Component } from 'react';
 import {api} from "../axios_api.js";
 import jwt from 'jsonwebtoken';
 import { Link } from 'react-router-dom';
-import Logo from "../images/LearnLogo.png";
 import jwt_decode from 'jwt-decode';
-import Card from 'react-bootstrap/Card'
-import { myObject } from "./forgot_password.component"
-import Navbar from "./navbar.component";
-import Button from 'react-bootstrap/Button'
 import ProgressBar from 'react-bootstrap/ProgressBar'
+import flag from "../images/REDFLAG.png"
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faFlag } from "@fortawesome/free-regular-svg-icons";
 
 export default class UsePlatform extends Component {
     constructor(props){
@@ -31,7 +29,8 @@ export default class UsePlatform extends Component {
             completedPlatform: false,
             submittedAnswer: false,
             shouldShuffle: true,
-            current_mc_array: []
+            current_mc_array: [],
+            submitted_answer_bool: false
         }
     }
 
@@ -100,7 +99,7 @@ export default class UsePlatform extends Component {
                                     var current_page = filtered_page_info[0];
 
                                     var arr = []
-                                    if(filtered_page_info.length != 0 && current_page.type == "Multiple Choice" && this.state.shouldShuffle){
+                                    if(filtered_page_info.length !== 0 && current_page.type === "Multiple Choice" && this.state.shouldShuffle){
                                         //Create array of all multiple choice options
                                         arr = current_page.multiple_choices.slice();
                                         arr.push(current_page.multiple_choice_answer);
@@ -113,7 +112,7 @@ export default class UsePlatform extends Component {
                         .catch(err => console.log("Error receiving platform format pages array: " + err));
 
                         var username = response.data.username;
-                        var user_id = decoded._id; 
+                        user_id = decoded._id; 
                         // this.setState({username: response.data.username, user_id: decoded._id, plat_id:platform_format_id});
                         const info ={
                             id: user_id,
@@ -144,13 +143,17 @@ export default class UsePlatform extends Component {
 
     continueButton(){
         //temporary continue button 
+        var button = document.getElementsByClassName("mc_button_submitted")[0];
+        button.classList.remove('mc_button_submitted');
+        button.classList.add('mc_button');
+    
 
         var completed_plat = false;
         var current_page = this.state.currentPage;
         var current_mc_array = [];
         if(this.state.pageIndex + 1 >= this.state.filterPages.length){
             completed_plat = true;
-            //set the platformData  is_completed to true in database
+            //set the platformData is_completed to true in database
             
             const val = {
                 user_id : this.state.user_id,
@@ -164,21 +167,13 @@ export default class UsePlatform extends Component {
         else{
             current_page = this.state.filterPages[this.state.pageIndex + 1];
 
-            if(current_page.type == "Multiple Choice"){
+            if(current_page.type === "Multiple Choice"){
                 current_mc_array = current_page.multiple_choices.slice();
                 current_mc_array.push(current_page.multiple_choice_answer);
                 current_mc_array = this.shuffleArray(current_mc_array);
             }
         }
 
-        const info = {
-            user_id : this.state.user_id,
-            platform_id : this.state.plat_id,
-            page_id : this.state.currentPage._id,
-        }
-
-
-        api.post('/platformData/updateCompletedPage/',info)
 
         this.setState({shouldShuffle: true, current_mc_array: current_mc_array, progressVal:this.state.progressVal + this.state.progressIncrement, pageIndex: this.state.pageIndex + 1, submittedAnswer:false, completedPlatform: completed_plat, currentPage: current_page});
     }
@@ -192,52 +187,62 @@ export default class UsePlatform extends Component {
             shuffled_arr[j] = temp;
         }
         return shuffled_arr;
-        // console.log("SHUFFLED:")
-        // console.log(array)
-        // this.setState({shouldShuffle: false, current_mc_array: array})
     }
 
-    submitMC(val) {
+    submitMC(val, index) {
         //check if platform has been completed 
 
         //check if answer submitted is correct 
-        if(val === this.state.currentPage.multiple_choice_answer)
-        {
-            console.log("CORRECT ANSWER SELECTED")
+        var submitted_answer_bool = false;
+        if(val === this.state.currentPage.multiple_choice_answer){
+            submitted_answer_bool = true;
         }
-        else
-        {
-            console.log("INCORRECT ANSWER SELECTED")
-        }
+        document.getElementById("mc"+index,).classList.remove("mc_button");
+        document.getElementById("mc"+index,).classList.add("mc_button_submitted");
+
+        
         //if platform has not been completed award experience 
 
         //else  
-        console.log(val)
-        this.setState({submittedAnswer:true, shouldShuffle: false})
+        const info = {
+            user_id : this.state.user_id,
+            platform_id : this.state.plat_id,
+            page_id : this.state.currentPage._id,
+        }
+
+
+        api.post('/platformData/updateCompletedPage/',info)
+
+        this.setState({submittedAnswer:true, shouldShuffle: false, submitted_answer_bool: submitted_answer_bool});
     }
+
     render() {
         
         return (
-            <div>
+            <div style={{height: "100vh", background: "#edd2ae", verticalAlign:"middle"}}>
                 <ProgressBar style={{background: "rgb(139 139 139)"}} now={this.state.progressVal} />
-
+                <div>
+                    <button onClick={() => this.props.history.push(`/dashboard`)} className="x_button">X</button>
+                </div>
                 {this.state.completedPlatform === true
                     ?
-                        <div>
-                            <p style={{color: "white"}}>FINISHED PLATFORM</p>
+                        <div style={{textAlign: "center", margin: "auto", fontSize: "40px", padding: "155px"}}>
+                            <p>Congratulations you have finished the platform!</p>
+                            <p>Click below to continue learning</p>
+                            <Link to="/dashboard">Explore More</Link>
                         </div>
                     :
                         (this.state.currentPage !== ''
                         ?
                             (this.state.currentPage.type === "Multiple Choice" 
                             ?
-                                <div style={{height: "97vh", background: "#edd2ae", verticalAlign:"middle"}}>
+                                <div>
                                 <p className="mc_prompt" >{this.state.currentPage.prompt}</p>
                                 <div className="mc_choices">
                                 {
                                 (this.state.current_mc_array.map((choice, index) =>
                                 <div>
-                                    <button className="mc_button" onClick={() => this.submitMC(choice)}>{String.fromCharCode(65+index)}.) {choice}</button>
+                                    <button id={"mc"+index} disabled={this.state.submittedAnswer} className="mc_button" onClick={() => this.submitMC(choice, index)}>{String.fromCharCode(65+index)}.) {choice}</button>
                                 </div>
                                 ))
                                 }
@@ -247,18 +252,36 @@ export default class UsePlatform extends Component {
                                         ?
                                             <p></p>
                                         :
-                                        <div>
-                                            <div>
-                                                <Button>Report</Button>
-                                            </div>
-                                            <div>
-                                                CORRECT!
-                                            </div>
-                                            <div>
-                                                <Button onClick={() => this.continueButton()}>Continue</Button>
-                                            </div>
-                                        </div>
+                                            (this.state.submitted_answer_bool === false
+                                            ?
+                                                <div className = "continue_incorrect">
+                                                    <div>
+                                                        <button className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
+                                                    </div>
+                                                    <div className = "correct">
+                                                        Incorrect!
+                                                    </div>
+                                                    <div className = "correct">
+                                                        Correct Answer was: {this.state.currentPage.multiple_choice_answer}
+                                                    </div>
+                                                    <div>
+                                                        <button className="continue_button_incorrect" onClick={() => this.continueButton()}>Continue</button>
+                                                    </div>
+                                                </div>
+                                            :
+                                                <div className = "continue_correct">
+                                                    <div>
+                                                    <button className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
+                                                    </div>
+                                                    <div className = "correct">
+                                                        CORRECT!
+                                                    </div>
+                                                    <div>
+                                                        <button className="continue_button_correct" onClick={() => this.continueButton()}>Continue</button>
+                                                    </div>
+                                                </div>
                                         )
+                                    )
                                     }   
                                 </div>
                             :
