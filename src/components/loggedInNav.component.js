@@ -73,13 +73,13 @@ export default class LoggedInNav extends Component {
         <ul class="navbar-nav ml-auto">
           <div style={{display:'flex'}}>
             <li className="navbar-item">
-              <Link to="/dashboard" className="nav-link navbarDropdown" style={{padding: '5px',color:'#00db00',fontFamily:"Quando",fontSize:'25px'}}>Create Platform</Link>
+              <Link to="/dashboard" className="nav-link navbarDropdown" style={{padding: '5px',color:'#00db00',fontFamily:"Quando",fontSize:'25px', paddingRight: "55px"}}>Create Platform</Link>
             </li>
             <li className="navbar-item">
-              <Link to ="/dashboard" className="nav-link navbarDropdown"  style={{padding: '5px',color:'#00db00',fontFamily:"Quando",fontSize:'25px'}}  >Leaderboard</Link>
+              <Link to ="/dashboard" className="nav-link navbarDropdown"  style={{padding: '5px',color:'#00db00',fontFamily:"Quando",fontSize:'25px', paddingRight: "55px"}}  >Leaderboard</Link>
             </li>
             <li className="navbar-item">
-              <Link to ="/dashboard" className="nav-link navbarDropdown"  style={{padding: '5px',color:'#00db00',fontFamily:"Quando",fontSize:'25px'}}  >My Platforms</Link>
+              <Link to ="/dashboard" className="nav-link navbarDropdown"  style={{padding: '5px',color:'#00db00',fontFamily:"Quando",fontSize:'25px', paddingRight: "55px"}}  >My Platforms</Link>
             </li>
           </div>
             <Dropdown style={{marginTop:'.7%'}}>
