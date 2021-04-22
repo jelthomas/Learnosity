@@ -6,7 +6,7 @@ import jwt_decode from 'jwt-decode';
 import ProgressBar from 'react-bootstrap/ProgressBar'
 import flag from "../images/REDFLAG.png"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFlag } from "@fortawesome/free-regular-svg-icons";
+import { faFlag, faCheckCircle, faTimesCircle } from "@fortawesome/free-regular-svg-icons";
 
 export default class UsePlatform extends Component {
     constructor(props){
@@ -15,6 +15,7 @@ export default class UsePlatform extends Component {
         this.continueButton = this.continueButton.bind(this);
         this.shuffleArray = this.shuffleArray.bind(this);
         this.submitMC = this.submitMC.bind(this);
+        this.submitFIB = this.submitFIB.bind(this);
         
         this.state = {
             user_id: '',
@@ -30,7 +31,10 @@ export default class UsePlatform extends Component {
             submittedAnswer: false,
             shouldShuffle: true,
             current_mc_array: [],
-            submitted_answer_bool: false
+            submitted_answer_bool: false,
+            submitted_fib_correct: '',
+            submittedFIB: false,
+            segmented: []
         }
     }
 
@@ -105,7 +109,37 @@ export default class UsePlatform extends Component {
                                         arr.push(current_page.multiple_choice_answer);
                                         arr = this.shuffleArray(arr);
                                     }
-                                    this.setState({current_mc_array: arr, filterPages: filtered_page_info, pageIndex: 0, currentPage: current_page, progressVal:((page_info_arr.length - filtered_page_info.length)/page_info_arr.length) *100, progressIncrement:(1/page_info_arr.length) *100, completedPlatform: completedPlat})
+                                    var segmented = [];
+                                    if(filtered_page_info.length !== 0 && current_page.type == "Fill in the Blank"){
+                                        var prompt = current_page.prompt;
+                                        var blank_maps = current_page.fill_in_the_blank_answers;
+                                        console.log(blank_maps);
+                                        var map_keys = Object.keys(blank_maps).sort();
+                                        var curr = 0;
+                                        console.log("Prompt:");
+                                        console.log(prompt);
+                                        for(var i = 0; i < map_keys.length; i++){
+                                            let index = parseInt(map_keys[i]);
+                                            console.log(curr);
+                                            console.log(index);
+                                            console.log("Part of prompt:")
+                                            console.log(prompt.substring(curr, index));
+                                            segmented.push(prompt.substring(curr, index));
+                                            console.log("Blank:")
+                                            console.log(blank_maps[index]);
+                                            segmented.push(blank_maps[index]);
+                                            curr = index + 1;
+                                        }
+                                        segmented.push(prompt.substring(curr));
+                                        console.log("Segmented:")
+                                        console.log(segmented);
+                                        console.log("Prompt:");
+                                        console.log(prompt);
+
+                                        //Have correctly segmented array (even index ==> prompt , odd index ==> blank)
+                                    
+                                    }
+                                    this.setState({current_mc_array: arr, segmented: segmented, filterPages: filtered_page_info, pageIndex: 0, currentPage: current_page, progressVal:((page_info_arr.length - filtered_page_info.length)/page_info_arr.length) *100, progressIncrement:(1/page_info_arr.length) *100, completedPlatform: completedPlat})
                                 })
                             })
                         })
@@ -142,14 +176,15 @@ export default class UsePlatform extends Component {
     }
 
     continueButton(){
-        //temporary continue button 
-        var button = document.getElementsByClassName("mc_button_submitted")[0];
-        button.classList.remove('mc_button_submitted');
-        button.classList.add('mc_button');
-    
-
-        var completed_plat = false;
+        
         var current_page = this.state.currentPage;
+        if(current_page.type === "Multiple Choice"){
+            var button = document.getElementsByClassName("mc_button_submitted")[0];
+            button.classList.remove('mc_button_submitted');
+            button.classList.add('mc_button');
+        }
+    
+        var completed_plat = false;
         var current_mc_array = [];
         if(this.state.pageIndex + 1 >= this.state.filterPages.length){
             completed_plat = true;
@@ -214,6 +249,52 @@ export default class UsePlatform extends Component {
         api.post('/platformData/updateCompletedPage/',info)
 
         this.setState({submittedAnswer:true, shouldShuffle: false, submitted_answer_bool: submitted_answer_bool});
+    }
+
+    submitFIB(){
+        var segmented = this.state.segmented;
+        var all_inputs = [];
+        for(let i = 0; i < segmented.length;i++){
+            if(i % 2 !== 0){
+                //Grab document at id = "fib"+i
+                all_inputs.push(document.getElementById("fib"+i).value.toLowerCase().trim());
+                document.getElementById("fib"+i).disabled = "true";
+            }
+        }
+        //All_inputs now has the user's values
+        var correct_vals = Object.values(this.state.currentPage.fill_in_the_blank_answers);
+        var users_correct = [];
+        for(let i = 0; i < correct_vals.length; i++){
+            users_correct.push(correct_vals[i].toLowerCase() === all_inputs[i]);
+        }
+
+        //Users_correct has array of True/False of their answers
+        var total_correct = 0;
+        for(let i = 0; i < users_correct.length; i++){
+            if(users_correct[i]){
+                //Display correct checkmark
+                var id = "check"+((i*2)+1);
+                total_correct += 1;
+                document.getElementById(id).style.display = 'inline';
+            }
+            else{
+                //Display incorrect mark
+                var id = "wrong"+((i*2)+1);
+                console.log(id);
+                document.getElementById(id).style.display = 'inline';
+            }
+        }
+        var submitted_fib = '';
+        if(total_correct == users_correct.length){
+            submitted_fib = 'correct';
+        }
+        else if(total_correct / users_correct.length >= 0.5){
+            submitted_fib = 'almost';
+        }
+        else{
+            submitted_fib = 'incorrect';
+        }
+        this.setState({submittedFIB: true, submitted_fib: submitted_fib})
     }
 
     render() {
@@ -288,8 +369,81 @@ export default class UsePlatform extends Component {
                                 (this.state.currentPage.type === "Fill in the Blank"
                                 ?
                                     <div>
-                                        <p style={{color: "white"}}>Fill in the Blank</p>
+                                     
+                                            <p style={{borderWidth: "0px 0px 2px 0px", width: "fit-content", margin: "auto", marginBottom: "30px", borderStyle: "solid"}} className="mc_prompt">Fill In The Blank:</p>
+                                            <div style={{display: "flex", alignItems: "center", justifyContent: "center", fontSize: "25px", fontWeight: "400"}}>
+                                                    {(this.state.segmented.map((val, index) =>
+                                                        (index % 2 == 0 
+                                                            ?
+
+                                                            <div>
+                                                                <div id={"fib"+index} >{val}</div>
+                                                            </div>
+                                                            :
+                                                            <div style={{paddingLeft: "8px"}}>
+                                                                <input id={"fib"+index} required placeholder={"Fill in the blank"}></input><FontAwesomeIcon id={"check"+index} className="check_mark" icon={faCheckCircle}/><FontAwesomeIcon id={"wrong"+index} className="wrong_mark" icon={faTimesCircle}/>
+                                                            </div>
+                                                        )
+                                                    ))}
+                                            </div>
+                                            <div style={{margin: "auto", textAlign: "center", marginTop: "10%"}}>
+                                                <button style={{padding: "10px"}} className="continue_button_correct" onClick={() => this.submitFIB()} type="submit">Submit</button>
+                                            </div>
+                                       
+                                        {
+                                        (this.state.submittedFIB === false
+                                        ?
+                                            <p></p>
+                                        :
+                                            (this.state.submitted_fib === 'incorrect'
+                                            ?
+                                                <div className = "continue_incorrect">
+                                                    <div>
+                                                        <button className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
+                                                    </div>
+                                                    <div className = "correct">
+                                                        Incorrect!
+                                                    </div>
+                                                    <div>
+                                                        <button className="continue_button_incorrect" onClick={() => this.continueButton()}>Continue</button>
+                                                    </div>
+                                                </div>
+                                            :
+
+                                                (this.state.submitted_fib === 'almost'
+                                            ?
+                                                <div className = "continue_incorrect">
+                                                    <div>
+                                                        <button className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
+                                                    </div>
+                                                    <div className = "correct">
+                                                        You Almost Had It!
+                                                    </div>
+                                                    <div>
+                                                        <button className="continue_button_incorrect" onClick={() => this.continueButton()}>Continue</button>
+                                                    </div>
+                                                </div>
+                                            :
+                                            
+                                                <div className = "continue_correct">
+                                                    <div>
+                                                    <button className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
+                                                    </div>
+                                                    <div className = "correct">
+                                                        You Nailed It!
+                                                    </div>
+                                                    <div>
+                                                        <button className="continue_button_correct" onClick={() => this.continueButton()}>Continue</button>
+                                                    </div>
+                                                </div>
+                                        )
+                                        )
+                                    )
+                                    }  
+
                                     </div>
+                                    
+                                    
                                 :
                                     (this.state.currentPage.type === "Matching Pair"
                                     ?

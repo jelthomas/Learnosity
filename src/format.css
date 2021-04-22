@@ -296,6 +296,18 @@
   cursor: pointer;
 }
 
+.check_mark {
+  /* transform: translate(-25px, 0px); */
+  display: none;
+  color: rgb(0, 219, 0);
+}
+
+.wrong_mark {
+  /* transform: translate(-25px, 0px); */
+  display: none;
+  color: red;
+}
+
 .card_body {
   padding: 0.25rem;
 }
