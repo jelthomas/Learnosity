@@ -34,6 +34,57 @@
   transition: width .6s ease;
 }
 
+
+/* .btn-primary:not(:disabled):not(.disabled).active, .btn-primary:not(:disabled):not(.disabled):active, .show>.btn-primary.dropdown-toggle {
+  color: #fff;
+  background-color: rgb(0, 219, 0);
+  border-color: rgb(0, 219, 0);
+} */
+
+
+.mc_button:active{
+  color: #fff;
+  background-color: rgb(0, 219, 0);
+  border-color: rgb(0, 219, 0);
+}
+
+.mc_button:hover {
+  color: #fff;
+  background-color: rgb(0, 219, 0);
+  border-color: rgb(0, 219, 0);
+}
+
+.mc_button:focus {
+  color: #fff;
+  background-color: rgb(0, 219, 0);
+  border-color: rgb(0, 219, 0);
+}
+
+.mc_prompt {
+  color: black;
+  font-size: 40px;
+  text-align: center;
+  padding-top: 35px;
+}
+
+.mc_choices {
+  margin-left: 30%;
+  width: fit-content;
+  margin-top: 4%;
+}
+
+.mc_button {
+  margin-top: 15px;
+  background: transparent;
+  border: transparent;
+  color: black;
+  font-size: 25px;
+  font-weight: 500;
+  border-radius: 15px;
+  padding: 5px;
+}
+
+
 #greeting {
         font-size: 30px;
         color: rgb(0, 219, 0);

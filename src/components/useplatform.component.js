@@ -21,15 +21,17 @@ export default class UsePlatform extends Component {
         this.state = {
             user_id: '',
             username: '',
-            plat_id:'',
-            platData_id:'',
-            pageIndex:'',
-            filterPages:'',
-            currentPage:'',
-            progressVal:0,
-            progressIncrement:0,
-            completedPlatform:false,
-            submittedAnswer:false
+            plat_id: '',
+            platData_id: '',
+            pageIndex: '',
+            filterPages: '',
+            currentPage: '',
+            progressVal: 0,
+            progressIncrement: 0,
+            completedPlatform: false,
+            submittedAnswer: false,
+            shouldShuffle: true,
+            current_mc_array: []
         }
     }
 
@@ -60,7 +62,7 @@ export default class UsePlatform extends Component {
                     if (response) {
                         //Valid user
                         var user_id = response.data._id;
-                        var username = response.data.username;
+
                         //Use platform format ID to grab all data
                         var platform_format_id = this.props.location.pathname.substring(13);
 
@@ -95,22 +97,31 @@ export default class UsePlatform extends Component {
                                     var completedPlat = (filtered_page_info.length === 0);
 
                                     //select a page to display
-                                
-                                    this.setState({filterPages: filtered_page_info, pageIndex: 0, currentPage: filtered_page_info[0], progressVal:((page_info_arr.length - filtered_page_info.length + 1)/page_info_arr.length) *100, progressIncrement:(1/page_info_arr.length) *100, completedPlatform: completedPlat})
+                                    var current_page = filtered_page_info[0];
+
+                                    var arr = []
+                                    if(filtered_page_info.length != 0 && current_page.type == "Multiple Choice" && this.state.shouldShuffle){
+                                        //Create array of all multiple choice options
+                                        arr = current_page.multiple_choices.slice();
+                                        arr.push(current_page.multiple_choice_answer);
+                                        arr = this.shuffleArray(arr);
+                                    }
+                                    this.setState({current_mc_array: arr, filterPages: filtered_page_info, pageIndex: 0, currentPage: current_page, progressVal:((page_info_arr.length - filtered_page_info.length)/page_info_arr.length) *100, progressIncrement:(1/page_info_arr.length) *100, completedPlatform: completedPlat})
                                 })
                             })
                         })
                         .catch(err => console.log("Error receiving platform format pages array: " + err));
 
-
-                        this.setState({username: response.data.username, user_id: decoded._id ,plat_id:platform_format_id});
+                        var username = response.data.username;
+                        var user_id = decoded._id; 
+                        // this.setState({username: response.data.username, user_id: decoded._id, plat_id:platform_format_id});
                         const info ={
-                            id:decoded._id,
+                            id: user_id,
                             platid : platform_format_id
                         }
                         api.post('/platformData/getSpecificPlatformData/',info)
                         .then(response=>{
-                            this.setState({platData_id : response.data[0]._id})
+                            this.setState({platData_id : response.data[0]._id, username: username, user_id: user_id, plat_id:platform_format_id})
                         })
                     }
                     else{
@@ -134,8 +145,11 @@ export default class UsePlatform extends Component {
     continueButton(){
         //temporary continue button 
 
+        var completed_plat = false;
+        var current_page = this.state.currentPage;
+        var current_mc_array = [];
         if(this.state.pageIndex + 1 >= this.state.filterPages.length){
-            this.setState({completedPlatform:true})
+            completed_plat = true;
             //set the platformData  is_completed to true in database
             
             const val = {
@@ -147,15 +161,15 @@ export default class UsePlatform extends Component {
 
 
         }
-        else
-        {
-            this.setState({currentPage:this.state.filterPages[this.state.pageIndex + 1]})
+        else{
+            current_page = this.state.filterPages[this.state.pageIndex + 1];
+
+            if(current_page.type == "Multiple Choice"){
+                current_mc_array = current_page.multiple_choices.slice();
+                current_mc_array.push(current_page.multiple_choice_answer);
+                current_mc_array = this.shuffleArray(current_mc_array);
+            }
         }
-
-
-        this.setState({progressVal:this.state.progressVal + this.state.progressIncrement})
-
-        this.setState({pageIndex: this.state.pageIndex + 1});
 
         const info = {
             user_id : this.state.user_id,
@@ -163,18 +177,24 @@ export default class UsePlatform extends Component {
             page_id : this.state.currentPage._id,
         }
 
-        this.setState({submittedAnswer:false})
 
         api.post('/platformData/updateCompletedPage/',info)
+
+        this.setState({shouldShuffle: true, current_mc_array: current_mc_array, progressVal:this.state.progressVal + this.state.progressIncrement, pageIndex: this.state.pageIndex + 1, submittedAnswer:false, completedPlatform: completed_plat, currentPage: current_page});
     }
 
     shuffleArray(array) {
-        for (var i = array.length - 1; i > 0; i--) {
+        var shuffled_arr = array.slice();
+        for (var i = shuffled_arr.length - 1; i > 0; i--) {
             var j = Math.floor(Math.random() * (i + 1));
-            var temp = array[i];
-            array[i] = array[j];
-            array[j] = temp;
+            var temp = shuffled_arr[i];
+            shuffled_arr[i] = shuffled_arr[j];
+            shuffled_arr[j] = temp;
         }
+        return shuffled_arr;
+        // console.log("SHUFFLED:")
+        // console.log(array)
+        // this.setState({shouldShuffle: false, current_mc_array: array})
     }
 
     submitMC(val) {
@@ -189,22 +209,14 @@ export default class UsePlatform extends Component {
         {
             console.log("INCORRECT ANSWER SELECTED")
         }
-        //if platform has not been completed award expierience 
+        //if platform has not been completed award experience 
 
         //else  
         console.log(val)
-        this.setState({submittedAnswer:true})
+        this.setState({submittedAnswer:true, shouldShuffle: false})
     }
     render() {
-        if(this.state.completedPlatform === false && this.state.currentPage !=='' && this.state.currentPage.type === "Multiple Choice")
-        {
-            //creates array and adds the answer to it 
-            var arr = this.state.currentPage.multiple_choices.slice()
-            console.log(arr)
-            arr.push(this.state.currentPage.multiple_choice_answer)
-
-            this.shuffleArray(arr)
-        }
+        
         return (
             <div>
                 <ProgressBar style={{background: "rgb(139 139 139)"}} now={this.state.progressVal} />
@@ -219,20 +231,33 @@ export default class UsePlatform extends Component {
                         ?
                             (this.state.currentPage.type === "Multiple Choice" 
                             ?
-                                <div style={{verticalAlign:"middle"}}>
-                                <p style={{color:"white"}}>{this.state.currentPage.prompt}</p>
+                                <div style={{height: "97vh", background: "#edd2ae", verticalAlign:"middle"}}>
+                                <p className="mc_prompt" >{this.state.currentPage.prompt}</p>
+                                <div className="mc_choices">
                                 {
-                                (arr.map((choice) =>
-                                
-                                <Button onClick={() => this.submitMC(choice)}>{choice}</Button>
+                                (this.state.current_mc_array.map((choice, index) =>
+                                <div>
+                                    <button className="mc_button" onClick={() => this.submitMC(choice)}>{String.fromCharCode(65+index)}.) {choice}</button>
+                                </div>
                                 ))
                                 }
+                                </div>
                                     {
                                         (this.state.submittedAnswer === false
                                         ?
                                             <p></p>
                                         :
-                                            <Button onClick={() => this.continueButton()}>Continue</Button>
+                                        <div>
+                                            <div>
+                                                <Button>Report</Button>
+                                            </div>
+                                            <div>
+                                                CORRECT!
+                                            </div>
+                                            <div>
+                                                <Button onClick={() => this.continueButton()}>Continue</Button>
+                                            </div>
+                                        </div>
                                         )
                                     }   
                                 </div>
@@ -272,7 +297,9 @@ export default class UsePlatform extends Component {
                             // <Button onClick={() => this.continueButton()}>Continue</Button>
                             // </div>
                         :
-                            <p style={{color: "white"}}>EMPTY CURRENT PAGE</p>
+                        <div style={{height: "100vh", background: "#edd2ae", verticalAlign:"middle"}}>
+                            <p style={{color: "white"}}></p>
+                        </div>
                         )
                 }
             </div>
