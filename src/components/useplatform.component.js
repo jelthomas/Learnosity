@@ -4,7 +4,6 @@ import jwt from 'jsonwebtoken';
 import { Link } from 'react-router-dom';
 import jwt_decode from 'jwt-decode';
 import ProgressBar from 'react-bootstrap/ProgressBar'
-import flag from "../images/REDFLAG.png"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFlag, faCheckCircle, faTimesCircle } from "@fortawesome/free-regular-svg-icons";
 
@@ -33,7 +32,6 @@ export default class UsePlatform extends Component {
             current_mc_array: [],
             submitted_answer_bool: false,
             submitted_fib_correct: '',
-            submittedFIB: false,
             segmented: []
         }
     }
@@ -110,7 +108,7 @@ export default class UsePlatform extends Component {
                                         arr = this.shuffleArray(arr);
                                     }
                                     var segmented = [];
-                                    if(filtered_page_info.length !== 0 && current_page.type == "Fill in the Blank"){
+                                    if(filtered_page_info.length !== 0 && current_page.type === "Fill in the Blank"){
                                         var prompt = current_page.prompt;
                                         var blank_maps = current_page.fill_in_the_blank_answers;
                                         console.log(blank_maps);
@@ -186,6 +184,7 @@ export default class UsePlatform extends Component {
     
         var completed_plat = false;
         var current_mc_array = [];
+        var segmented = [];
         if(this.state.pageIndex + 1 >= this.state.filterPages.length){
             completed_plat = true;
             //set the platformData is_completed to true in database
@@ -207,10 +206,37 @@ export default class UsePlatform extends Component {
                 current_mc_array.push(current_page.multiple_choice_answer);
                 current_mc_array = this.shuffleArray(current_mc_array);
             }
+
+
+            if(current_page.type === "Fill in the Blank"){
+                if(this.state.filterPages.length !== 0 && current_page.type === "Fill in the Blank"){
+                    var prompt = current_page.prompt;
+                    var blank_maps = current_page.fill_in_the_blank_answers;
+                    console.log(blank_maps);
+                    var map_keys = Object.keys(blank_maps).sort();
+                    var curr = 0;
+                    console.log("Prompt:");
+                    console.log(prompt);
+                    for(var i = 0; i < map_keys.length; i++){
+                        let index = parseInt(map_keys[i]);
+                        console.log(curr);
+                        console.log(index);
+                        console.log("Part of prompt:")
+                        console.log(prompt.substring(curr, index));
+                        segmented.push(prompt.substring(curr, index));
+                        console.log("Blank:")
+                        console.log(blank_maps[index]);
+                        segmented.push(blank_maps[index]);
+                        curr = index + 1;
+                    }
+                    segmented.push(prompt.substring(curr));
+
+                }
+            }
         }
 
 
-        this.setState({shouldShuffle: true, current_mc_array: current_mc_array, progressVal:this.state.progressVal + this.state.progressIncrement, pageIndex: this.state.pageIndex + 1, submittedAnswer:false, completedPlatform: completed_plat, currentPage: current_page});
+        this.setState({shouldShuffle: true, current_mc_array: current_mc_array, progressVal:this.state.progressVal + this.state.progressIncrement, pageIndex: this.state.pageIndex + 1, completedPlatform: completed_plat, currentPage: current_page,segmented:segmented,submittedAnswer:false,submitted_fib:""});
     }
 
     shuffleArray(array) {
@@ -271,21 +297,22 @@ export default class UsePlatform extends Component {
         //Users_correct has array of True/False of their answers
         var total_correct = 0;
         for(let i = 0; i < users_correct.length; i++){
+            var id;
             if(users_correct[i]){
                 //Display correct checkmark
-                var id = "check"+((i*2)+1);
+                id = "check"+((i*2)+1);
                 total_correct += 1;
                 document.getElementById(id).style.display = 'inline';
             }
             else{
                 //Display incorrect mark
-                var id = "wrong"+((i*2)+1);
+                id = "wrong"+((i*2)+1);
                 console.log(id);
                 document.getElementById(id).style.display = 'inline';
             }
         }
         var submitted_fib = '';
-        if(total_correct == users_correct.length){
+        if(total_correct === users_correct.length){
             submitted_fib = 'correct';
         }
         else if(total_correct / users_correct.length >= 0.5){
@@ -294,7 +321,7 @@ export default class UsePlatform extends Component {
         else{
             submitted_fib = 'incorrect';
         }
-        this.setState({submittedFIB: true, submitted_fib: submitted_fib})
+        this.setState({submittedAnswer: true, submitted_fib: submitted_fib})
     }
 
     render() {
@@ -373,7 +400,7 @@ export default class UsePlatform extends Component {
                                             <p style={{borderWidth: "0px 0px 2px 0px", width: "fit-content", margin: "auto", marginBottom: "30px", borderStyle: "solid"}} className="mc_prompt">Fill In The Blank:</p>
                                             <div style={{display: "flex", alignItems: "center", justifyContent: "center", fontSize: "25px", fontWeight: "400"}}>
                                                     {(this.state.segmented.map((val, index) =>
-                                                        (index % 2 == 0 
+                                                        (index % 2 === 0 
                                                             ?
 
                                                             <div>
@@ -391,7 +418,7 @@ export default class UsePlatform extends Component {
                                             </div>
                                        
                                         {
-                                        (this.state.submittedFIB === false
+                                        (this.state.submittedAnswer === false
                                         ?
                                             <p></p>
                                         :
