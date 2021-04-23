@@ -6,7 +6,7 @@ import "../format.css";
 import Card from "react-bootstrap/Card"
 import Penguin from "../images/Penguin.jpg"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faStar, faAngleLeft, faAngleRight, faAngleDown, faAngleUp } from "@fortawesome/free-solid-svg-icons";
+import { faStar, faPlay, faAngleRight, faAngleDown, faAngleUp } from "@fortawesome/free-solid-svg-icons";
 import LoggedInNav from "./loggedInNav.component";
 
 
@@ -521,7 +521,7 @@ export default class Dashboard extends Component {
         return (
             <div>
                 <LoggedInNav props={this.props}/>
-                <div style={{display:"flex", marginLeft: "5%", marginRight: "5%"}}>
+                <div style={{display:"flex", marginLeft: "5%", marginRight: "5%", paddingTop: "15px"}}>
                     <div id="dash">Dashboard</div>
                     <div id="greeting">Welcome {this.state.username}!</div>
                 </div>
@@ -534,16 +534,16 @@ export default class Dashboard extends Component {
                         </div>
                     </div>
                     <div style={{display: "flex"}}>
-                        
                         {this.state.recent_platforms.map((platform, index) => (
-                            <Card className = "card_top">
+                            <Card className = "card_top itemsContainer">
+                            <FontAwesomeIcon className="play_button" icon={faPlay} />
                             <Card.Img variant="top" onClick={() => this.clickUsePlatform(platform._id)} src={platform.cover_photo} className = "card_image"/>
                                 <Card.Body className = "card_body">
                                     <Card.Title className = "card_info">{platform.plat_name}</Card.Title>
                                     <Card.Text className = "card_info">
                                     {platform.owner}
                                     </Card.Text>
-                                    <div onClick={() => this.toggleFavoriteRecent(index)}>
+                                    <div style={{width: "fit-content"}} onClick={() => this.toggleFavoriteRecent(index)}>
                                         <FavoriteButton isfavorited={platform.is_favorited}/>
                                     </div>
                                 </Card.Body>
@@ -560,12 +560,12 @@ export default class Dashboard extends Component {
                         </div>
                     </div>
                     <div style={{display: "flex", marginLeft: "3%", marginBottom: "2%"}}>
-                        <div className="dashboard_sort" style={{width: "26%"}}>
+                        <div className="dashboard_sort" style={{width: "26%", paddingLeft: "5px"}}>
                            <input type="text" placeholder="Search By Title or Creator" style={{borderRadius: "10px", background: "white", borderColor: "transparent", width: "100%", outline: "none", height: '31px', paddingBottom: "6px"}}></input>
                         </div>
                         <div className="dashboard_sort">
                             
-                            <div>
+                            <div style={{paddingLeft: "5px"}}>
                                 Sort By:
                                 <select style={{width: "70%", marginLeft: "6px", border: "transparent", borderRadius: "7px", outline:"none"}}>
                                     <option value="volvo">Favorited</option>
@@ -586,26 +586,21 @@ export default class Dashboard extends Component {
                     </div>
                     <div>
                             <div style={{display: "flex"}}>
-                            { (this.state.all_platforms !== undefined
-                                        ?
-                                        this.state.all_platforms.map((platform, index) => (
-                                            <Card className = "card_top">
-                                            <Card.Img variant="top"  onClick={() => this.clickUsePlatform(platform._id)} src={platform.cover_photo} className = "card_image"/>
-                                                <Card.Body className = "card_body">
-                                                    <Card.Title className = "card_info">{platform.plat_name}</Card.Title>
-                                                    <Card.Text className = "card_info">
-                                                    {platform.owner}
-                                                    </Card.Text>
-                                                    <div onClick={() => this.toggleFavoriteAll(index)}>
-                                                        <FavoriteButton isfavorited={platform.is_favorited}/>
-                                                    </div>
-                                                </Card.Body>
-                                            </Card>
-                                        ))
-                                        :
-                                            <p>HELLO MY FRIENDS</p>
-                                        )
-                                }
+                            {this.state.all_platforms.map((platform, index) => (
+                                <Card className = "card_top itemsContainer">
+                                <FontAwesomeIcon className="play_button" icon={faPlay} />
+                                <Card.Img variant="top" onClick={() => this.clickUsePlatform(platform._id)} src={platform.cover_photo} className = "card_image"/>
+                                    <Card.Body className = "card_body">
+                                        <Card.Title className = "card_info">{platform.plat_name}</Card.Title>
+                                        <Card.Text className = "card_info">
+                                        {platform.owner}
+                                        </Card.Text>
+                                        <div style={{width: "fit-content"}} onClick={() => this.toggleFavoriteRecent(index)}>
+                                            <FavoriteButton isfavorited={platform.is_favorited}/>
+                                        </div>
+                                    </Card.Body>
+                                </Card>
+                            ))}
                             </div>
                         </div>
                 </div>
