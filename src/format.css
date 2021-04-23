@@ -99,6 +99,17 @@
   background: rgb(5, 197, 5);
 }
 
+.red_place_holder::-webkit-input-placeholder { /* Edge */
+  color: red;
+}
+
+.red_place_holder:-ms-input-placeholder { /* Internet Explorer */
+  color: red;
+}
+
+.red_place_holder::placeholder {
+  color: red;
+}
 
 .continue_button_correct {
   margin-top: 15px;
@@ -302,11 +313,18 @@
   color: rgb(0, 219, 0);
 }
 
-.wrong_mark {
+.wrong_mark{
   /* transform: translate(-25px, 0px); */
   display: none;
   color: red;
 }
+
+.asterisk{
+  display: none;
+  color: red;
+  font-size: 35px;
+}
+
 
 .card_body {
   padding: 0.25rem;
