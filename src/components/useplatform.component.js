@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import jwt_decode from 'jwt-decode';
 import ProgressBar from 'react-bootstrap/ProgressBar'
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFlag, faCheckCircle, faTimesCircle } from "@fortawesome/free-regular-svg-icons";
+import { faFlag, faCheckCircle, faTimesCircle, faAsterisk } from "@fortawesome/free-regular-svg-icons";
 
 export default class UsePlatform extends Component {
     constructor(props){
@@ -15,6 +15,7 @@ export default class UsePlatform extends Component {
         this.shuffleArray = this.shuffleArray.bind(this);
         this.submitMC = this.submitMC.bind(this);
         this.submitFIB = this.submitFIB.bind(this);
+        this.removeClass = this.removeClass.bind(this);
         
         this.state = {
             user_id: '',
@@ -111,29 +112,16 @@ export default class UsePlatform extends Component {
                                     if(filtered_page_info.length !== 0 && current_page.type === "Fill in the Blank"){
                                         var prompt = current_page.prompt;
                                         var blank_maps = current_page.fill_in_the_blank_answers;
-                                        console.log(blank_maps);
                                         var map_keys = Object.keys(blank_maps).sort();
                                         var curr = 0;
-                                        console.log("Prompt:");
-                                        console.log(prompt);
                                         for(var i = 0; i < map_keys.length; i++){
                                             let index = parseInt(map_keys[i]);
-                                            console.log(curr);
-                                            console.log(index);
-                                            console.log("Part of prompt:")
-                                            console.log(prompt.substring(curr, index));
                                             segmented.push(prompt.substring(curr, index));
-                                            console.log("Blank:")
-                                            console.log(blank_maps[index]);
                                             segmented.push(blank_maps[index]);
                                             curr = index + 1;
                                         }
                                         segmented.push(prompt.substring(curr));
-                                        console.log("Segmented:")
                                         console.log(segmented);
-                                        console.log("Prompt:");
-                                        console.log(prompt);
-
                                         //Have correctly segmented array (even index ==> prompt , odd index ==> blank)
                                     
                                     }
@@ -181,6 +169,21 @@ export default class UsePlatform extends Component {
             button.classList.remove('mc_button_submitted');
             button.classList.add('mc_button');
         }
+        else if(current_page.type === "Fill in the Blank"){
+            var blanks = document.getElementsByClassName("blank");
+            for(let i = 0; i < blanks.length; i++){
+                blanks[i].disabled = false;
+                blanks[i].value = '';
+            }
+            var checks = document.getElementsByClassName("check_mark");
+            for(let i = 0; i < checks.length; i++){
+                checks[i].style.display = "none";
+            }
+            var wrongs = document.getElementsByClassName("wrong_mark");
+            for(let i = 0; i < wrongs.length; i++){
+                wrongs[i].style.display = "none";
+            }
+        }
     
         var completed_plat = false;
         var current_mc_array = [];
@@ -212,25 +215,17 @@ export default class UsePlatform extends Component {
                 if(this.state.filterPages.length !== 0 && current_page.type === "Fill in the Blank"){
                     var prompt = current_page.prompt;
                     var blank_maps = current_page.fill_in_the_blank_answers;
-                    console.log(blank_maps);
                     var map_keys = Object.keys(blank_maps).sort();
                     var curr = 0;
-                    console.log("Prompt:");
-                    console.log(prompt);
                     for(var i = 0; i < map_keys.length; i++){
                         let index = parseInt(map_keys[i]);
-                        console.log(curr);
-                        console.log(index);
-                        console.log("Part of prompt:")
-                        console.log(prompt.substring(curr, index));
                         segmented.push(prompt.substring(curr, index));
-                        console.log("Blank:")
-                        console.log(blank_maps[index]);
                         segmented.push(blank_maps[index]);
                         curr = index + 1;
                     }
                     segmented.push(prompt.substring(curr));
 
+                    console.log(segmented);
                 }
             }
         }
@@ -277,9 +272,31 @@ export default class UsePlatform extends Component {
         this.setState({submittedAnswer:true, shouldShuffle: false, submitted_answer_bool: submitted_answer_bool});
     }
 
+    removeClass(index){
+        document.getElementById("fib"+index).placeholder = "Fill in the blank";
+        document.getElementById("fib"+index).classList.remove("red_place_holder");
+        let id = "ast"+ index;
+        document.getElementById(id).style.display = 'none';
+    }
+
     submitFIB(){
         var segmented = this.state.segmented;
         var all_inputs = [];
+        var not_valid = false;
+        for(let i = 0; i < segmented.length;i++){
+            if(i % 2 !== 0){
+                if(!document.getElementById("fib"+i).validity.valid){
+                    document.getElementById("fib"+i).placeholder = "This Field is Required!";
+                    document.getElementById("fib"+i).classList.add("red_place_holder");
+                    let id = "ast"+ i;
+                    document.getElementById(id).style.display = 'inline';
+                    not_valid = true;
+                }
+            }
+        }
+        if(not_valid){
+            return;
+        }
         for(let i = 0; i < segmented.length;i++){
             if(i % 2 !== 0){
                 //Grab document at id = "fib"+i
@@ -307,7 +324,6 @@ export default class UsePlatform extends Component {
             else{
                 //Display incorrect mark
                 id = "wrong"+((i*2)+1);
-                console.log(id);
                 document.getElementById(id).style.display = 'inline';
             }
         }
@@ -321,6 +337,17 @@ export default class UsePlatform extends Component {
         else{
             submitted_fib = 'incorrect';
         }
+
+        //Update completed_pages
+        const info = {
+            user_id : this.state.user_id,
+            platform_id : this.state.plat_id,
+            page_id : this.state.currentPage._id,
+        }
+
+
+        api.post('/platformData/updateCompletedPage/',info)
+        
         this.setState({submittedAnswer: true, submitted_fib: submitted_fib})
     }
 
@@ -396,7 +423,7 @@ export default class UsePlatform extends Component {
                                 (this.state.currentPage.type === "Fill in the Blank"
                                 ?
                                     <div>
-                                     
+                            
                                             <p style={{borderWidth: "0px 0px 2px 0px", width: "fit-content", margin: "auto", marginBottom: "30px", borderStyle: "solid"}} className="mc_prompt">Fill In The Blank:</p>
                                             <div style={{display: "flex", alignItems: "center", justifyContent: "center", fontSize: "25px", fontWeight: "400"}}>
                                                     {(this.state.segmented.map((val, index) =>
@@ -404,17 +431,17 @@ export default class UsePlatform extends Component {
                                                             ?
 
                                                             <div>
-                                                                <div id={"fib"+index} >{val}</div>
+                                                                <div style={{whiteSpace: "pre"}} id={"fib"+index} >{val}</div>
                                                             </div>
                                                             :
                                                             <div style={{paddingLeft: "8px"}}>
-                                                                <input id={"fib"+index} required placeholder={"Fill in the blank"}></input><FontAwesomeIcon id={"check"+index} className="check_mark" icon={faCheckCircle}/><FontAwesomeIcon id={"wrong"+index} className="wrong_mark" icon={faTimesCircle}/>
+                                                                <input id={"fib"+index} onChange={() => this.removeClass(index)} className = "blank" required placeholder={"Fill in the blank"}></input><FontAwesomeIcon id={"check"+index} className="check_mark" icon={faCheckCircle}/><FontAwesomeIcon id={"wrong"+index} className="wrong_mark" icon={faTimesCircle}/><p id={"ast"+index} className="asterisk">*</p>
                                                             </div>
                                                         )
                                                     ))}
                                             </div>
                                             <div style={{margin: "auto", textAlign: "center", marginTop: "10%"}}>
-                                                <button style={{padding: "10px"}} className="continue_button_correct" onClick={() => this.submitFIB()} type="submit">Submit</button>
+                                                <button style={{padding: "10px"}} className="continue_button_correct" onClick={() => this.submitFIB()} >Submit</button>
                                             </div>
                                        
                                         {
@@ -451,6 +478,7 @@ export default class UsePlatform extends Component {
                                                     </div>
                                                 </div>
                                             :
+
                                             
                                                 <div className = "continue_correct">
                                                     <div>
