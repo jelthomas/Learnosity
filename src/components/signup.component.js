@@ -8,6 +8,8 @@ import Alert from "react-bootstrap/Alert"
 import Navbar from "./navbar.component";
 import jwt from 'jsonwebtoken';
 import jwt_decode from 'jwt-decode';
+require('dotenv').config();
+
 export default class SignUp extends Component {
     constructor(props){
         super(props);
@@ -191,7 +193,7 @@ export default class SignUp extends Component {
         var validToken = false;
         if(token){
             //Token in session storage
-            jwt.verify(token, "jwt_key", function(err,res) {
+            jwt.verify(token, process.env.REACT_APP_SECRET, function(err,res) {
                 if(err){
                     //Improper JWT format 
                     //Remove token and redirect back to home

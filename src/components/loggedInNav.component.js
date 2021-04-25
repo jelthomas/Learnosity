@@ -3,10 +3,9 @@ import { Link } from 'react-router-dom';
 import Logo from "../images/LearnLogo.png"
 import jwt from 'jsonwebtoken';
 import jwt_decode from 'jwt-decode';
-//import {api} from "../axios_api.js";
 import Dropdown from "react-bootstrap/Dropdown"
-import Penguin from "../images/Penguin.jpg"
-
+import { api } from '../axios_api';
+require('dotenv').config();
 
 
 export default class LoggedInNav extends Component {
@@ -17,6 +16,7 @@ export default class LoggedInNav extends Component {
 
     this.state = {
         loggedInUser: '',
+        profile_picture: ''
     }
   }
 
@@ -31,7 +31,7 @@ export default class LoggedInNav extends Component {
     var validToken = false;
     if(token){
         //Token in session storage
-        jwt.verify(token, "jwt_key", function(err,res) {
+        jwt.verify(token, process.env.REACT_APP_SECRET, function(err,res) {
             if(err){
                 //Improper JWT format 
                 //Remove token and redirect back to home
@@ -45,7 +45,12 @@ export default class LoggedInNav extends Component {
     if(validToken){
         //Check if ID is in token and ID exists as a user
         const decoded = jwt_decode(token);
-        this.setState({loggedInUser:decoded.username})
+        var profile_pic;
+        api.get('/user/'+decoded._id)
+          .then(response => {
+            profile_pic = response.data.profile_picture;
+            this.setState({loggedInUser:decoded.username, profile_picture: profile_pic})
+          })
     }  
     else{
         //Not a Valid Token
@@ -86,7 +91,7 @@ export default class LoggedInNav extends Component {
               <Dropdown.Toggle className="navbarDropdown" variant="success" id="dropdown-basic" style= {{backgroundColor: "#FFFFFF", borderColor: "#000000", borderRadius: "50px", color: "#00DB00", fontSize: '18px'}}>
                         {this.state.loggedInUser}
                         <img className="thumbnail-image" 
-                            src={Penguin} 
+                            src={this.state.profile_picture} 
                             width = {30}
                             alt="user pic"
                             

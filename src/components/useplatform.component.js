@@ -6,6 +6,7 @@ import jwt_decode from 'jwt-decode';
 import ProgressBar from 'react-bootstrap/ProgressBar'
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFlag, faCheckCircle, faTimesCircle, faAsterisk } from "@fortawesome/free-regular-svg-icons";
+require('dotenv').config();
 
 export default class UsePlatform extends Component {
     constructor(props){
@@ -42,7 +43,7 @@ export default class UsePlatform extends Component {
         var validToken = false;
         if(token){
             //Token in session storage
-            jwt.verify(token, "jwt_key", function(err,res) {
+            jwt.verify(token, process.env.REACT_APP_SECRET, function(err,res) {
                 if(err){
                     //Improper JWT format 
                     //Remove token and redirect back to home
