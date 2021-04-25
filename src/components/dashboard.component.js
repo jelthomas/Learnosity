@@ -4,10 +4,10 @@ import jwt from 'jsonwebtoken';
 import jwt_decode from 'jwt-decode'
 import "../format.css";
 import Card from "react-bootstrap/Card"
-import Penguin from "../images/Penguin.jpg"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faStar, faPlay, faAngleRight, faAngleDown, faAngleUp } from "@fortawesome/free-solid-svg-icons";
 import LoggedInNav from "./loggedInNav.component";
+require('dotenv').config();
 
 
 function FavoriteButton(props) {
@@ -46,7 +46,7 @@ export default class Dashboard extends Component {
         var validToken = false;
         if(token){
             //Token in session storage
-            jwt.verify(token, "jwt_key", function(err,res) {
+            jwt.verify(token, process.env.REACT_APP_SECRET, function(err,res) {
                 if(err){
                     //Improper JWT format 
                     //Remove token and redirect back to home

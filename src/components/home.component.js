@@ -5,10 +5,8 @@ import Carousel1 from "../images/Carousel1.jpg"
 import Carousel2 from "../images/LearnosityPage2.png"
 import jwt_decode from 'jwt-decode'
 import jwt from 'jsonwebtoken';
-//import loggedInNav from "./loggedInNav.component.js"
 import Navbar from "./navbar.component";
-//import "bootstrap/dist/css/bootstrap.min.css";
-// import 'bootstrap/js/dist/util';
+require('dotenv').config();
 
 export default class Home extends Component {
     constructor(props){
@@ -27,7 +25,7 @@ export default class Home extends Component {
         if(token){
             //Token in session storage
             console.log("Token found");
-            jwt.verify(token, "jwt_key", function(err,res) {
+            jwt.verify(token, process.env.REACT_APP_SECRET, function(err,res) {
                 if(err){
                     //Improper JWT format 
                     //Remove token and redirect back to home

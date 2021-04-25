@@ -7,6 +7,7 @@ import jwt_decode from 'jwt-decode';
 import "../format.css";
 import { myObject } from "./forgot_password.component"
 import Navbar from "./navbar.component";
+require('dotenv').config();
 
 export default class Login extends Component {
     constructor(props){
@@ -27,7 +28,7 @@ export default class Login extends Component {
         var validToken = false;
         if(token){
             //Token in session storage
-            jwt.verify(token, "jwt_key", function(err,res) {
+            jwt.verify(token, process.env.REACT_APP_SECRET, function(err,res) {
                 if(err){
                     //Improper JWT format 
                     //Remove token and redirect back to home
@@ -60,6 +61,7 @@ export default class Login extends Component {
         }  
         else{
             //Not a Valid Token
+            console.log("Not valid");
             localStorage.removeItem('usertoken');
         }
         if (myObject.value !== "") {
@@ -83,9 +85,15 @@ export default class Login extends Component {
             .then(res => {
                 if(res.data.payload){
                     //Successfully logged in
-                    let user_token = jwt.sign(res.data.payload, "jwt_key", {
+                    console.log("Logged In");
+                    console.log(res.data.payload);
+                    console.log("Secret:");
+                    console.log(process.env.REACT_APP_SECRET);
+                    let user_token = jwt.sign(res.data.payload, process.env.REACT_APP_SECRET, {
                         algorithm: "HS256"
                     })      
+                    console.log("Token:")
+                    console.log(user_token);
                     localStorage.setItem('usertoken', user_token);
                     this.props.history.push(`/dashboard`);
                 }

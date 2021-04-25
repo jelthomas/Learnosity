@@ -6,6 +6,9 @@ import Button from "react-bootstrap/Button"
 import Alert from "react-bootstrap/Alert"
 import {api} from "../axios_api.js";
 import Navbar from "./navbar.component";
+import jwt from 'jsonwebtoken';
+import jwt_decode from 'jwt-decode'
+require('dotenv').config();
 
 export let myObject = {value: ""};
 
@@ -28,6 +31,48 @@ export default class ForgotPassword extends Component {
             showAlert1: false,
             showAlert2: false,
             showAlert3: false
+        }
+    }
+
+    componentDidMount(){
+        var token = localStorage.getItem('usertoken');
+        var validToken = false;
+        if(token){
+            //Token in session storage
+            jwt.verify(token, process.env.REACT_APP_SECRET, function(err,res) {
+                if(err){
+                    //Improper JWT format 
+                    localStorage.removeItem('usertoken');
+                }
+                else{
+                    //Properly formatted JWT
+                    validToken = true;
+                }});
+        }
+        if(validToken){
+            //Check if ID is in token and ID exists as a user
+            const decoded = jwt_decode(token);
+            if (decoded._id){
+                //ID exists in token
+                //Check if ID exists as a user
+                api.get('/user/'+ decoded._id)
+                .then(response => {
+                    if (response) {
+                        //Valid user
+                        this.props.history.push(`/dashboard`);
+                    }
+                    else{
+                        //Fake ID...
+                        localStorage.removeItem('usertoken');
+                    }
+                })
+                .catch(err => console.log("User Error: " + err));
+            }
+        }  
+        else{
+            //Not a Valid Token
+            console.log("Not valid");
+            localStorage.removeItem('usertoken');
         }
     }
 
