@@ -480,6 +480,9 @@ export default class UsePlatform extends Component {
                                                     <div className = "correct">
                                                         You Almost Had It!
                                                     </div>
+                                                    <div className = "correct">
+                                                        Correct Prompt was: {this.state.segmented.join(' ')}
+                                                    </div>
                                                     <div>
                                                         <button className="continue_button_incorrect" onClick={() => this.continueButton()}>Continue</button>
                                                     </div>
