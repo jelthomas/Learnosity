@@ -171,6 +171,7 @@ export default class UsePlatform extends Component {
             button.classList.add('mc_button');
         }
         else if(current_page.type === "Fill in the Blank"){
+            document.getElementsByClassName("continue_button_correct")[0].style.display = 'inline';
             var blanks = document.getElementsByClassName("blank");
             for(let i = 0; i < blanks.length; i++){
                 blanks[i].disabled = false;
@@ -281,6 +282,7 @@ export default class UsePlatform extends Component {
     }
 
     submitFIB(){
+        console.log("Submitted");
         var segmented = this.state.segmented;
         var all_inputs = [];
         var not_valid = false;
@@ -298,6 +300,7 @@ export default class UsePlatform extends Component {
         if(not_valid){
             return;
         }
+        document.getElementsByClassName("continue_button_correct")[0].style.display = 'none';
         for(let i = 0; i < segmented.length;i++){
             if(i % 2 !== 0){
                 //Grab document at id = "fib"+i
@@ -394,7 +397,7 @@ export default class UsePlatform extends Component {
                                                     <div>
                                                         <button className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
                                                     </div>
-                                                    <div className = "correct">
+                                                    <div className = "correct_phrase">
                                                         Incorrect!
                                                     </div>
                                                     <div className = "correct">
@@ -409,7 +412,7 @@ export default class UsePlatform extends Component {
                                                     <div>
                                                     <button className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
                                                     </div>
-                                                    <div className = "correct">
+                                                    <div className = "correct_phrase">
                                                         CORRECT!
                                                     </div>
                                                     <div>
@@ -458,6 +461,9 @@ export default class UsePlatform extends Component {
                                                     </div>
                                                     <div className = "correct">
                                                         Incorrect!
+                                                    </div>
+                                                    <div className = "correct">
+                                                        Correct Prompt was: {this.state.segmented.join(' ')}
                                                     </div>
                                                     <div>
                                                         <button className="continue_button_incorrect" onClick={() => this.continueButton()}>Continue</button>

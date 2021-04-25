@@ -55,6 +55,16 @@
   align-self: center;
   color: white;
   font-size: 25px;
+  max-width: 900px;
+  max-height: 45px;
+  overflow-y: auto;
+}
+
+.correct_phrase {
+  margin: auto;
+  align-self: center;
+  color: white;
+  font-size: 25px;
 }
 
 .report_button:active{
@@ -121,6 +131,7 @@
   border-radius: 15px;
   padding: 5px;
   box-shadow: 1px 1px 5px black;
+
 }
 
 .continue_incorrect {
