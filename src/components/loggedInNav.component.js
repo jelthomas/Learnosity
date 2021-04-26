@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken';
 import jwt_decode from 'jwt-decode';
 import Dropdown from "react-bootstrap/Dropdown"
 import { api } from '../axios_api';
+import UserIcon from "../images/userIcon.png"
 require('dotenv').config();
 
 
@@ -91,7 +92,7 @@ export default class LoggedInNav extends Component {
               <Dropdown.Toggle className="navbarDropdown" variant="success" id="dropdown-basic" style= {{backgroundColor: "#FFFFFF", borderColor: "#000000", borderRadius: "50px", color: "#00DB00", fontSize: '18px'}}>
                         {this.state.loggedInUser}
                         <img className="thumbnail-image" 
-                            src={this.state.profile_picture} 
+                            src={this.state.profile_picture === "" ? UserIcon : this.state.profile_picture} 
                             width = {30}
                             alt="user pic"
                             
