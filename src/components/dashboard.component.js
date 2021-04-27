@@ -90,6 +90,7 @@ export default class Dashboard extends Component {
                                 platform_formats[i].is_favorited = null;
                                 platform_formats[i].recently_played = null;
                             }
+                            console.log("PLATFORM FORMAT IDS 123456", platform_format_ids)
                             //Now query to receive the platform Data information for all ids in the array for that user
                             api.post('/platformData/getAllPlatforms', {platformFormat_ids: platform_format_ids, user_id: decoded._id})
                             .then(all_plat_data_ids => {
@@ -99,7 +100,6 @@ export default class Dashboard extends Component {
                                 for(var i = 0; i < all_platforms.length; i++){
                                     var specific_platform_format_id = all_platforms[i].platform_id;
                                     var correct_index = index_dict[specific_platform_format_id];
-                                    console.log("GETTING ALL PLATFORM VALUES " + all_platforms[i])
                                     //platform_formats[correct_index] = all_platforms[i]
                                 // platform_formats[correct_index].platform_id = all_platforms[i].platform_id;
                                     platform_formats[correct_index].completed_pages = all_platforms[i].completed_pages;
@@ -109,48 +109,80 @@ export default class Dashboard extends Component {
                                 all_platform_formats = platform_formats.slice()
                                 //Platform_formats now holds all platforms that are published and haven't been created by the user
 
-                                //Start of getting the recent platforms 
-                        api.post('/platformFormat/'+ response.data.username, {index: this.state.paginate_rec_index})
+                                //Start of getting the recent platforms
+                        api.post('platformData/getRecentPlatforms', {user_id: decoded._id, index: this.state.paginate_rec_index, max: 5})
                         .then(all_plat_ids => {
-                            //Received array of platformFormat Ids
                             var platform_formats = all_plat_ids.data;
                             var platform_format_ids = [];
                             var index_dict = {};
-                            console.log("Print this if update is getting called")
-                            for(var i = 0; i < platform_formats.length; i++){
-                                platform_format_ids.push(platform_formats[i]._id);
-                                index_dict[platform_formats[i]._id] = i;
-                                platform_formats[i].completed_pages = null;
-                                platform_formats[i].is_favorited = null;
-                                platform_formats[i].recently_played = null;
+                            for (var i = 0; i < platform_formats.length; i++){
+                                platform_format_ids.push(platform_formats[i].platform_id);
+                                index_dict[platform_formats[i].platform_id] = i;
+                                platform_formats[i].plat_name = null;
+                                platform_formats[i].owner = null;
+                                platform_formats[i].is_public = null;
+                                platform_formats[i].privacy_password = null;
+                                platform_formats[i].cover_photo = null;
+                                platform_formats[i].pages = null;
                             }
-                            //Now query to receive the platform Data information for all ids in the array for that user
-                            api.post('/platformData/getAllPlatforms', {platformFormat_ids: platform_format_ids, user_id: decoded._id})
+                            api.post('platformFormat/getAllPlatformFormats', {platformFormat_ids: platform_format_ids})
                             .then(all_plat_data_ids => {
-                                // Received all platform data info for all platforms
                                 var all_platforms = all_plat_data_ids.data;
-
                                 for(var i = 0; i < all_platforms.length; i++){
-                                    var specific_platform_format_id = all_platforms[i].platform_id;
+                                    var specific_platform_format_id = all_platforms[i]._id;
                                     var correct_index = index_dict[specific_platform_format_id];
-                                    console.log("GETTING ALL PLATFORM VALUES " + all_platforms[i])
-                                    //platform_formats[correct_index] = all_platforms[i]
-                                // platform_formats[correct_index].platform_id = all_platforms[i].platform_id;
-                                    platform_formats[correct_index].completed_pages = all_platforms[i].completed_pages;
-                                    platform_formats[correct_index].is_favorited = all_platforms[i].is_favorited;
-                                    platform_formats[correct_index].recently_played = all_platforms[i].recently_played;
+                                    platform_formats[correct_index].plat_name = all_platforms[i].plat_name;
+                                    platform_formats[correct_index].owner = all_platforms[i].owner;
+                                    platform_formats[correct_index].is_public = all_platforms[i].is_public;
+                                    platform_formats[correct_index].privacy_password = all_platforms[i].privacy_password;
+                                    platform_formats[correct_index].cover_photo = all_platforms[i].cover_photo;
+                                    platform_formats[correct_index].pages = all_platforms[i].pages;
                                 }
-                                //Platform_formats now holds all platforms that are published and haven't been created by the user
+                                recent_platforms = platform_formats.slice()
+                                this.setState({all_platforms: all_platform_formats, recent_platforms: recent_platforms, username: response.data.username, id: decoded._id});
+                            })
 
-                                //Filter platform_formats to get the first 5 recent (within a month recently played)
-                                recent_platforms = platform_formats.filter(function(platform) {
-                                    var d = new Date();
-                                    d.setMonth(d.getMonth() - 1);
-                                    return platform.recently_played != null && Date.parse(platform.recently_played) >= d;
-                                }).sort((a, b) => (a.recently_played < b.recently_played) ? 1 : -1);
-                                this.setState({all_platforms: all_platform_formats, get_all: false, recent_platforms: recent_platforms, username: response.data.username, id: decoded._id});                           
-                            })      
-                        });
+                        })
+                                
+
+                        // api.post('/platformFormat/'+ response.data.username, {index: this.state.paginate_rec_index})
+                        // .then(all_plat_ids => {
+                        //     //Received array of platformFormat Ids
+                        //     var platform_formats = all_plat_ids.data;
+                        //     var platform_format_ids = [];
+                        //     var index_dict = {};
+                        //     for(var i = 0; i < platform_formats.length; i++){
+                        //         platform_format_ids.push(platform_formats[i]._id);
+                        //         index_dict[platform_formats[i]._id] = i;
+                        //         platform_formats[i].completed_pages = null;
+                        //         platform_formats[i].is_favorited = null;
+                        //         platform_formats[i].recently_played = null;
+                        //     }
+                        //     //Now query to receive the platform Data information for all ids in the array for that user
+                        //     api.post('/platformData/getAllPlatforms', {platformFormat_ids: platform_format_ids, user_id: decoded._id})
+                        //     .then(all_plat_data_ids => {
+                        //         // Received all platform data info for all platforms
+                        //         var all_platforms = all_plat_data_ids.data;
+
+                        //         for(var i = 0; i < all_platforms.length; i++){
+                        //             var specific_platform_format_id = all_platforms[i].platform_id;
+                        //             var correct_index = index_dict[specific_platform_format_id];
+                        //             platform_formats[correct_index].completed_pages = all_platforms[i].completed_pages;
+                        //             platform_formats[correct_index].is_favorited = all_platforms[i].is_favorited;
+                        //             platform_formats[correct_index].recently_played = all_platforms[i].recently_played;
+                        //         }
+                        //         //Platform_formats now holds all platforms that are published and haven't been created by the user
+
+                        //         //Filter platform_formats to get the first 5 recent (within a month recently played)
+                        //         recent_platforms = platform_formats.filter(function(platform) {
+                        //             var d = new Date();
+                        //             d.setMonth(d.getMonth() - 1);
+                        //             return platform.recently_played != null && Date.parse(platform.recently_played) >= d;
+                        //         }).sort((a, b) => (a.recently_played < b.recently_played) ? 1 : -1);
+                        //         console.log("PLATFORM FORMATS", recent_platforms)
+                        //         this.setState({all_platforms: all_platform_formats, get_all: false, recent_platforms: recent_platforms, username: response.data.username, id: decoded._id});                           
+                        //     })      
+                        // }); //End of then of first api call
 
                             })      
                         });
@@ -326,100 +358,85 @@ export default class Dashboard extends Component {
     leftRecentPlatforms(){
         if (this.state.paginate_rec_index > 0){
             var recent_platforms
-            api.post('/platformFormat/'+ this.state.username, {index: this.state.paginate_rec_index - 1, max: 5})
-            .then(all_plat_ids => {
-                //Received array of platformFormat Ids
-                var platform_formats = all_plat_ids.data;
-                var platform_format_ids = [];
-                var index_dict = {};
-                console.log("Print this if update is getting called")
-                for(var i = 0; i < platform_formats.length; i++){
-                    platform_format_ids.push(platform_formats[i]._id);
-                    index_dict[platform_formats[i]._id] = i;
-                    platform_formats[i].completed_pages = null;
-                    platform_formats[i].is_favorited = null;
-                    platform_formats[i].recently_played = null;
-                }
-                //Now query to receive the platform Data information for all ids in the array for that user
-                api.post('/platformData/getAllPlatforms', {platformFormat_ids: platform_format_ids, user_id: this.state.id})
-                .then(all_plat_data_ids => {
-                    // Received all platform data info for all platforms
-                    var all_platforms = all_plat_data_ids.data;
+            api.post('platformData/getRecentPlatforms', {user_id: this.state.id, index: this.state.paginate_rec_index - 1, max: 5})
+                        .then(all_plat_ids => {
+                            var platform_formats = all_plat_ids.data;
+                            var platform_format_ids = [];
+                            var index_dict = {};
+                            for (var i = 0; i < platform_formats.length; i++){
+                                platform_format_ids.push(platform_formats[i].platform_id);
+                                index_dict[platform_formats[i].platform_id] = i;
+                                platform_formats[i].plat_name = null;
+                                platform_formats[i].owner = null;
+                                platform_formats[i].is_public = null;
+                                platform_formats[i].privacy_password = null;
+                                platform_formats[i].cover_photo = null;
+                                platform_formats[i].pages = null;
+                            }
+                            console.log("PLATFORM FORMATS", platform_format_ids)
+                            api.post('platformFormat/getAllPlatformFormats', {}, {params: {platformFormat_ids: platform_format_ids}})
+                            .then(all_plat_data_ids => {
+                                var all_platforms = all_plat_data_ids.data;
+                                for(var i = 0; i < all_platforms.length; i++){
+                                    if (platform_format_ids.includes(all_platforms[i]._id)){
+                                        var specific_platform_format_id = all_platforms[i]._id;
+                                        var correct_index = index_dict[specific_platform_format_id];
+                                        platform_formats[correct_index].plat_name = all_platforms[i].plat_name;
+                                        platform_formats[correct_index].owner = all_platforms[i].owner;
+                                        platform_formats[correct_index].is_public = all_platforms[i].is_public;
+                                        platform_formats[correct_index].privacy_password = all_platforms[i].privacy_password;
+                                        platform_formats[correct_index].cover_photo = all_platforms[i].cover_photo;
+                                        platform_formats[correct_index].pages = all_platforms[i].pages;
+                                    }
+                                    
+                                }
+                                recent_platforms = platform_formats.slice()
+                                this.setState({recent_platforms: recent_platforms, paginate_rec_index: this.state.paginate_rec_index - 1});
+                            })
 
-                    for(var i = 0; i < all_platforms.length; i++){
-                        var specific_platform_format_id = all_platforms[i].platform_id;
-                        var correct_index = index_dict[specific_platform_format_id];
-                        console.log("GETTING ALL PLATFORM VALUES " + all_platforms[i])
-                        //platform_formats[correct_index] = all_platforms[i]
-                       // platform_formats[correct_index].platform_id = all_platforms[i].platform_id;
-                        platform_formats[correct_index].completed_pages = all_platforms[i].completed_pages;
-                        platform_formats[correct_index].is_favorited = all_platforms[i].is_favorited;
-                        platform_formats[correct_index].recently_played = all_platforms[i].recently_played;
-                    }
-                    //Platform_formats now holds all platforms that are published and haven't been created by the user
-
-                    //Filter platform_formats to get the first 5 recent (within a month recently played)
-                    recent_platforms = platform_formats.filter(function(platform) {
-                        var d = new Date();
-                        d.setMonth(d.getMonth() - 1);
-                        return platform.recently_played != null && Date.parse(platform.recently_played) >= d;
-                    }).sort((a, b) => (a.recently_played < b.recently_played) ? 1 : -1);
-                    this.setState({recent_platforms: recent_platforms, paginate_rec_index: this.state.paginate_rec_index -1});
-
-                    
-                })      
-            });
+                        })
         }
     }
 
     rightRecentPlatforms(){
         var recent_platforms
-            api.post('/platformFormat/'+ this.state.username, {index: this.state.paginate_rec_index + 1, max: 5})
-            .then(all_plat_ids => {
-                if (all_plat_ids.data.length === 0){
-                    return
-                }
-                //Received array of platformFormat Ids
-                var platform_formats = all_plat_ids.data;
-                var platform_format_ids = [];
-                var index_dict = {};
-                console.log("Print this if update is getting called")
-                for(var i = 0; i < platform_formats.length; i++){
-                    platform_format_ids.push(platform_formats[i]._id);
-                    index_dict[platform_formats[i]._id] = i;
-                    platform_formats[i].completed_pages = null;
-                    platform_formats[i].is_favorited = null;
-                    platform_formats[i].recently_played = null;
-                }
-                //Now query to receive the platform Data information for all ids in the array for that user
-                api.post('/platformData/getAllPlatforms', {platformFormat_ids: platform_format_ids, user_id: this.state.id})
-                .then(all_plat_data_ids => {
-                    // Received all platform data info for all platforms
-                    var all_platforms = all_plat_data_ids.data;
+            api.post('platformData/getRecentPlatforms', {user_id: this.state.id, index: this.state.paginate_rec_index + 1, max: 5})
+                        .then(all_plat_ids => {
+                            var platform_formats = all_plat_ids.data;
+                            var platform_format_ids = [];
+                            var index_dict = {};
+                            for (var i = 0; i < platform_formats.length; i++){
+                                platform_format_ids.push(platform_formats[i].platform_id);
+                                index_dict[platform_formats[i].platform_id] = i;
+                                platform_formats[i].plat_name = null;
+                                platform_formats[i].owner = null;
+                                platform_formats[i].is_public = null;
+                                platform_formats[i].privacy_password = null;
+                                platform_formats[i].cover_photo = null;
+                                platform_formats[i].pages = null;
+                            }
+                            console.log("PLATFORM FORMATS", platform_format_ids)
+                            api.post('platformFormat/getAllPlatformFormats', {}, {params: {platformFormat_ids: platform_format_ids}})
+                            .then(all_plat_data_ids => {
+                                var all_platforms = all_plat_data_ids.data;
+                                for(var i = 0; i < all_platforms.length; i++){
+                                    if (platform_format_ids.includes(all_platforms[i]._id)){
+                                        var specific_platform_format_id = all_platforms[i]._id;
+                                        var correct_index = index_dict[specific_platform_format_id];
+                                        platform_formats[correct_index].plat_name = all_platforms[i].plat_name;
+                                        platform_formats[correct_index].owner = all_platforms[i].owner;
+                                        platform_formats[correct_index].is_public = all_platforms[i].is_public;
+                                        platform_formats[correct_index].privacy_password = all_platforms[i].privacy_password;
+                                        platform_formats[correct_index].cover_photo = all_platforms[i].cover_photo;
+                                        platform_formats[correct_index].pages = all_platforms[i].pages;
+                                    }
+                                    
+                                }
+                                recent_platforms = platform_formats.slice()
+                                this.setState({recent_platforms: recent_platforms, paginate_rec_index: this.state.paginate_rec_index + 1});
+                            })
 
-                    for(var i = 0; i < all_platforms.length; i++){
-                        var specific_platform_format_id = all_platforms[i].platform_id;
-                        var correct_index = index_dict[specific_platform_format_id];
-                        console.log("GETTING ALL PLATFORM VALUES " + all_platforms[i])
-                        //platform_formats[correct_index] = all_platforms[i]
-                       // platform_formats[correct_index].platform_id = all_platforms[i].platform_id;
-                        platform_formats[correct_index].completed_pages = all_platforms[i].completed_pages;
-                        platform_formats[correct_index].is_favorited = all_platforms[i].is_favorited;
-                        platform_formats[correct_index].recently_played = all_platforms[i].recently_played;
-                    }
-                    //Platform_formats now holds all platforms that are published and haven't been created by the user
-
-                    //Filter platform_formats to get the first 5 recent (within a month recently played)
-                    recent_platforms = platform_formats.filter(function(platform) {
-                        var d = new Date();
-                        d.setMonth(d.getMonth() - 1);
-                        return platform.recently_played != null && Date.parse(platform.recently_played) >= d;
-                    }).sort((a, b) => (a.recently_played < b.recently_played) ? 1 : -1);
-                    this.setState({recent_platforms: recent_platforms, paginate_rec_index: this.state.paginate_rec_index +1});
-
-                    
-                })      
-            });
+                        })
     }
 
     clickUsePlatform(plat_id){
@@ -532,7 +549,7 @@ export default class Dashboard extends Component {
                         {this.state.recent_platforms.map((platform, index) => (
                             <Card className = "card_top itemsContainer">
                             <FontAwesomeIcon className="play_button" icon={faPlay} />
-                            <Card.Img variant="top" onClick={() => this.clickUsePlatform(platform._id)} src={platform.cover_photo} className = "card_image"/>
+                            <Card.Img variant="top" onClick={() => this.clickUsePlatform(platform.platform_id)} src={platform.cover_photo} className = "card_image"/>
                                 <Card.Body className = "card_body">
                                     <Card.Title className = "card_info">{platform.plat_name}</Card.Title>
                                     <Card.Text className = "card_info">
