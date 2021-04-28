@@ -47,7 +47,7 @@ export default class LoggedInNav extends Component {
         //Check if ID is in token and ID exists as a user
         const decoded = jwt_decode(token);
         var profile_pic;
-        api.get('/user/'+decoded._id)
+        api.get('/user/getSpecificUser/'+decoded._id)
           .then(response => {
             profile_pic = response.data.profile_picture;
             this.setState({loggedInUser:decoded.username, profile_picture: profile_pic})

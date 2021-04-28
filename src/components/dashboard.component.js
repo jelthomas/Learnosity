@@ -70,14 +70,14 @@ export default class Dashboard extends Component {
                 //Check if ID exists as a user
                 var all_platform_formats
                 var recent_platforms
-                api.get('/user/'+ decoded._id)
+                api.get('/user/getSpecificUser/'+ decoded._id)
                 .then(response => {
                     if (response) {
                         //Valid user
                         this.setState({username: response.data.username, id: decoded._id });
                     
                         //Get array of PlatformFormat Ids (where owner != username and is_published = true)
-                        api.post('/platformFormat/'+ response.data.username, {index: this.state.paginate_all_index})
+                        api.post('/platformFormat/getNonUserPlatforms/'+ response.data.username, {index: this.state.paginate_all_index})
                         .then(all_plat_ids => {
                             //Received array of platformFormat Ids
                             var platform_formats = all_plat_ids.data;
@@ -90,7 +90,6 @@ export default class Dashboard extends Component {
                                 platform_formats[i].is_favorited = null;
                                 platform_formats[i].recently_played = null;
                             }
-                            console.log("PLATFORM FORMAT IDS 123456", platform_format_ids)
                             //Now query to receive the platform Data information for all ids in the array for that user
                             api.post('/platformData/getAllPlatforms', {platformFormat_ids: platform_format_ids, user_id: decoded._id})
                             .then(all_plat_data_ids => {
@@ -110,80 +109,42 @@ export default class Dashboard extends Component {
                                 //Platform_formats now holds all platforms that are published and haven't been created by the user
 
                                 //Start of getting the recent platforms
-                        api.post('platformData/getRecentPlatforms', {user_id: decoded._id, index: this.state.paginate_rec_index, max: 5})
-                        .then(all_plat_ids => {
-                            var platform_formats = all_plat_ids.data;
-                            var platform_format_ids = [];
-                            var index_dict = {};
-                            for (var i = 0; i < platform_formats.length; i++){
-                                platform_format_ids.push(platform_formats[i].platform_id);
-                                index_dict[platform_formats[i].platform_id] = i;
-                                platform_formats[i].plat_name = null;
-                                platform_formats[i].owner = null;
-                                platform_formats[i].is_public = null;
-                                platform_formats[i].privacy_password = null;
-                                platform_formats[i].cover_photo = null;
-                                platform_formats[i].pages = null;
-                            }
-                            api.post('platformFormat/getAllPlatformFormats', {platformFormat_ids: platform_format_ids})
-                            .then(all_plat_data_ids => {
-                                var all_platforms = all_plat_data_ids.data;
-                                for(var i = 0; i < all_platforms.length; i++){
-                                    var specific_platform_format_id = all_platforms[i]._id;
-                                    var correct_index = index_dict[specific_platform_format_id];
-                                    platform_formats[correct_index].plat_name = all_platforms[i].plat_name;
-                                    platform_formats[correct_index].owner = all_platforms[i].owner;
-                                    platform_formats[correct_index].is_public = all_platforms[i].is_public;
-                                    platform_formats[correct_index].privacy_password = all_platforms[i].privacy_password;
-                                    platform_formats[correct_index].cover_photo = all_platforms[i].cover_photo;
-                                    platform_formats[correct_index].pages = all_platforms[i].pages;
-                                }
-                                recent_platforms = platform_formats.slice()
-                                this.setState({all_platforms: all_platform_formats, recent_platforms: recent_platforms, username: response.data.username, id: decoded._id});
-                            })
-
-                        })
+                                var recent_platforms
+                                api.post('platformData/getRecentPlatforms', {user_id: this.state.id, index: this.state.paginate_rec_index, max: 5})
+                                            .then(all_plat_ids => {
+                                                var platform_datas = all_plat_ids.data;
+                                                var platform_format_ids = [];
+                                                var index_dict = {};
+                                                for (var i = 0; i < platform_datas.length; i++){
+                                                    platform_format_ids.push(platform_datas[i].platform_id);
+                                                    index_dict[platform_datas[i].platform_id] = i;
+                                                    platform_datas[i].plat_name = null;
+                                                    platform_datas[i].owner = null;
+                                                    platform_datas[i].is_public = null;
+                                                    platform_datas[i].privacy_password = null;
+                                                    platform_datas[i].cover_photo = null;
+                                                    platform_datas[i].pages = null;
+                                                }
+                                                api.post('/platformFormat/returnFormats', {ids: platform_format_ids})
+                                                .then(all_plat_data_ids => {
+                                                    var all_platforms = all_plat_data_ids.data;
+                                                    for(var i = 0; i < all_platforms.length; i++){
+                                                        var specific_platform_format_id = all_platforms[i]._id;
+                                                        var correct_index = index_dict[specific_platform_format_id];
+                                                        platform_datas[correct_index].plat_name = all_platforms[i].plat_name;
+                                                        platform_datas[correct_index].owner = all_platforms[i].owner;
+                                                        platform_datas[correct_index].is_public = all_platforms[i].is_public;
+                                                        platform_datas[correct_index].privacy_password = all_platforms[i].privacy_password;
+                                                        platform_datas[correct_index].cover_photo = all_platforms[i].cover_photo;
+                                                        platform_datas[correct_index].pages = all_platforms[i].pages;  
+                                                    }
+                                                    recent_platforms = platform_datas.slice()
+                                                    this.setState({all_platforms: all_platform_formats, recent_platforms: recent_platforms, username: response.data.username, id: decoded._id});
+                                                })
+                    
+                                            })
+                        
                                 
-
-                        // api.post('/platformFormat/'+ response.data.username, {index: this.state.paginate_rec_index})
-                        // .then(all_plat_ids => {
-                        //     //Received array of platformFormat Ids
-                        //     var platform_formats = all_plat_ids.data;
-                        //     var platform_format_ids = [];
-                        //     var index_dict = {};
-                        //     for(var i = 0; i < platform_formats.length; i++){
-                        //         platform_format_ids.push(platform_formats[i]._id);
-                        //         index_dict[platform_formats[i]._id] = i;
-                        //         platform_formats[i].completed_pages = null;
-                        //         platform_formats[i].is_favorited = null;
-                        //         platform_formats[i].recently_played = null;
-                        //     }
-                        //     //Now query to receive the platform Data information for all ids in the array for that user
-                        //     api.post('/platformData/getAllPlatforms', {platformFormat_ids: platform_format_ids, user_id: decoded._id})
-                        //     .then(all_plat_data_ids => {
-                        //         // Received all platform data info for all platforms
-                        //         var all_platforms = all_plat_data_ids.data;
-
-                        //         for(var i = 0; i < all_platforms.length; i++){
-                        //             var specific_platform_format_id = all_platforms[i].platform_id;
-                        //             var correct_index = index_dict[specific_platform_format_id];
-                        //             platform_formats[correct_index].completed_pages = all_platforms[i].completed_pages;
-                        //             platform_formats[correct_index].is_favorited = all_platforms[i].is_favorited;
-                        //             platform_formats[correct_index].recently_played = all_platforms[i].recently_played;
-                        //         }
-                        //         //Platform_formats now holds all platforms that are published and haven't been created by the user
-
-                        //         //Filter platform_formats to get the first 5 recent (within a month recently played)
-                        //         recent_platforms = platform_formats.filter(function(platform) {
-                        //             var d = new Date();
-                        //             d.setMonth(d.getMonth() - 1);
-                        //             return platform.recently_played != null && Date.parse(platform.recently_played) >= d;
-                        //         }).sort((a, b) => (a.recently_played < b.recently_played) ? 1 : -1);
-                        //         console.log("PLATFORM FORMATS", recent_platforms)
-                        //         this.setState({all_platforms: all_platform_formats, get_all: false, recent_platforms: recent_platforms, username: response.data.username, id: decoded._id});                           
-                        //     })      
-                        // }); //End of then of first api call
-
                             })      
                         });
                     }
@@ -214,7 +175,16 @@ export default class Dashboard extends Component {
         recent_plats[index].is_favorited = !recent_plats[index].is_favorited;
 
         //Update value in the database using api call
-        api.post('/platformData/toggleFavorited', {id: recent_plats[index]._id, user_id: this.state.id, is_favorited: recent_plats[index].is_favorited})
+        console.log("RECENT PLATFORMS", recent_plats)
+        var all_platforms = this.state.all_platforms
+        var myID = recent_plats[index].platform_id;
+        for (var i = 0; i < all_platforms.length; i++){
+            if (all_platforms[i]._id === myID){
+                all_platforms[i].is_favorited = !all_platforms[i].is_favorited
+                break
+            }
+        }
+        api.post('/platformData/toggleFavorited', {id: recent_plats[index].platform_id, user_id: this.state.id, is_favorited: recent_plats[index].is_favorited})
         .then(recent_plats => console.log(recent_plats));
 
         this.setState({recent_platforms: recent_plats});
@@ -223,6 +193,7 @@ export default class Dashboard extends Component {
     toggleFavoriteAll(index){
         //Update is_favorited attribute for all platform at index
         var all_plats = this.state.all_platforms;
+        console.log("ALL PLATFORMS", all_plats)
 
         //Check if we need to create a new platform Data object
         var create_new = (all_plats[index].is_favorited === null);
@@ -262,12 +233,20 @@ export default class Dashboard extends Component {
                 console.log(error.response)
             });
         }
+        var recent_platforms = this.state.recent_platforms
+        var myID = all_plats[index]._id;
+        for (var i = 0; i < recent_platforms.length; i++){
+            if (recent_platforms[i].platform_id === myID){
+                recent_platforms[i].is_favorited = !recent_platforms[i].is_favorited
+                break
+            }
+        }
     }
 
     leftAllPlatforms(){
         if (this.state.paginate_all_index > 0){
             var all_platform_formats  
-            api.post('/platformFormat/'+ this.state.username, {index: this.state.paginate_all_index - 1, max: 20})
+            api.post('/platformFormat/getNonUserPlatforms/'+ this.state.username, {index: this.state.paginate_all_index - 1, max: 20})
             .then(all_plat_ids => {
                 //Received array of platformFormat Ids
                 var platform_formats = all_plat_ids.data;
@@ -311,7 +290,7 @@ export default class Dashboard extends Component {
 
     rightAllPlatforms(){
         var all_platform_formats
-        api.post('/platformFormat/'+ this.state.username, {index: this.state.paginate_all_index + 1, max: 20})
+        api.post('/platformFormat/getNonUserPlatforms/'+ this.state.username, {index: this.state.paginate_all_index + 1, max: 20})
             .then(all_plat_ids => {
                 if (all_plat_ids.data.length === 0){
                     return
@@ -360,37 +339,34 @@ export default class Dashboard extends Component {
             var recent_platforms
             api.post('platformData/getRecentPlatforms', {user_id: this.state.id, index: this.state.paginate_rec_index - 1, max: 5})
                         .then(all_plat_ids => {
-                            var platform_formats = all_plat_ids.data;
+                            var platform_datas = all_plat_ids.data;
                             var platform_format_ids = [];
                             var index_dict = {};
-                            for (var i = 0; i < platform_formats.length; i++){
-                                platform_format_ids.push(platform_formats[i].platform_id);
-                                index_dict[platform_formats[i].platform_id] = i;
-                                platform_formats[i].plat_name = null;
-                                platform_formats[i].owner = null;
-                                platform_formats[i].is_public = null;
-                                platform_formats[i].privacy_password = null;
-                                platform_formats[i].cover_photo = null;
-                                platform_formats[i].pages = null;
+                            for (var i = 0; i < platform_datas.length; i++){
+                                platform_format_ids.push(platform_datas[i].platform_id);
+                                index_dict[platform_datas[i].platform_id] = i;
+                                platform_datas[i].plat_name = null;
+                                platform_datas[i].owner = null;
+                                platform_datas[i].is_public = null;
+                                platform_datas[i].privacy_password = null;
+                                platform_datas[i].cover_photo = null;
+                                platform_datas[i].pages = null;
                             }
-                            console.log("PLATFORM FORMATS", platform_format_ids)
-                            api.post('platformFormat/getAllPlatformFormats', {}, {params: {platformFormat_ids: platform_format_ids}})
+                            api.post('/platformFormat/returnFormats', {ids: platform_format_ids})
                             .then(all_plat_data_ids => {
                                 var all_platforms = all_plat_data_ids.data;
+                                console.log("ALL PLATFORMS", all_platforms)
                                 for(var i = 0; i < all_platforms.length; i++){
-                                    if (platform_format_ids.includes(all_platforms[i]._id)){
-                                        var specific_platform_format_id = all_platforms[i]._id;
-                                        var correct_index = index_dict[specific_platform_format_id];
-                                        platform_formats[correct_index].plat_name = all_platforms[i].plat_name;
-                                        platform_formats[correct_index].owner = all_platforms[i].owner;
-                                        platform_formats[correct_index].is_public = all_platforms[i].is_public;
-                                        platform_formats[correct_index].privacy_password = all_platforms[i].privacy_password;
-                                        platform_formats[correct_index].cover_photo = all_platforms[i].cover_photo;
-                                        platform_formats[correct_index].pages = all_platforms[i].pages;
-                                    }
-                                    
+                                    var specific_platform_format_id = all_platforms[i]._id;
+                                    var correct_index = index_dict[specific_platform_format_id];
+                                    platform_datas[correct_index].plat_name = all_platforms[i].plat_name;
+                                    platform_datas[correct_index].owner = all_platforms[i].owner;
+                                    platform_datas[correct_index].is_public = all_platforms[i].is_public;
+                                    platform_datas[correct_index].privacy_password = all_platforms[i].privacy_password;
+                                    platform_datas[correct_index].cover_photo = all_platforms[i].cover_photo;
+                                    platform_datas[correct_index].pages = all_platforms[i].pages;  
                                 }
-                                recent_platforms = platform_formats.slice()
+                                recent_platforms = platform_datas.slice()
                                 this.setState({recent_platforms: recent_platforms, paginate_rec_index: this.state.paginate_rec_index - 1});
                             })
 
@@ -398,41 +374,45 @@ export default class Dashboard extends Component {
         }
     }
 
+    //TO DISABLE BUTTON, CHANGE MAX TO 6 AND SEE IF 6 ARE ACTUALLY RETURNED. IF 5 OR LESS, DISABLE BUTTON
     rightRecentPlatforms(){
         var recent_platforms
             api.post('platformData/getRecentPlatforms', {user_id: this.state.id, index: this.state.paginate_rec_index + 1, max: 5})
                         .then(all_plat_ids => {
-                            var platform_formats = all_plat_ids.data;
+                            if (all_plat_ids.data.length === 0){
+                                return
+                            }
+                            var platform_datas = all_plat_ids.data;
                             var platform_format_ids = [];
                             var index_dict = {};
-                            for (var i = 0; i < platform_formats.length; i++){
-                                platform_format_ids.push(platform_formats[i].platform_id);
-                                index_dict[platform_formats[i].platform_id] = i;
-                                platform_formats[i].plat_name = null;
-                                platform_formats[i].owner = null;
-                                platform_formats[i].is_public = null;
-                                platform_formats[i].privacy_password = null;
-                                platform_formats[i].cover_photo = null;
-                                platform_formats[i].pages = null;
+                            for (var i = 0; i < platform_datas.length; i++){
+                                platform_format_ids.push(platform_datas[i].platform_id);
+                                index_dict[platform_datas[i].platform_id] = i;
+                                platform_datas[i].plat_name = null;
+                                platform_datas[i].owner = null;
+                                platform_datas[i].is_public = null;
+                                platform_datas[i].privacy_password = null;
+                                platform_datas[i].cover_photo = null;
+                                platform_datas[i].pages = null;
                             }
-                            console.log("PLATFORM FORMATS", platform_format_ids)
-                            api.post('platformFormat/getAllPlatformFormats', {}, {params: {platformFormat_ids: platform_format_ids}})
+                            api.post('/platformFormat/returnFormats', {ids: platform_format_ids})
                             .then(all_plat_data_ids => {
                                 var all_platforms = all_plat_data_ids.data;
+                                console.log("ALL PLATFORMS", all_platforms)
                                 for(var i = 0; i < all_platforms.length; i++){
-                                    if (platform_format_ids.includes(all_platforms[i]._id)){
-                                        var specific_platform_format_id = all_platforms[i]._id;
-                                        var correct_index = index_dict[specific_platform_format_id];
-                                        platform_formats[correct_index].plat_name = all_platforms[i].plat_name;
-                                        platform_formats[correct_index].owner = all_platforms[i].owner;
-                                        platform_formats[correct_index].is_public = all_platforms[i].is_public;
-                                        platform_formats[correct_index].privacy_password = all_platforms[i].privacy_password;
-                                        platform_formats[correct_index].cover_photo = all_platforms[i].cover_photo;
-                                        platform_formats[correct_index].pages = all_platforms[i].pages;
-                                    }
+                                    var specific_platform_format_id = all_platforms[i]._id;
+                                    var correct_index = index_dict[specific_platform_format_id];
+                                    platform_datas[correct_index].plat_name = all_platforms[i].plat_name;
+                                    platform_datas[correct_index].owner = all_platforms[i].owner;
+                                    platform_datas[correct_index].is_public = all_platforms[i].is_public;
+                                    platform_datas[correct_index].privacy_password = all_platforms[i].privacy_password;
+                                    platform_datas[correct_index].cover_photo = all_platforms[i].cover_photo;
+                                    platform_datas[correct_index].pages = all_platforms[i].pages;
+                                    
                                     
                                 }
-                                recent_platforms = platform_formats.slice()
+                                console.log("PLATFORM DATAS", platform_datas)
+                                recent_platforms = platform_datas.slice()
                                 this.setState({recent_platforms: recent_platforms, paginate_rec_index: this.state.paginate_rec_index + 1});
                             })
 
@@ -607,7 +587,7 @@ export default class Dashboard extends Component {
                                         <Card.Text className = "card_info">
                                         {platform.owner}
                                         </Card.Text>
-                                        <div style={{width: "fit-content"}} onClick={() => this.toggleFavoriteRecent(index)}>
+                                        <div style={{width: "fit-content"}} onClick={() => this.toggleFavoriteAll(index)}>
                                             <FavoriteButton isfavorited={platform.is_favorited}/>
                                         </div>
                                     </Card.Body>

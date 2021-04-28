@@ -64,7 +64,7 @@ export default class UsePlatform extends Component {
             if (decoded._id){
                 //ID exists in token
                 //Check if ID exists as a user
-                api.get('/user/'+ decoded._id)
+                api.get('/user/getSpecificUser/'+ decoded._id)
                 .then(response => {
                     if (response) {
                         //Valid user
@@ -73,7 +73,7 @@ export default class UsePlatform extends Component {
                         //Use platform format ID to grab all data
                         var platform_format_id = this.props.location.pathname.substring(13);
 
-                        api.get('platformFormat/getPages/'+platform_format_id)
+                        api.get('/platformFormat/getPages/'+platform_format_id)
                         .then(response => {
                             //Successfully received pages_array
                             var pages_array = response.data.pages;
