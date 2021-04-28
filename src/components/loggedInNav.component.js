@@ -14,11 +14,44 @@ export default class LoggedInNav extends Component {
     super(props);
 
     this.logOut = this.logOut.bind(this);
+    this.createPlatform = this.createPlatform.bind(this);
 
     this.state = {
         loggedInUser: '',
         profile_picture: ''
     }
+  }
+
+  createPlatform()
+  {
+      console.log("CREATE PLATFORM CLICKED")
+
+      const createPlatFormat = {
+          plat_name : "Untitled",
+          owner : this.state.loggedInUser,
+          is_public : true,
+          privacy_password :"",
+          cover_photo :"",
+          pages : [],
+          is_published : false
+      }
+
+      api.post("/platformFormat/add",createPlatFormat)
+      .then(response => {
+
+        var platID = response.data._id
+
+        console.log(response.data._id)
+
+        this.props.props.history.push('/editPlatform/'+platID)
+      })
+      .catch(error => {
+          console.log(error.response)
+      });
+      
+
+
+      // this.props.props.history.push('/editPlatform/')
   }
 
   logOut()
@@ -79,7 +112,7 @@ export default class LoggedInNav extends Component {
         <ul class="navbar-nav ml-auto">
           <div style={{display:'flex'}}>
             <li className="navbar-item">
-              <Link to="/dashboard" className="nav-link navbarDropdown" style={{padding: '5px',color:'#00db00',fontFamily:"Quando",fontSize:'25px', paddingRight: "55px"}}>Create Platform</Link>
+              <Link onClick={this.createPlatform} className="nav-link navbarDropdown" style={{padding: '5px',color:'#00db00',fontFamily:"Quando",fontSize:'25px', paddingRight: "55px"}}>Create Platform</Link>
             </li>
             <li className="navbar-item">
               <Link to ="/dashboard" className="nav-link navbarDropdown"  style={{padding: '5px',color:'#00db00',fontFamily:"Quando",fontSize:'25px', paddingRight: "55px"}}  >Leaderboard</Link>
