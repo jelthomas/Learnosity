@@ -35,11 +35,48 @@
 }
 
 
-/* .btn-primary:not(:disabled):not(.disabled).active, .btn-primary:not(:disabled):not(.disabled):active, .show>.btn-primary.dropdown-toggle {
-  color: #fff;
-  background-color: rgb(0, 219, 0);
-  border-color: rgb(0, 219, 0);
-} */
+.matching_outer{
+  display: flex;
+  background: white;
+  width: 30%;
+  margin: auto;
+  padding: 2% 2% 0 2%;
+  border-radius: 15px;
+  margin-top: 2%;
+}
+
+.matching_key{
+  background: white;
+  border-radius: 10px;
+  padding: 5px;
+  width: 150px;
+  border-style: solid;
+  border-width: 2px;
+  text-align: center;
+}
+
+.matching_all_values{
+  display: flex;
+  margin: auto;
+  width: max-content;
+  margin-top: 2%;
+}
+
+.matching_each_value{
+  background: white;
+  border-radius: 10px;
+  padding: 5px;
+  margin-left: 50px;
+  border-style: solid;
+  border-width: 2px;
+  text-align: center;
+  width: max-content;
+}
+
+.key_blank_wrap{
+  display: flex;
+  margin-bottom: 9%;
+}
 
 .continue_correct {
   position: fixed;
@@ -208,7 +245,6 @@
   color: black;
   font-size: 40px;
   text-align: center;
-  padding-top: 35px;
 }
 
 .mc_choices {
