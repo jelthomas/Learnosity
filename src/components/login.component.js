@@ -45,7 +45,7 @@ export default class Login extends Component {
             if (decoded._id){
                 //ID exists in token
                 //Check if ID exists as a user
-                api.get('/user/'+ decoded._id)
+                api.get('/user/getSpecificUser/'+ decoded._id)
                 .then(response => {
                     if (response) {
                         //Valid user

@@ -46,7 +46,7 @@ export default class Home extends Component {
                 //Check if ID exists as a user
                 console.log("ID exists");
                 console.log(decoded);
-                api.get('/user/'+ decoded._id)
+                api.get('/user/getSpecificUser/'+ decoded._id)
                 .then(response => {
                     console.log(response.data);
                     if (response) {
