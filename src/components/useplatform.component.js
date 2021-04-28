@@ -4,6 +4,9 @@ import jwt from 'jsonwebtoken';
 import { Link } from 'react-router-dom';
 import jwt_decode from 'jwt-decode';
 import ProgressBar from 'react-bootstrap/ProgressBar'
+import {DragDropContext} from 'react-beautiful-dnd'
+import {Droppable} from 'react-beautiful-dnd'
+import {Draggable} from 'react-beautiful-dnd'
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFlag, faCheckCircle, faTimesCircle, faAsterisk } from "@fortawesome/free-regular-svg-icons";
 require('dotenv').config();
@@ -17,7 +20,8 @@ export default class UsePlatform extends Component {
         this.submitMC = this.submitMC.bind(this);
         this.submitFIB = this.submitFIB.bind(this);
         this.removeClass = this.removeClass.bind(this);
-        
+        this.handleOnDragEnd = this.handleOnDragEnd.bind(this);
+
         this.state = {
             user_id: '',
             username: '',
@@ -122,9 +126,15 @@ export default class UsePlatform extends Component {
                                             curr = index + 1;
                                         }
                                         segmented.push(prompt.substring(curr));
-                                        console.log(segmented);
                                         //Have correctly segmented array (even index ==> prompt , odd index ==> blank)
                                     
+                                    }
+                                    var matching_keys;
+                                    var matching_values;
+                                    if(filtered_page_info.length !== 0 && current_page.type === "Matching"){
+                                        var matching_pairs = current_page.matching_pairs;
+                                        matching_keys = Object.keys(matching_pairs);
+                                        matching_values = Object.values(matching_pairs);
                                     }
                                     this.setState({current_mc_array: arr, segmented: segmented, filterPages: filtered_page_info, pageIndex: 0, currentPage: current_page, progressVal:((page_info_arr.length - filtered_page_info.length)/page_info_arr.length) *100, progressIncrement:(1/page_info_arr.length) *100, completedPlatform: completedPlat})
                                 })
@@ -226,8 +236,6 @@ export default class UsePlatform extends Component {
                         curr = index + 1;
                     }
                     segmented.push(prompt.substring(curr));
-
-                    console.log(segmented);
                 }
             }
         }
@@ -282,7 +290,6 @@ export default class UsePlatform extends Component {
     }
 
     submitFIB(){
-        console.log("Submitted");
         var segmented = this.state.segmented;
         var all_inputs = [];
         var not_valid = false;
@@ -355,10 +362,14 @@ export default class UsePlatform extends Component {
         this.setState({submittedAnswer: true, submitted_fib: submitted_fib})
     }
 
+    handleOnDragEnd(result){
+        console.log(result);
+    }
+
     render() {
         
         return (
-            <div style={{height: "100vh", background: "#edd2ae", verticalAlign:"middle"}}>
+            <div style={{height: "100vh", background: "#edd2ae", verticalAlign:"middle", overflowY:"auto"}}>
                 <ProgressBar style={{background: "rgb(139 139 139)"}} now={this.state.progressVal} />
                 <div>
                     <button onClick={() => this.props.history.push(`/dashboard`)} className="x_button">X</button>
@@ -510,10 +521,52 @@ export default class UsePlatform extends Component {
                                     
                                     
                                 :
-                                    (this.state.currentPage.type === "Matching Pair"
+                                    (this.state.currentPage.type === "Matching"
                                     ?
                                         <div>
-                                            <p style={{color: "white"}}>Matching Pair</p>
+                                            <p className="mc_prompt" >{this.state.currentPage.prompt}</p>
+                                            <DragDropContext onDragEnd={() => this.handleOnDragEnd()}>
+                                                <Droppable droppableId="droppable_area">
+                                                    {(provided) => (
+                                                        <div {...provided.droppableProps} ref={provided.innerRef}>
+                                                            <div className = "matching_outer">
+                                                                <div style={{width:"100%"}}>
+                                                                    {
+                                                                    (Object.keys(this.state.currentPage.matching_pairs).map((key, index) =>
+                                                                        <div className = "key_blank_wrap">
+                                                                            <div className = "matching_key" id = {"matching_key" + {index}}>
+                                                                                {key}
+                                                                            </div>
+                                                                        
+                                                                            <div className = "matching_key" style={{background: "grey", marginLeft:"auto"}} id = {"matching_blank" + {index}}>
+                                                                            </div>
+                                                                        </div>
+                                                                    ))
+                                                                    }
+                                                                </div>
+                                                            </div>
+                                                
+                                                            <div className = "matching_all_values">
+                                                                {
+                                                                    (Object.values(this.state.currentPage.matching_pairs).map((value, index) =>
+                                                                        <Draggable key = {index} draggableId={value} index={index}>
+                                                                            {(provided) => (
+                                                                                <div className = "matching_each_value" id = {"matching_value" + {index}} {...provided.draggableProps} ref={provided.innerRef} {...provided.dragHandleProps}>
+                                                                                    {value}
+                                                                                </div>
+                                                                            )}
+                                                                        </Draggable>
+                                                                    ))
+                                                                }    
+                                                            </div>
+                                                            {provided.placeholder}
+                                                        </div>
+                                                )}
+                                                </Droppable>
+                                            </DragDropContext>
+                                            <div style={{margin: "auto", textAlign: "center", marginTop: "2%"}}>
+                                                <button style={{padding: "10px"}} className="continue_button_correct" onClick={""} >Submit</button>
+                                            </div>
                                         </div>
                                     :
                                         (this.state.currentPage.type === "Timer"
