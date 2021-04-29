@@ -3,12 +3,12 @@ import {api} from "../axios_api.js";
 import jwt from 'jsonwebtoken';
 import { Link } from 'react-router-dom';
 import jwt_decode from 'jwt-decode';
-import ProgressBar from 'react-bootstrap/ProgressBar'
-import {DragDropContext} from 'react-beautiful-dnd'
-import {Droppable} from 'react-beautiful-dnd'
-import {Draggable} from 'react-beautiful-dnd'
+import ProgressBar from 'react-bootstrap/ProgressBar';
+import {DragDropContext} from 'react-beautiful-dnd';
+import {Droppable} from 'react-beautiful-dnd';
+import {Draggable} from 'react-beautiful-dnd';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFlag, faCheckCircle, faTimesCircle, faAsterisk } from "@fortawesome/free-regular-svg-icons";
+import { faFlag, faCheckCircle, faTimesCircle } from "@fortawesome/free-regular-svg-icons";
 require('dotenv').config();
 
 export default class UsePlatform extends Component {
@@ -21,6 +21,7 @@ export default class UsePlatform extends Component {
         this.submitFIB = this.submitFIB.bind(this);
         this.removeClass = this.removeClass.bind(this);
         this.handleOnDragEnd = this.handleOnDragEnd.bind(this);
+        this.submitMatching = this.submitMatching.bind(this);
 
         this.state = {
             user_id: '',
@@ -38,7 +39,9 @@ export default class UsePlatform extends Component {
             current_mc_array: [],
             submitted_answer_bool: false,
             submitted_fib_correct: '',
-            segmented: []
+            segmented: [],
+            matching_pairs_values: [],
+            matching_pairs_answered: []
         }
     }
 
@@ -129,14 +132,14 @@ export default class UsePlatform extends Component {
                                         //Have correctly segmented array (even index ==> prompt , odd index ==> blank)
                                     
                                     }
-                                    var matching_keys;
                                     var matching_values;
+                                    var matching_pairs_answered;
                                     if(filtered_page_info.length !== 0 && current_page.type === "Matching"){
                                         var matching_pairs = current_page.matching_pairs;
-                                        matching_keys = Object.keys(matching_pairs);
                                         matching_values = Object.values(matching_pairs);
+                                        matching_pairs_answered = new Array(matching_values.length).fill("");
                                     }
-                                    this.setState({current_mc_array: arr, segmented: segmented, filterPages: filtered_page_info, pageIndex: 0, currentPage: current_page, progressVal:((page_info_arr.length - filtered_page_info.length)/page_info_arr.length) *100, progressIncrement:(1/page_info_arr.length) *100, completedPlatform: completedPlat})
+                                    this.setState({matching_pairs_answered: matching_pairs_answered, matching_pairs_values: matching_values, current_mc_array: arr, segmented: segmented, filterPages: filtered_page_info, pageIndex: 0, currentPage: current_page, progressVal:((page_info_arr.length - filtered_page_info.length)/page_info_arr.length) *100, progressIncrement:(1/page_info_arr.length) *100, completedPlatform: completedPlat})
                                 })
                             })
                         })
@@ -196,10 +199,28 @@ export default class UsePlatform extends Component {
                 wrongs[i].style.display = "none";
             }
         }
+        else if(current_page.type === "Matching"){
+            document.getElementsByClassName("continue_button_correct")[0].style.display = 'inline';
+            document.getElementById("matching_bottom").style.marginTop = '2%';
+            
+            var checks = document.getElementsByClassName("check_mark");
+            for(let i = 0; i < checks.length; i++){
+                checks[i].style.display = "none";
+            }
+            var wrongs = document.getElementsByClassName("wrong_mark");
+            for(let i = 0; i < wrongs.length; i++){
+                wrongs[i].style.display = "none";
+            }
+            for(let i = 0; i < this.state.matching_pairs_answered.length; i++){
+                document.getElementById("matching_correct"+i).style.display = 'none';
+            }
+        }
     
         var completed_plat = false;
         var current_mc_array = [];
         var segmented = [];
+        var matching_values;
+        var matching_pairs_answered;
         if(this.state.pageIndex + 1 >= this.state.filterPages.length){
             completed_plat = true;
             //set the platformData is_completed to true in database
@@ -222,9 +243,8 @@ export default class UsePlatform extends Component {
                 current_mc_array = this.shuffleArray(current_mc_array);
             }
 
-
-            if(current_page.type === "Fill in the Blank"){
-                if(this.state.filterPages.length !== 0 && current_page.type === "Fill in the Blank"){
+            else if(current_page.type === "Fill in the Blank"){
+                if(this.state.filterPages.length !== 0){
                     var prompt = current_page.prompt;
                     var blank_maps = current_page.fill_in_the_blank_answers;
                     var map_keys = Object.keys(blank_maps).sort();
@@ -238,10 +258,17 @@ export default class UsePlatform extends Component {
                     segmented.push(prompt.substring(curr));
                 }
             }
+            else if(current_page.type === "Matching"){
+                if(this.state.filterPages.length !== 0){
+                    var matching_pairs = current_page.matching_pairs;
+                    matching_values = Object.values(matching_pairs);
+                    matching_pairs_answered = new Array(matching_values.length).fill("");
+                }
+            }
         }
 
 
-        this.setState({shouldShuffle: true, current_mc_array: current_mc_array, progressVal:this.state.progressVal + this.state.progressIncrement, pageIndex: this.state.pageIndex + 1, completedPlatform: completed_plat, currentPage: current_page,segmented:segmented,submittedAnswer:false,submitted_fib:""});
+        this.setState({matching_pairs_answered: matching_pairs_answered, matching_pairs_values: matching_values, shouldShuffle: true, current_mc_array: current_mc_array, progressVal:this.state.progressVal + this.state.progressIncrement, pageIndex: this.state.pageIndex + 1, completedPlatform: completed_plat, currentPage: current_page,segmented:segmented,submittedAnswer:false,submitted_fib:""});
     }
 
     shuffleArray(array) {
@@ -362,8 +389,141 @@ export default class UsePlatform extends Component {
         this.setState({submittedAnswer: true, submitted_fib: submitted_fib})
     }
 
+    submitMatching(){
+        var users_answers = this.state.matching_pairs_answered;
+        var not_valid = false;
+        for(let i = 0; i < users_answers.length;i++){
+            if(users_answers[i] === ""){
+                let id = "ast_matching"+ i;
+                document.getElementById(id).style.display = 'inline';
+                document.getElementById(id).style.marginLeft = '375%';
+                document.getElementById(id).style.maxHeight = '22px';
+                document.getElementById("matching_required").style.display = 'block';
+                not_valid = true;
+            }
+        }
+        if(not_valid){
+            return;
+        }
+        document.getElementsByClassName("continue_button_correct")[0].style.display = 'none';
+        var map = this.state.currentPage.matching_pairs;
+        var keys = Object.keys(map);
+        var users_correct = [];
+        for(let i = 0; i < users_answers.length; i++){
+            users_correct.push(map[keys[i]] === users_answers[i]);
+        }
+   
+        //Users_correct has array of True/False of their answers
+        var total_correct = 0;
+        for(let i = 0; i < users_correct.length; i++){
+            var id;
+            if(users_correct[i]){
+                //Display correct checkmark
+                id = "check_matching"+(i);
+                total_correct += 1;
+                document.getElementById(id).style.display = 'inline';
+                document.getElementById(id).style.marginLeft = '375%';
+            }
+            else{
+                //Display incorrect mark
+                id = "wrong_matching"+(i);
+                document.getElementById(id).style.display = 'inline';
+                //Display correct answer
+                document.getElementById("matching_correct"+i).style.display = 'block';
+            }
+        }
+        var submitted_fib = '';
+        if(total_correct === users_correct.length){
+            submitted_fib = 'correct';
+        }
+        else if(total_correct / users_correct.length >= 0.5){
+            submitted_fib = 'almost';
+        }
+        else{
+            submitted_fib = 'incorrect';
+        }
+
+        document.getElementById("matching_bottom").style.marginTop = '10%';
+
+        //Update completed_pages
+        const info = {
+            user_id : this.state.user_id,
+            platform_id : this.state.plat_id,
+            page_id : this.state.currentPage._id,
+        }
+
+
+        api.post('/platformData/updateCompletedPage/',info)
+        
+        this.setState({submittedAnswer: true, submitted_fib: submitted_fib})
+    }
+
     handleOnDragEnd(result){
-        console.log(result);
+        
+        if(!result.destination){
+            return;
+        }
+        var values_arr;
+        var answered_arr;
+        var source;
+        if(result.source.droppableId !== result.destination.droppableId){
+            //User is matching a pair
+            if(result.source.droppableId === "all_values"){
+                //Dragging from right list to answered list to one of the answered droppables
+                //Make copy of the right side array of values
+                values_arr = this.state.matching_pairs_values.slice();
+                //Make copy of the left side array of values
+                answered_arr = this.state.matching_pairs_answered.slice();
+                //Remove element from right side array at source.index
+                var [removed] = values_arr.splice(result.source.index, 1);
+                //If there is a value in the answered_arr already, swap the source and destination
+                var destination = answered_arr[parseInt(result.destination.droppableId.slice(-1))]
+                if(destination !== ''){
+                    values_arr.splice(result.source.index, 0, destination);
+                }
+                //Set left array at index of droppableID to removed element
+                answered_arr[parseInt(result.destination.droppableId.slice(-1))] = removed;
+                //Set state for updating both arrays
+
+                //Remove required message and asterisks
+                let id = "ast_matching"+ result.destination.droppableId.slice(-1);
+                document.getElementById(id).style.display = 'none';
+                document.getElementById("matching_required").style.display = 'none';
+
+                this.setState({matching_pairs_values: values_arr, matching_pairs_answered: answered_arr});
+            }
+            else if(result.destination.droppableId === "all_values"){
+                //Dragging from one of the answered droppables to the right most list
+                values_arr = this.state.matching_pairs_values.slice();
+                answered_arr = this.state.matching_pairs_answered.slice();
+                //Set source as the element that is being dragged from left to right
+                source = answered_arr[parseInt(result.source.droppableId.slice(-1))];
+                //Remove element from left array
+                answered_arr[parseInt(result.source.droppableId.slice(-1))] = "";
+                //Add element to right array at correct index
+                values_arr.splice(result.destination.index, 0, source);
+                this.setState({matching_pairs_values: values_arr, matching_pairs_answered: answered_arr});
+            }
+            else{
+                //Dragging from one of the left droppables to another left droppable
+                answered_arr = this.state.matching_pairs_answered.slice();
+                source = answered_arr[parseInt(result.source.droppableId.slice(-1))];
+                destination = answered_arr[parseInt(result.destination.droppableId.slice(-1))];
+                //Simply swap the two in the answered_arr
+                answered_arr[parseInt(result.source.droppableId.slice(-1))] = destination;
+                answered_arr[parseInt(result.destination.droppableId.slice(-1))] = source;
+                this.setState({matching_pairs_answered: answered_arr});
+            }
+        }
+        else{
+            //User is rearranging inside of the same area
+            if(result.destination.droppableId === "all_values"){
+                var copied_vals = this.state.matching_pairs_values.slice();
+                var [removed] = copied_vals.splice(result.source.index, 1);
+                copied_vals.splice(result.destination.index, 0, removed);
+                this.setState({matching_pairs_values: copied_vals});
+            }
+        }
     }
 
     render() {
@@ -525,48 +685,139 @@ export default class UsePlatform extends Component {
                                     ?
                                         <div>
                                             <p className="mc_prompt" >{this.state.currentPage.prompt}</p>
-                                            <DragDropContext onDragEnd={() => this.handleOnDragEnd()}>
-                                                <Droppable droppableId="droppable_area">
-                                                    {(provided) => (
-                                                        <div {...provided.droppableProps} ref={provided.innerRef}>
-                                                            <div className = "matching_outer">
-                                                                <div style={{width:"100%"}}>
-                                                                    {
-                                                                    (Object.keys(this.state.currentPage.matching_pairs).map((key, index) =>
-                                                                        <div className = "key_blank_wrap">
-                                                                            <div className = "matching_key" id = {"matching_key" + {index}}>
-                                                                                {key}
-                                                                            </div>
-                                                                        
-                                                                            <div className = "matching_key" style={{background: "grey", marginLeft:"auto"}} id = {"matching_blank" + {index}}>
-                                                                            </div>
-                                                                        </div>
-                                                                    ))
-                                                                    }
+                                            <p id="matching_required" style={{textAlign: "center", color: "red", display: "none", fontSize: "22px"}}>Make sure you match every pair before submitting!</p>
+                                            <DragDropContext onDragEnd={(result) => this.handleOnDragEnd(result)}>
+                                            <div style={{display:"flex"}}>
+                                                <div className = "matching_outer">
+                                                    <div style={{width:"100%"}}>
+                                                        {
+                                                        (Object.keys(this.state.currentPage.matching_pairs).map((key, index) =>
+                                                            <div className = "key_blank_wrap">
+                                                                <div className = "matching_key" id = {"matching_key" + {index}}>
+                                                                    {key}
                                                                 </div>
+                                                                <div style={{margin: "auto", display: "flex", placeItems: "center"}}>
+                                                                    <div id = {"matching_correct"+index} style={{display: "none"}} className = "matching_correct_answer">
+                                                                        {this.state.currentPage.matching_pairs[key]}
+                                                                    </div>
+                                                                    <FontAwesomeIcon id={"check_matching"+index} className="check_mark" icon={faCheckCircle}/><FontAwesomeIcon id={"wrong_matching"+index} className="wrong_mark" icon={faTimesCircle}/><p id={"ast_matching"+index} className="asterisk">*</p>
+                                                                </div>
+                                                                <Droppable droppableId={"blank_match"+ index} key={"blank_match"+ index}>
+                                                                    {(provided, snapshot) => {
+                                                                        return (
+                                                                            <div {...provided.droppableProps} ref={provided.innerRef} className = "matching_key" style={{background: "grey", marginLeft:"auto"}}>
+                                                                                <div>
+                                                                                        {(this.state.matching_pairs_answered[index] === ""
+                                                                                        ?
+                                                                                            <p></p>
+                                                                                        :
+                                                                                        
+                                                                                            <Draggable key={"blank_drag"+ index} draggableId={"blank_drag"+ index} index = {index}>
+                                                                                                {(provided, snapshot) => {
+                                                                                                    return (
+                                                                                                    <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} className = "matching_each_value_temp" id = {"matching_blank" + {index}}>
+                                                                                                        {this.state.matching_pairs_answered[index]}
+                                                                                                        {provided.placeholder}
+                                                                                                    </div>
+                                                                                                )
+                                                                                                }}
+                                                                                            </Draggable>
+                                                                                        
+                                                                                        )}
+                                                                                </div> 
+                                                                                {provided.placeholder}
+                                                                            </div>
+                                                                        )}}
+                                                                </Droppable>
                                                             </div>
-                                                
-                                                            <div className = "matching_all_values">
-                                                                {
-                                                                    (Object.values(this.state.currentPage.matching_pairs).map((value, index) =>
-                                                                        <Draggable key = {index} draggableId={value} index={index}>
-                                                                            {(provided) => (
-                                                                                <div className = "matching_each_value" id = {"matching_value" + {index}} {...provided.draggableProps} ref={provided.innerRef} {...provided.dragHandleProps}>
-                                                                                    {value}
-                                                                                </div>
-                                                                            )}
-                                                                        </Draggable>
-                                                                    ))
-                                                                }    
-                                                            </div>
-                                                            {provided.placeholder}
-                                                        </div>
-                                                )}
-                                                </Droppable>
-                                            </DragDropContext>
-                                            <div style={{margin: "auto", textAlign: "center", marginTop: "2%"}}>
-                                                <button style={{padding: "10px"}} className="continue_button_correct" onClick={""} >Submit</button>
+                                                        ))
+                                                        }
+                                                    </div>
+                                                </div>
+                                                <div className = "matching_values_outer">
+                                                    <Droppable droppableId={"all_values"} key={"all_values"}>
+                                                    {(provided, snapshot) => {
+                                                            return (
+                                                                <div {...provided.droppableProps} ref={provided.innerRef} style={{width:"100%"}}> 
+                                                                    {
+                                                                        (this.state.matching_pairs_values.map((value, index) =>
+                                                                            <Draggable key={"key_id"+ index} draggableId={"key_id"+ index} index = {index}>
+                                                                                {(provided, snapshot) => {
+                                                                                    return (
+                                                                                    <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
+                                                                                        <div className = "matching_each_value" id = {"matching_value" + {index}}>
+                                                                                            {value}
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    )
+                                                                                }}
+                                                                            </Draggable>
+                                                                        ))
+                                                                    }  
+                                                                    {provided.placeholder}
+                                                                </div>
+                                                            )}
+                                                                }
+                                                    </Droppable>
+                                                </div>
                                             </div>
+                                            </DragDropContext>
+                                            <div id="matching_bottom" style={{margin: "auto", textAlign: "center", marginTop: "2%"}}>
+                                                <button style={{padding: "10px"}} className="continue_button_correct" onClick={() => this.submitMatching()} >Submit</button>
+                                            </div>
+
+                                            {
+                                                (this.state.submittedAnswer === false
+                                                ?
+                                                    <p></p>
+                                                :
+                                                    (this.state.submitted_fib === 'incorrect'
+                                                    ?
+                                                        <div className = "continue_incorrect">
+                                                            <div>
+                                                                <button className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
+                                                            </div>
+                                                            <div className = "correct">
+                                                                Incorrect!
+                                                            </div>
+                                                            <div>
+                                                                <button className="continue_button_incorrect" onClick={() => this.continueButton()}>Continue</button>
+                                                            </div>
+                                                        </div>
+                                                    :
+
+                                                        (this.state.submitted_fib === 'almost'
+                                                    ?
+                                                        <div className = "continue_incorrect">
+                                                            <div>
+                                                                <button className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
+                                                            </div>
+                                                            <div className = "correct">
+                                                                You Almost Had It!
+                                                            </div>
+                                                            <div>
+                                                                <button className="continue_button_incorrect" onClick={() => this.continueButton()}>Continue</button>
+                                                            </div>
+                                                        </div>
+                                                    :
+
+                                                    
+                                                        <div className = "continue_correct">
+                                                            <div>
+                                                            <button className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
+                                                            </div>
+                                                            <div className = "correct">
+                                                                You Nailed It!
+                                                            </div>
+                                                            <div>
+                                                                <button className="continue_button_correct" onClick={() => this.continueButton()}>Continue</button>
+                                                            </div>
+                                                        </div>
+                                                )
+                                                )
+                                            )
+                                            }
+
                                         </div>
                                     :
                                         (this.state.currentPage.type === "Timer"
