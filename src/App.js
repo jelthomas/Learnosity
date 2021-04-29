@@ -1,11 +1,9 @@
 import React from 'react';
 import {BrowserRouter as Router, Route} from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
-
 import Home from "./components/home.component";
 import SignUp from "./components/signup.component";
 import Login from "./components/login.component";
-// import Navbar from "./components/navbar.component";
 import ForgotPassword from "./components/forgot_password.component";
 import Dashboard from "./components/dashboard.component";
 import UsePlatform from "./components/useplatform.component"

@@ -38,8 +38,26 @@
 .matching_outer{
   display: flex;
   background: white;
-  width: 30%;
+  width: 35%;
+  padding: 2% 2% 0 2%;
+  border-radius: 15px;
+  margin-top: 2%;
+  margin-left: 27%;
+}
+
+.matching_correct_answer{
+  height: fit-content;
+  max-width: 90px;
+  min-width: 90px;
   margin: auto;
+  overflow-x: auto;
+  color: rgb(0, 219, 0);
+}
+
+.matching_values_outer{
+  display: flex;
+  background: transparent;
+  width: 30%;
   padding: 2% 2% 0 2%;
   border-radius: 15px;
   margin-top: 2%;
@@ -71,6 +89,21 @@
   border-width: 2px;
   text-align: center;
   width: max-content;
+  margin-bottom: 9%;
+}
+
+.matching_each_value_temp{
+  background: white;
+  border-radius: 10px;
+  padding: 5px;
+  margin-left: 50px;
+  border-style: solid;
+  border-width: 2px;
+  text-align: center;
+  width: max-content;
+  margin-bottom: 9%;
+  margin: auto;
+  max-width: 135px;
 }
 
 .key_blank_wrap{
