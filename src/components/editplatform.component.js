@@ -141,6 +141,7 @@ export default class EditPlatform extends Component {
             api.post('/platformFormat/update_cover_photo',updateCover)
             .then(response => {
                 console.log(response.data)
+                this.updatePlatformFormat();
               })
             .catch(error => {
                 console.log(error.response)
@@ -151,7 +152,6 @@ export default class EditPlatform extends Component {
         console.log(error);
         });
 
-        this.updatePlatformFormat();
         document.getElementById('inputGroupFile01').value = ""
     }
 
