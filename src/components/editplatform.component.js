@@ -179,10 +179,20 @@ export default class EditPlatform extends Component {
                 .then(response => {
                     console.log(response)
                     //updates platform format so page is rendered properly
-                    this.updatePlatformFormat();
-                  })
+                    var platform_format_id = this.props.location.pathname.substring(14);
+
+
+                    api.get('/platformFormat/getSpecificPlatformFormat/'+platform_format_id)
+                    .then(response => {
+                        console.log(response)
+                        this.setState({platformFormat:response.data[0]})
+                    })
+                    .catch(error => {
+                        console.log(error.response)
+                    });
+                })
                 .catch(error => {
-                    console.log(error.response)
+                    console.log(error)
                 });
             }
            
