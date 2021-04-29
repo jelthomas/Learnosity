@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import {api} from "../axios_api.js";
+import axios from "axios";
 import jwt from 'jsonwebtoken';
 import { Link } from 'react-router-dom';
 import jwt_decode from 'jwt-decode';
@@ -9,10 +10,13 @@ export default class EditPlatform extends Component {
     constructor(props){
         super(props);
         this.addPageToPlatform = this.addPageToPlatform.bind(this);
+        this.setFileName = this.setFileName.bind(this);
+        this.setPlatformCoverPage = this.setPlatformCoverPage.bind(this);
         
         this.state = {
             user_id: '',
-            platformFormat:''
+            platformFormat:'',
+            fileName:''
         }
     }
 
@@ -58,19 +62,74 @@ export default class EditPlatform extends Component {
         });
         
 
-        //add page to platformFormat 
-        // const addToPlat = {
-        //     platform_format_id:this.state.platformFormat._id,
-        //     page_format_id : page_id
-        // }
-        // api.post('/platformFormat/addToPages',addToPlat)
-        // .then(response => {
-        //     console.log(response)
-        //   })
-        // .catch(error => {
-        //     console.log(error.response)
-        // });
+   
 
+    }
+
+    setFileName() {
+        const file = document.getElementById('inputGroupFile01').files
+        if(file[0] === undefined) {
+          this.setState({fileName : ""})
+        } else {
+            this.setState({fileName : file[0].name})
+        }
+    }
+
+    setPlatformCoverPage() {
+        const file = document.getElementById('inputGroupFile01').files
+        //checks if file is properly defined
+        if(file[0] === undefined) {
+            return
+        }
+        //checks if file size is greater then 10 MB
+        if(file[0].size > 10000000) {
+            return
+        }
+
+        //checks the type of file
+        if(file[0].type !== "image/png" && file[0].type !== "image/jpg")
+        {
+            return
+        }
+
+        console.log("Gets Pasts Type check")
+
+        const data = new FormData()
+        console.log(file[0])
+        data.append('image', file[0]);
+
+        var config = {
+            method: 'post',
+            url: 'https://api.imgur.com/3/image',
+            headers: {
+              'Authorization': 'Client-ID 06ca9bca2100479'
+            },
+            data : data
+          };
+    
+        var platID = this.state.platformFormat._id
+        api(config)
+        .then(function (response) {
+            console.log((response.data.data.link));
+
+            const updateCover = {
+                platformID : platID,
+                newCoverPhoto : response.data.data.link
+            }
+
+            api.post('/platformFormat/update_cover_photo',updateCover)
+            .then(response => {
+                console.log(response.data)
+              })
+            .catch(error => {
+                console.log(error.response)
+            });
+        })
+        .catch(function (error) {
+        console.log(error);
+        });
+
+        document.getElementById('inputGroupFile01').value = ""
     }
 
     
@@ -150,10 +209,11 @@ render() {
                     type="file"
                     id="inputGroupFile01"
                     accept="image/*"
+                    onChange={this.setPlatformCoverPage}
                 />
-                <label className="custom-file-label" htmlFor="inputGroupFile01">
-                    Choose an image file
-                </label>
+                {/* <label className="custom-file-label" htmlFor="inputGroupFile01">
+                    {this.state.fileName === "" ? "Choose an image file" : this.state.fileName}
+                </label> */}
                 </div>
             </div>
         </div>
