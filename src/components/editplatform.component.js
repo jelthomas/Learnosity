@@ -146,13 +146,12 @@ export default class EditPlatform extends Component {
                 console.log(error.response)
             });
 
-
-            this.updatePlatformFormat();
         })
         .catch(function (error) {
         console.log(error);
         });
 
+        this.updatePlatformFormat();
         document.getElementById('inputGroupFile01').value = ""
     }
 
