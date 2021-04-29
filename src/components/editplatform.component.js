@@ -107,13 +107,13 @@ export default class EditPlatform extends Component {
             data : data
           };
     
-
+        console.log(this.state.platformFormat._id);
         api(config)
         .then(function (response) {
             console.log((response.data.data.link));
 
             const updateCover = {
-                platformID : this.state.platformFormat,
+                platformID : this.state.platformFormat._id,
                 newCoverPhoto : response.data.data.link
             }
 
