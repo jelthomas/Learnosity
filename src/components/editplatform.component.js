@@ -4,14 +4,17 @@ import axios from "axios";
 import jwt from 'jsonwebtoken';
 import { Link } from 'react-router-dom';
 import jwt_decode from 'jwt-decode';
+import DefaultCoverPhoto from "../images/defaultCoverPhoto.png"
 require('dotenv').config();
 
 export default class EditPlatform extends Component {
     constructor(props){
         super(props);
+        this.updatePlatformFormat = this.updatePlatformFormat.bind(this);
         this.addPageToPlatform = this.addPageToPlatform.bind(this);
         this.setFileName = this.setFileName.bind(this);
         this.setPlatformCoverPage = this.setPlatformCoverPage.bind(this);
+        this.updatePlatformName = this.updatePlatformName.bind(this);
         
         this.state = {
             user_id: '',
@@ -19,6 +22,25 @@ export default class EditPlatform extends Component {
             fileName:''
         }
     }
+
+    
+    updatePlatformFormat(){
+
+        console.log("INSIDE updatePlatformFormat")
+        
+        var platform_format_id = this.props.location.pathname.substring(14);
+
+
+        api.get('/platformFormat/getSpecificPlatformFormat/'+platform_format_id)
+        .then(response => {
+            console.log(response)
+            this.setState({platformFormat:response.data[0]})
+        })
+        .catch(error => {
+            console.log(error.response)
+        });
+    }
+
 
     addPageToPlatform(){
         console.log("adding page to platform")
@@ -52,6 +74,8 @@ export default class EditPlatform extends Component {
             api.post('/platformFormat/addToPages',addToPlat)
             .then(response => {
                 console.log(response)
+                //updates platform format so page is rendered properly
+                this.updatePlatformFormat();
               })
             .catch(error => {
                 console.log(error.response)
@@ -61,9 +85,6 @@ export default class EditPlatform extends Component {
             console.log(error.response)
         });
         
-
-   
-
     }
 
     setFileName() {
@@ -120,6 +141,7 @@ export default class EditPlatform extends Component {
             api.post('/platformFormat/update_cover_photo',updateCover)
             .then(response => {
                 console.log(response.data)
+                this.updatePlatformFormat();
               })
             .catch(error => {
                 console.log(error.response)
@@ -130,6 +152,44 @@ export default class EditPlatform extends Component {
         });
 
         document.getElementById('inputGroupFile01').value = ""
+    }
+
+    updatePlatformName(e){
+        if(e.key === "Enter")
+        {
+            console.log("Enter KEY PRESSED")
+            console.log(document.getElementById('changePlatName').value)
+
+            var inputVal = document.getElementById('changePlatName').value
+
+            if(inputVal.length < 1)
+            {
+                return
+            }
+            else 
+            {
+                const newName = {
+                    platformID : this.state.platformFormat._id,
+                    newPlatName : inputVal
+                }
+
+                //call update platname 
+                api.post('/platformFormat/updatePlatName',newName)
+                .then(response => {
+                    console.log(response)
+                    //updates platform format so page is rendered properly
+                    this.updatePlatformFormat();
+                  })
+                .catch(error => {
+                    console.log(error.response)
+                });
+            }
+           
+        }
+        else
+        {
+
+        }
     }
 
     
@@ -203,6 +263,11 @@ render() {
         <div style={{height: "100vh", background: "#edd2ae", verticalAlign:"middle"}}>
             <p>{this.state.platformFormat.plat_name}</p>
             <button onClick={this.addPageToPlatform}>Add Page</button>
+            <img  
+                src={this.state.platformFormat.cover_photo === "" ? DefaultCoverPhoto : this.state.platformFormat.cover_photo} 
+                width = {200}
+                alt="coverphoto"
+            />
             <div className="input-group mb-3">
                 <div className="custom-file">
                 <input
@@ -216,6 +281,7 @@ render() {
                 </label> */}
                 </div>
             </div>
+            <input type="text" id="changePlatName" placeholder="Enter New Name" onKeyDown={this.updatePlatformName}/> 
         </div>
     );
 }
