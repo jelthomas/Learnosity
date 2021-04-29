@@ -5,7 +5,7 @@ import jwt_decode from 'jwt-decode'
 import "../format.css";
 import Card from "react-bootstrap/Card"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faStar, faPlay, faAngleRight, faAngleDown, faAngleUp } from "@fortawesome/free-solid-svg-icons";
+import { faStar, faPlay, faAngleRight, faAngleLeft } from "@fortawesome/free-solid-svg-icons";
 import LoggedInNav from "./loggedInNav.component";
 require('dotenv').config();
 
@@ -531,12 +531,17 @@ export default class Dashboard extends Component {
             }
             else if (e.value === "createdAt"){
                 argumentForAllPlatforms = {
-                    "createdAt": "asc"
+                    "createdAt": "desc"
                 }
             } 
-            else if (e.value === "pages.length"){
+            else if (e.value === "pages_length"){
                 argumentForAllPlatforms = {
-                    "createdAt": "asc"
+                    "pages_length": "desc"
+                }
+            }
+            else if (e.value === "times_played"){
+                argumentForAllPlatforms = {
+                    "times_played": "desc"
                 }
             }
             this.setState({
@@ -569,18 +574,18 @@ export default class Dashboard extends Component {
     }
     
     searchPlatforms(e) {
-        if (e.key === "Enter") {
+        // if (e.key === "Enter") {
             var userSearch = document.getElementById("userSearch")
             this.setState({
                 searchBy: userSearch.value
             })
             this.retrieveAllPlatforms(this.state.argumentForAllPlatforms, this.state.filterBy, userSearch.value)
-        }
+        // }
         
     }
 
     retrieveAllPlatforms(argumentForAllPlatforms, filterBy, searchBy) {
-        var all_platform_formats
+        var all_platform_formats;
         api.post('/platformFormat/getNonUserPlatforms/'+ this.state.username, {index: this.state.paginate_all_index, argumentForAllPlatforms: argumentForAllPlatforms, filterBy: filterBy, userSearch: searchBy})
         .then(all_plat_ids => {
             //Received array of platformFormat Ids
@@ -628,12 +633,12 @@ export default class Dashboard extends Component {
                     <div id="greeting">Welcome {this.state.username}!</div>
                 </div>
                 <div style={{marginLeft: "2.5%", marginRight: "2.5%"}} className="block">
-                    <div className="top_block">
+                    <div className="top_block" style={{display: "flex"}}>
                         <div className="white_text">
                             Your Recent Platforms
-                            <button onClick = {() => this.leftRecentPlatforms()}>Page Left</button>
-                            <button onClick = {() => this.rightRecentPlatforms()}>Page Right</button>
                         </div>
+                        <button style={{marginLeft: "70%"}} className = "paginate_arrows" onClick = {() => this.leftRecentPlatforms()}><FontAwesomeIcon icon={faAngleLeft} /></button>
+                        <button style={{marginLeft: "auto", marginRight: "3%"}} className = "paginate_arrows" onClick = {() => this.rightRecentPlatforms()}><FontAwesomeIcon icon={faAngleRight} /></button>
                     </div>
                     <div style={{display: "flex"}}>
                         {this.state.recent_platforms.map((platform, index) => (
@@ -654,16 +659,16 @@ export default class Dashboard extends Component {
                     </div>
                 </div>
                 <div style={{marginLeft: "2.5%", marginRight: "2.5%"}} className="block">
-                    <div className="top_block">
+                    <div className="top_block" style={{display: "flex"}}>
                         <div className="white_text">
                             Explore All Learning Platforms
-                            <button onClick = {() => this.leftAllPlatforms()}>Page Left</button>
-                            <button onClick = {() => this.rightAllPlatforms()}>Page Right</button>
                         </div>
+                        <button style={{marginLeft: "64%"}} className = "paginate_arrows" onClick = {() => this.leftAllPlatforms()}><FontAwesomeIcon icon={faAngleLeft} /></button>
+                        <button style={{marginLeft: "auto", marginRight: "3%"}} className = "paginate_arrows" onClick = {() => this.rightAllPlatforms()}><FontAwesomeIcon icon={faAngleRight} /></button>
                     </div>
-                    <div style={{display: "flex", marginLeft: "3%", marginBottom: "2%"}}>
+                    <div style={{display: "flex", marginLeft: "3%"}}>
                         <div className="dashboard_sort" style={{width: "26%", paddingLeft: "5px"}}>
-                           <input onKeyDown={this.searchPlatforms} id="userSearch" type="text" placeholder="Search By Title or Creator" style={{borderRadius: "10px", background: "white", borderColor: "transparent", width: "100%", outline: "none", height: '31px', paddingBottom: "6px"}}></input>
+                           <input onChange={this.searchPlatforms} id="userSearch" type="text" placeholder="Search By Title or Creator" style={{borderRadius: "10px", background: "white", borderColor: "transparent", width: "100%", outline: "none", height: '31px', paddingBottom: "6px"}}></input>
                         </div>
                         <div className="dashboard_sort">
                             
@@ -672,6 +677,8 @@ export default class Dashboard extends Component {
                                 <select onChange = {this.onChangeSortBy} defaultValue = "none" id = "sort_by" style={{width: "70%", marginLeft: "6px", border: "transparent", borderRadius: "7px", outline:"none"}}>
                                     <option value="none">None</option>
                                     <option value="createdAt">Recently Created</option>
+                                    <option value="times_played">Most Popular</option>
+                                    <option value="pages_length">Most Content</option>
                                 </select>
                             </div>
                          </div>
@@ -686,7 +693,7 @@ export default class Dashboard extends Component {
                         </div>
                     </div>
                     <div>
-                            <div style={{display: "flex"}}>
+                            <div style={{display: "flex", flexWrap: "wrap"}}>
                             {this.state.all_platforms.map((platform, index) => (
                                 <Card className = "card_top itemsContainer">
                                 <FontAwesomeIcon className="play_button" icon={faPlay} />

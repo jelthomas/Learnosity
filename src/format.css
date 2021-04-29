@@ -379,6 +379,15 @@
   height: 200px;
   margin-left: 3%;
   box-shadow: 3px 3px 3px #706767;
+  margin-top: 2%;
+}
+
+.paginate_arrows{
+  background: transparent;
+  color: white;
+  border: transparent;
+  font-size: 40px;
+  margin-top: -10px;
 }
 
 .card_image {
