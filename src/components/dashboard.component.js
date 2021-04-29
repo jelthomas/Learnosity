@@ -28,22 +28,33 @@ export default class Dashboard extends Component {
         this.rightAllPlatforms = this.rightAllPlatforms.bind(this);
         this.leftRecentPlatforms = this.leftRecentPlatforms.bind(this);
         this.rightRecentPlatforms = this.rightRecentPlatforms.bind(this);
+        this.retrieveAllPlatforms = this.retrieveAllPlatforms.bind(this);
+        this.onChangeSortBy = this.onChangeSortBy.bind(this);
+        this.onChangeFilterBy = this.onChangeFilterBy.bind(this);
+        this.searchPlatforms = this.searchPlatforms.bind(this);
 
         this.state = {
             username: "",
             id: "",
             search: '',
             sort_by: '',
+            sort_by_value: '',
             privacy_filter: '',
             recent_platforms: [],
             get_recent: true,
             get_all: true,
             all_platforms: [],
             paginate_rec_index: 0,
-            paginate_all_index: 0
+            paginate_all_index: 0,
+            argumentForAllPlatforms: {
+                "plat_name": "asc"
+            },
+            filterBy: true,
+            searchBy: ""
         }
 
     }
+    
     
     componentDidMount() {
         var token = localStorage.getItem('usertoken');
@@ -75,9 +86,9 @@ export default class Dashboard extends Component {
                     if (response) {
                         //Valid user
                         this.setState({username: response.data.username, id: decoded._id });
-                    
+                        
                         //Get array of PlatformFormat Ids (where owner != username and is_published = true)
-                        api.post('/platformFormat/getNonUserPlatforms/'+ response.data.username, {index: this.state.paginate_all_index})
+                        api.post('/platformFormat/getNonUserPlatforms/'+ response.data.username, {index: this.state.paginate_all_index, argumentForAllPlatforms: this.state.argumentForAllPlatforms, filterBy: this.state.filterBy, userSearch: this.state.searchBy})
                         .then(all_plat_ids => {
                             //Received array of platformFormat Ids
                             var platform_formats = all_plat_ids.data;
@@ -246,7 +257,7 @@ export default class Dashboard extends Component {
     leftAllPlatforms(){
         if (this.state.paginate_all_index > 0){
             var all_platform_formats  
-            api.post('/platformFormat/getNonUserPlatforms/'+ this.state.username, {index: this.state.paginate_all_index - 1, max: 20})
+            api.post('/platformFormat/getNonUserPlatforms/'+ this.state.username, {index: this.state.paginate_all_index - 1, max: 20, argumentForAllPlatforms: this.state.argumentForAllPlatforms})
             .then(all_plat_ids => {
                 //Received array of platformFormat Ids
                 var platform_formats = all_plat_ids.data;
@@ -290,7 +301,7 @@ export default class Dashboard extends Component {
 
     rightAllPlatforms(){
         var all_platform_formats
-        api.post('/platformFormat/getNonUserPlatforms/'+ this.state.username, {index: this.state.paginate_all_index + 1, max: 20})
+        api.post('/platformFormat/getNonUserPlatforms/'+ this.state.username, {index: this.state.paginate_all_index + 1, max: 20, argumentForAllPlatforms: this.state.argumentForAllPlatforms})
             .then(all_plat_ids => {
                 if (all_plat_ids.data.length === 0){
                     return
@@ -509,7 +520,106 @@ export default class Dashboard extends Component {
  
     }
 
+    onChangeSortBy() {
+        var e = document.getElementById("sort_by")
+        var argumentForAllPlatforms
+        if (e !== null) {
+            if (e.value === "none"){
+                argumentForAllPlatforms = {
+                    "plat_name": "asc"
+                }
+            }
+            else if (e.value === "createdAt"){
+                argumentForAllPlatforms = {
+                    "createdAt": "asc"
+                }
+            } 
+            else if (e.value === "pages.length"){
+                argumentForAllPlatforms = {
+                    "createdAt": "asc"
+                }
+            }
+            this.setState({
+                argumentForAllPlatforms: argumentForAllPlatforms
+            })
+            this.retrieveAllPlatforms(argumentForAllPlatforms, this.state.filterBy, this.state.searchBy)
+        }
+    }
+
+    onChangeFilterBy() {
+        var e = document.getElementById("filter_by")
+        var filterBy
+        if (e !== null) {
+            if (e.value === "public") {
+                filterBy = true
+            }
+            if (e.value === "private") {
+                filterBy = false
+            }
+            if (e.value === "both") {
+                filterBy = {
+                    $in: [true, false]
+                }
+            }
+            this.setState({
+                filterBy: filterBy
+            })
+            this.retrieveAllPlatforms(this.state.argumentForAllPlatforms, filterBy, this.state.searchBy)
+        }
+    }
+    
+    searchPlatforms(e) {
+        if (e.key === "Enter") {
+            var userSearch = document.getElementById("userSearch")
+            this.setState({
+                searchBy: userSearch.value
+            })
+            this.retrieveAllPlatforms(this.state.argumentForAllPlatforms, this.state.filterBy, userSearch.value)
+        }
+        
+    }
+
+    retrieveAllPlatforms(argumentForAllPlatforms, filterBy, searchBy) {
+        var all_platform_formats
+        api.post('/platformFormat/getNonUserPlatforms/'+ this.state.username, {index: this.state.paginate_all_index, argumentForAllPlatforms: argumentForAllPlatforms, filterBy: filterBy, userSearch: searchBy})
+        .then(all_plat_ids => {
+            //Received array of platformFormat Ids
+            var platform_formats = all_plat_ids.data;
+            var platform_format_ids = [];
+            var index_dict = {};
+            for(var i = 0; i < platform_formats.length; i++){
+                platform_format_ids.push(platform_formats[i]._id);
+                index_dict[platform_formats[i]._id] = i;
+                platform_formats[i].completed_pages = null;
+                platform_formats[i].is_favorited = null;
+                platform_formats[i].recently_played = null;
+            }
+            //Now query to receive the platform Data information for all ids in the array for that user
+            api.post('/platformData/getAllPlatforms', {platformFormat_ids: platform_format_ids, user_id: this.state.id})
+            .then(all_plat_data_ids => {
+                // Received all platform data info for all platforms
+                var all_platforms = all_plat_data_ids.data;
+
+                for(var i = 0; i < all_platforms.length; i++){
+                    var specific_platform_format_id = all_platforms[i].platform_id;
+                    var correct_index = index_dict[specific_platform_format_id];
+                    //platform_formats[correct_index] = all_platforms[i]
+                // platform_formats[correct_index].platform_id = all_platforms[i].platform_id;
+                    platform_formats[correct_index].completed_pages = all_platforms[i].completed_pages;
+                    platform_formats[correct_index].is_favorited = all_platforms[i].is_favorited;
+                    platform_formats[correct_index].recently_played = all_platforms[i].recently_played;
+                }
+                all_platform_formats = platform_formats.slice()
+                //Platform_formats now holds all platforms that are published and haven't been created by the user
+                this.setState({
+                    all_platforms: platform_formats
+                })
+            })      
+        });
+    }
+
     render() {
+        
         return (
             <div>
                 <LoggedInNav props={this.props}/>
@@ -553,25 +663,24 @@ export default class Dashboard extends Component {
                     </div>
                     <div style={{display: "flex", marginLeft: "3%", marginBottom: "2%"}}>
                         <div className="dashboard_sort" style={{width: "26%", paddingLeft: "5px"}}>
-                           <input type="text" placeholder="Search By Title or Creator" style={{borderRadius: "10px", background: "white", borderColor: "transparent", width: "100%", outline: "none", height: '31px', paddingBottom: "6px"}}></input>
+                           <input onKeyDown={this.searchPlatforms} id="userSearch" type="text" placeholder="Search By Title or Creator" style={{borderRadius: "10px", background: "white", borderColor: "transparent", width: "100%", outline: "none", height: '31px', paddingBottom: "6px"}}></input>
                         </div>
                         <div className="dashboard_sort">
                             
                             <div style={{paddingLeft: "5px"}}>
                                 Sort By:
-                                <select style={{width: "70%", marginLeft: "6px", border: "transparent", borderRadius: "7px", outline:"none"}}>
-                                    <option value="volvo">Favorited</option>
-                                    <option value="saab">Recently Created</option>
-                                    <option value="opel">Most Popular</option>
+                                <select onChange = {this.onChangeSortBy} defaultValue = "none" id = "sort_by" style={{width: "70%", marginLeft: "6px", border: "transparent", borderRadius: "7px", outline:"none"}}>
+                                    <option value="none">None</option>
+                                    <option value="createdAt">Recently Created</option>
                                 </select>
                             </div>
                          </div>
                         <div className="dashboard_sort" style={{width: "12.5%"}}>
                             <div>
-                                <select style={{width: "93%", marginLeft: "6px", border: "transparent", borderRadius: "7px", outline:"none"}}>
-                                    <option value="volvo">Public Only</option>
-                                    <option value="saab">Private Only</option>
-                                    <option value="opel">Public and Private</option>
+                                <select onChange = {this.onChangeFilterBy} defaultValue = "public" id = "filter_by" style={{width: "93%", marginLeft: "6px", border: "transparent", borderRadius: "7px", outline:"none"}}>
+                                    <option value="public">Public Only</option>
+                                    <option value="private">Private Only</option>
+                                    <option value="both">Public and Private</option>
                                 </select>
                             </div>
                         </div>
