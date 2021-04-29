@@ -141,11 +141,13 @@ export default class EditPlatform extends Component {
             api.post('/platformFormat/update_cover_photo',updateCover)
             .then(response => {
                 console.log(response.data)
-                this.updatePlatformFormat();
               })
             .catch(error => {
                 console.log(error.response)
             });
+
+
+            this.updatePlatformFormat();
         })
         .catch(function (error) {
         console.log(error);
