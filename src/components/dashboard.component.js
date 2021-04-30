@@ -7,6 +7,7 @@ import Card from "react-bootstrap/Card"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faStar, faPlay, faAngleRight, faAngleLeft } from "@fortawesome/free-solid-svg-icons";
 import LoggedInNav from "./loggedInNav.component";
+import DefaultCoverPhoto from "../images/defaultCoverPhoto.png"
 require('dotenv').config();
 
 
@@ -52,9 +53,7 @@ export default class Dashboard extends Component {
             filterBy: true,
             searchBy: "",
             canPaginateRightRecent: true,
-            canPaginateLeftRecent: false,
-            canPaginateRightAll: true,
-            canPaginateLeftAll: false
+            canPaginateRightAll: true
         }
 
     }
@@ -97,7 +96,6 @@ export default class Dashboard extends Component {
                             //Received array of platformFormat Ids
                             var platform_formats
                             if (all_plat_ids.data.length > 20){
-                                console.log("CAN PAGINATE RIGHT FOR ALL")
                                 platform_formats = all_plat_ids.data.slice(0,20)
                                 this.setState({
                                     canPaginateRightAll: true
@@ -105,7 +103,6 @@ export default class Dashboard extends Component {
                             }
                             else {
                                 platform_formats = all_plat_ids.data.slice(0, all_plat_ids.data.length)
-                                console.log("CANNOT PAGINATE RIGHT FOR ALL")
                                 this.setState({
                                     canPaginateRightAll: false
                                 })
@@ -145,15 +142,13 @@ export default class Dashboard extends Component {
                                                 if (all_plat_ids.data.length > 5){
                                                     platform_datas = all_plat_ids.data.slice(0,5)
                                                     this.setState({
-                                                        canPaginateRightRecent: true,
-                                                        canPaginateLeftRecent: false
+                                                        canPaginateRightRecent: true
                                                     })
                                                 }
                                                 else {
                                                     platform_datas = all_plat_ids.data.slice(0, all_plat_ids.data.length)
                                                     this.setState({
-                                                        canPaginateRightRecent: false,
-                                                        canPaginateLeftRecent: false
+                                                        canPaginateRightRecent: false
                                                     })
                                                 }
                                                 var platform_format_ids = [];
@@ -181,8 +176,14 @@ export default class Dashboard extends Component {
                                                         platform_datas[correct_index].cover_photo = all_platforms[i].cover_photo;
                                                         platform_datas[correct_index].pages = all_platforms[i].pages;  
                                                     }
-                                                    recent_platforms = platform_datas.slice()
-                                                    this.setState({all_platforms: all_platform_formats, recent_platforms: recent_platforms, username: response.data.username, id: decoded._id});
+                                                    
+                                                    var temp = [];
+                                                    for(var i = 0; i < platform_datas.length; i++){
+                                                        if(platform_datas[i].plat_name !== null){
+                                                            temp.push(platform_datas[i]);
+                                                        }
+                                                    }
+                                                    this.setState({all_platforms: all_platform_formats, recent_platforms: temp, username: response.data.username, id: decoded._id});
                                                 })
                     
                                             })
@@ -218,7 +219,6 @@ export default class Dashboard extends Component {
         recent_plats[index].is_favorited = !recent_plats[index].is_favorited;
 
         //Update value in the database using api call
-        console.log("RECENT PLATFORMS", recent_plats)
         var all_platforms = this.state.all_platforms
         var myID = recent_plats[index].platform_id;
         for (var i = 0; i < all_platforms.length; i++){
@@ -228,15 +228,14 @@ export default class Dashboard extends Component {
             }
         }
         api.post('/platformData/toggleFavorited', {id: recent_plats[index].platform_id, user_id: this.state.id, is_favorited: recent_plats[index].is_favorited})
-        .then(recent_plats => console.log(recent_plats));
-
+        .then();
         this.setState({recent_platforms: recent_plats});
+
     }
 
     toggleFavoriteAll(index){
         //Update is_favorited attribute for all platform at index
         var all_plats = this.state.all_platforms;
-        console.log("ALL PLATFORMS", all_plats)
 
         //Check if we need to create a new platform Data object
         var create_new = (all_plats[index].is_favorited === null);
@@ -247,9 +246,10 @@ export default class Dashboard extends Component {
 
             //Update value in the database using api call
             api.post('/platformData/toggleFavorited', {id: all_plats[index]._id, user_id: this.state.id, is_favorited: all_plats[index].is_favorited})
-            .then(all_plats => console.log(all_plats));
-
+            .then(all_plats => {});
             this.setState({all_plats: all_plats});
+
+            
         }
         else{
             //Create new platform data object for this platform format ID and user ID
@@ -269,9 +269,7 @@ export default class Dashboard extends Component {
 
             //create a platformData
             api.post('/platformData/addFavorite',createPlatData)
-            .then(response => {
-                console.log(response)
-            })
+            .then(response => {})
             .catch(error => {
                 console.log(error.response)
             });
@@ -290,13 +288,11 @@ export default class Dashboard extends Component {
         if (this.state.paginate_all_index > 0){
             if (this.state.paginate_all_index - 1 === 0){
                 this.setState({
-                    canPaginateLeftAll: false,
                     canPaginateRightAll: true
                 })
             }
             else {
                 this.setState({
-                    canPaginateLeftAll: true,
                     canPaginateRightAll: true
                 })
             }
@@ -348,15 +344,13 @@ export default class Dashboard extends Component {
                 if (all_plat_ids.data.length > 20){
                     platform_formats = all_plat_ids.data.slice(0,20)
                     this.setState({
-                        canPaginateRightAll: true,
-                        canPaginateLeftAll: true
+                        canPaginateRightAll: true
                     })
                 }
                 else {
                     platform_formats = all_plat_ids.data
                     this.setState({
-                        canPaginateRightAll: false,
-                        canPaginateLeftAll: true
+                        canPaginateRightAll: false
                     })
                 }
                 //Received array of platformFormat Ids
@@ -398,13 +392,11 @@ export default class Dashboard extends Component {
         if (this.state.paginate_rec_index > 0){
             if (this.state.paginate_rec_index - 1 === 0){
                 this.setState({
-                    canPaginateLeftRecent: false,
                     canPaginateRightRecent: true
                 })
             }
             else {
                 this.setState({
-                    canPaginateLeftRecent: true,
                     canPaginateRightRecent: true
                 })
             }
@@ -454,15 +446,13 @@ export default class Dashboard extends Component {
                             if (all_plat_ids.data.length > 5){
                                 platform_datas = all_plat_ids.data.slice(0,5)
                                 this.setState({
-                                    canPaginateRightRecent: true,
-                                    canPaginateLeftRecent: true
+                                    canPaginateRightRecent: true
                                 })
                             }
                             else {
                                 platform_datas = all_plat_ids.data.slice(0, all_plat_ids.data.length)
                                 this.setState({
-                                    canPaginateRightRecent: false,
-                                    canPaginateLeftRecent: true
+                                    canPaginateRightRecent: false
                                 })
                             }
                             var platform_format_ids = [];
@@ -511,8 +501,6 @@ export default class Dashboard extends Component {
         .then(response => {
             if(response.data.length ===0)
             {
-                console.log("platform Data does not exist ")
-
                 const createPlatData = {
                     user_id : this.state.id,
                     platform_id : plat_id,
@@ -535,8 +523,6 @@ export default class Dashboard extends Component {
             {
                 //platformData already exists 
                 //update recently played
-                console.log("platform Data EXISTS")
-                console.log(response)
 
                 const recentPlay = {
                     user_id : this.state.id,
@@ -545,12 +531,6 @@ export default class Dashboard extends Component {
                 }
 
                 api.post('/platformData/updateRecentlyPlayed',recentPlay)
-                // .then(response => {
-                //     console.log(response)
-                // })
-                // .catch(error => {
-                //     console.log(error.response)
-                // });
 
                 //clearing the completed_pages 
                 const info = {
@@ -560,7 +540,6 @@ export default class Dashboard extends Component {
                 api.get('/platformFormat/getSpecificPlatformFormat/'+plat_id)
                 .then(resp => {
                     if(response.data[0].is_completed === true && (response.data[0].completed_pages.length === resp.data[0].pages.length)){
-                        console.log("EQUAL PAGE AMOUNTS")
 
                         const values = {
                             user_id : this.state.id,
@@ -568,9 +547,7 @@ export default class Dashboard extends Component {
                         }
                         //clears the array to be empty 
                         api.post('/platformData/clearCompletedPage/',values)
-                        .then(resp2 =>{
-                            console.log(resp2)
-                        })
+                        .then()
                         .catch(err=>{
                             console.log(err.response)
                         })
@@ -702,14 +679,26 @@ export default class Dashboard extends Component {
                         <div className="white_text">
                             Your Recent Platforms
                         </div>
-                        <button disabled={!this.state.canPaginateLeftRecent} style={{marginLeft: "70%"}} className = "paginate_arrows" onClick = {() => this.leftRecentPlatforms()}><FontAwesomeIcon icon={faAngleLeft} /></button>
-                        <button disabled={!this.state.canPaginateRightRecent} style={{marginLeft: "auto", marginRight: "3%"}} className = "paginate_arrows" onClick = {() => this.rightRecentPlatforms()}><FontAwesomeIcon icon={faAngleRight} /></button>
+                        {this.state.paginate_rec_index === 0
+                        ?
+                            <button disabled="true" style={{marginLeft: "70%", color:"grey"}} className = "paginate_arrows" onClick = {() => this.leftRecentPlatforms()}><FontAwesomeIcon icon={faAngleLeft} /></button>
+                        :
+                            <button style={{marginLeft: "70%"}} className = "paginate_arrows" onClick = {() => this.leftRecentPlatforms()}><FontAwesomeIcon icon={faAngleLeft} /></button>
+                        }
+                        {this.state.canPaginateRightRecent
+                        ?
+                            <button style={{marginLeft: "auto", marginRight: "3%"}} className = "paginate_arrows" onClick = {() => this.rightRecentPlatforms()}><FontAwesomeIcon icon={faAngleRight} /></button>
+                        :
+                            <button disabled="true" style={{marginLeft: "auto", marginRight: "3%", color: "grey"}} className = "paginate_arrows" onClick = {() => this.rightRecentPlatforms()}><FontAwesomeIcon icon={faAngleRight} /></button>
+                        }
+
                     </div>
                     <div style={{display: "flex"}}>
+                        {console.log(this.state.recent_platforms)}
                         {this.state.recent_platforms.map((platform, index) => (
                             <Card className = "card_top itemsContainer">
                             <FontAwesomeIcon className="play_button" icon={faPlay} />
-                            <Card.Img variant="top" onClick={() => this.clickUsePlatform(platform.platform_id)} src={platform.cover_photo} className = "card_image"/>
+                            <Card.Img variant="top" onClick={() => this.clickUsePlatform(platform.platform_id)} src={platform.cover_photo === "" ? DefaultCoverPhoto : platform.cover_photo} className = "card_image"/>
                                 <Card.Body className = "card_body">
                                     <Card.Title className = "card_info">{platform.plat_name}</Card.Title>
                                     <Card.Text className = "card_info">
@@ -728,8 +717,19 @@ export default class Dashboard extends Component {
                         <div className="white_text">
                             Explore All Learning Platforms
                         </div>
-                        <button disabled={!this.state.canPaginateLeftAll} style={{marginLeft: "64%"}} className = "paginate_arrows" onClick = {() => this.leftAllPlatforms()}><FontAwesomeIcon icon={faAngleLeft} /></button>
-                        <button disabled={!this.state.canPaginateRightAll} style={{marginLeft: "auto", marginRight: "3%"}} className = "paginate_arrows" onClick = {() => this.rightAllPlatforms()}><FontAwesomeIcon icon={faAngleRight} /></button>
+                        {this.state.paginate_all_index === 0
+                        ?
+                            <button disabled="true" style={{marginLeft: "64%", color: "grey"}} className = "paginate_arrows" onClick = {() => this.leftAllPlatforms()}><FontAwesomeIcon icon={faAngleLeft} /></button>
+                        :
+                            <button style={{marginLeft: "64%"}} className = "paginate_arrows" onClick = {() => this.leftAllPlatforms()}><FontAwesomeIcon icon={faAngleLeft} /></button>
+                        }   
+                        {this.state.canPaginateRightAll
+                        ?
+                            <button style={{marginLeft: "auto", marginRight: "3%"}} className = "paginate_arrows" onClick = {() => this.rightAllPlatforms()}><FontAwesomeIcon icon={faAngleRight} /></button>
+                        :
+                            <button disabled="true" style={{marginLeft: "auto", marginRight: "3%", color:"grey"}} className = "paginate_arrows" onClick = {() => this.rightAllPlatforms()}><FontAwesomeIcon icon={faAngleRight} /></button>
+                        }
+                    
                     </div>
                     <div style={{display: "flex", marginLeft: "3%"}}>
                         <div className="dashboard_sort" style={{width: "26%", paddingLeft: "5px"}}>
@@ -762,7 +762,7 @@ export default class Dashboard extends Component {
                             {this.state.all_platforms.map((platform, index) => (
                                 <Card className = "card_top itemsContainer">
                                 <FontAwesomeIcon className="play_button" icon={faPlay} />
-                                <Card.Img variant="top" onClick={() => this.clickUsePlatform(platform._id)} src={platform.cover_photo} className = "card_image"/>
+                                <Card.Img variant="top" onClick={() => this.clickUsePlatform(platform._id)} src={platform.cover_photo === "" ? DefaultCoverPhoto : platform.cover_photo} className = "card_image"/>
                                     <Card.Body className = "card_body">
                                         <Card.Title className = "card_info">{platform.plat_name}</Card.Title>
                                         <Card.Text className = "card_info">
