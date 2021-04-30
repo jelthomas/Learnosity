@@ -18,11 +18,13 @@ export default class EditPlatform extends Component {
         this.setPlatformPublish = this.setPlatformPublish.bind(this);
         this.changePlatName = this.changePlatName.bind(this);
         this.changePrivacyPass = this.changePrivacyPass.bind(this);
+        this.updateAllPageInfo = this.updateAllPageInfo.bind(this);
         
         this.state = {
             user_id: '',
             platformFormat:'',
-            fileName:''
+            fileName:'',
+            allPageInfo:[]
         }
     }
 
@@ -43,6 +45,40 @@ export default class EditPlatform extends Component {
             console.log(error.response)
         });
     }
+
+    updateAllPageInfo(){
+
+        console.log("INSIDE updatePlatformFormat")
+        
+        var platform_format_id = this.props.location.pathname.substring(14);
+        var allPages
+
+
+        api.get('/platformFormat/getSpecificPlatformFormat/'+platform_format_id)
+        .then(response => {
+            console.log(response)
+            this.setState({platformFormat:response.data[0]})
+
+            
+            var pageArray = response.data[0].pages
+
+            api.post('/pageFormat/getAllPages',{pages_id:pageArray})
+            .then(response =>{
+                
+                allPages = response.data
+                console.log(allPages)
+
+                this.setState({allPageInfo:allPages})
+            })
+            .catch(error => {
+                console.log(error.response)
+            })
+        })
+        .catch(error => {
+            console.log(error.response)
+        });
+    }
+
 
 
     addPageToPlatform(){
@@ -78,7 +114,7 @@ export default class EditPlatform extends Component {
             .then(response => {
                 console.log(response)
                 //updates platform format so page is rendered properly
-                this.updatePlatformFormat();
+                this.updateAllPageInfo();
               })
             .catch(error => {
                 console.log(error.response)
@@ -274,6 +310,7 @@ export default class EditPlatform extends Component {
     //SAVE VALUES TO A STATE VARIABLE
     componentDidMount(){
         var token = localStorage.getItem('usertoken');
+        var allPages;
         var validToken = false;
         if(token){
             //Token in session storage
@@ -307,12 +344,24 @@ export default class EditPlatform extends Component {
                         api.get('/platformFormat/getSpecificPlatformFormat/'+platform_format_id)
                         .then(response => {
 							this.setState({platformFormat:response.data[0]})
+
+                            var pageArray = response.data[0].pages
+
+                            api.post('/pageFormat/getAllPages',{pages_id:pageArray})
+                            .then(response =>{
+                                
+                                allPages = response.data
+                                console.log(allPages)
+
+                                this.setState({allPageInfo:allPages})
+                            })
+                            .catch(error => {
+                                console.log(error.response)
+                            })
                         })
                         .catch(error => {
                             console.log(error.response)
                         });
-						
-
                         console.log(platform_format_id)
                         //Use platform format ID to grab all data
                     }
@@ -368,7 +417,9 @@ render() {
                 <option value="false">Not Published</option>
             </select>
             <input type="password" id="privacyPassword" disabled={this.state.platformFormat.is_public} value = {this.state.platformFormat.privacy_password} onChange = {this.changePrivacyPass}/>
-            <p>{this.state.platformFormat.pages}</p>
+            {this.state.allPageInfo.map((page, index) => (
+                <p>{page.page_title}</p>
+            ))}
         </div>
     );
 }
