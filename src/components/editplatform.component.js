@@ -10,6 +10,7 @@ require('dotenv').config();
 export default class EditPlatform extends Component {
     constructor(props){
         super(props);
+        
         this.updatePlatformFormat = this.updatePlatformFormat.bind(this);
         this.addPageToPlatform = this.addPageToPlatform.bind(this);
         this.setFileName = this.setFileName.bind(this);
@@ -19,6 +20,7 @@ export default class EditPlatform extends Component {
         this.changePlatName = this.changePlatName.bind(this);
         this.changePrivacyPass = this.changePrivacyPass.bind(this);
         this.updateAllPageInfo = this.updateAllPageInfo.bind(this);
+        this.editPage = this.editPage.bind(this);
         
         this.state = {
             user_id: '',
@@ -306,6 +308,14 @@ export default class EditPlatform extends Component {
         }
     }
 
+    editPage(page_id){
+        console.log(page_id)
+
+        var platform_format_id = this.props.location.pathname.substring(14);
+
+        this.props.history.push(`/editPage/`+ platform_format_id +'/' +page_id);
+    }
+
     //REMEMBER TO GRAB THE PLATFORM_FORMAT BASED ON THE URL 
     //SAVE VALUES TO A STATE VARIABLE
     componentDidMount(){
@@ -387,7 +397,6 @@ render() {
         
     return (
         <div style={{height: "100vh", background: "#edd2ae", verticalAlign:"middle"}}>
-            {/* <p>{this.state.platformFormat.plat_name}</p> */}
             <button onClick={this.addPageToPlatform}>Add Page</button>
             <img  
                 src={this.state.platformFormat.cover_photo === "" ? DefaultCoverPhoto : this.state.platformFormat.cover_photo} 
@@ -417,9 +426,11 @@ render() {
                 <option value="false">Not Published</option>
             </select>
             <input type="password" id="privacyPassword" disabled={this.state.platformFormat.is_public} value = {this.state.platformFormat.privacy_password} onChange = {this.changePrivacyPass}/>
-            {this.state.allPageInfo.map((page, index) => (
-                <p>{page.page_title}</p>
+            <div>
+            {this.state.allPageInfo.map((page) => (
+                <button onClick={() => this.editPage(page._id)}>{page.page_title}</button>
             ))}
+            </div>
         </div>
     );
 }
