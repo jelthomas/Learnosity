@@ -50,7 +50,11 @@ export default class Dashboard extends Component {
                 "plat_name": "asc"
             },
             filterBy: true,
-            searchBy: ""
+            searchBy: "",
+            canPaginateRightRecent: true,
+            canPaginateLeftRecent: false,
+            canPaginateRightAll: true,
+            canPaginateLeftAll: false
         }
 
     }
@@ -88,10 +92,24 @@ export default class Dashboard extends Component {
                         this.setState({username: response.data.username, id: decoded._id });
                         
                         //Get array of PlatformFormat Ids (where owner != username and is_published = true)
-                        api.post('/platformFormat/getNonUserPlatforms/'+ response.data.username, {index: this.state.paginate_all_index, argumentForAllPlatforms: this.state.argumentForAllPlatforms, filterBy: this.state.filterBy, userSearch: this.state.searchBy})
+                        api.post('/platformFormat/getNonUserPlatforms/'+ response.data.username, {index: this.state.paginate_all_index, max: 21, argumentForAllPlatforms: this.state.argumentForAllPlatforms, filterBy: this.state.filterBy, userSearch: this.state.searchBy})
                         .then(all_plat_ids => {
                             //Received array of platformFormat Ids
-                            var platform_formats = all_plat_ids.data;
+                            var platform_formats
+                            if (all_plat_ids.data.length > 20){
+                                console.log("CAN PAGINATE RIGHT FOR ALL")
+                                platform_formats = all_plat_ids.data.slice(0,20)
+                                this.setState({
+                                    canPaginateRightAll: true
+                                })
+                            }
+                            else {
+                                platform_formats = all_plat_ids.data.slice(0, all_plat_ids.data.length)
+                                console.log("CANNOT PAGINATE RIGHT FOR ALL")
+                                this.setState({
+                                    canPaginateRightAll: false
+                                })
+                            }
                             var platform_format_ids = [];
                             var index_dict = {};
                             for(var i = 0; i < platform_formats.length; i++){
@@ -121,9 +139,23 @@ export default class Dashboard extends Component {
 
                                 //Start of getting the recent platforms
                                 var recent_platforms
-                                api.post('platformData/getRecentPlatforms', {user_id: this.state.id, index: this.state.paginate_rec_index, max: 5})
+                                api.post('platformData/getRecentPlatforms', {user_id: this.state.id, index: this.state.paginate_rec_index, max: 6})
                                             .then(all_plat_ids => {
-                                                var platform_datas = all_plat_ids.data;
+                                                var platform_datas
+                                                if (all_plat_ids.data.length > 5){
+                                                    platform_datas = all_plat_ids.data.slice(0,5)
+                                                    this.setState({
+                                                        canPaginateRightRecent: true,
+                                                        canPaginateLeftRecent: false
+                                                    })
+                                                }
+                                                else {
+                                                    platform_datas = all_plat_ids.data.slice(0, all_plat_ids.data.length)
+                                                    this.setState({
+                                                        canPaginateRightRecent: false,
+                                                        canPaginateLeftRecent: false
+                                                    })
+                                                }
                                                 var platform_format_ids = [];
                                                 var index_dict = {};
                                                 for (var i = 0; i < platform_datas.length; i++){
@@ -256,8 +288,20 @@ export default class Dashboard extends Component {
 
     leftAllPlatforms(){
         if (this.state.paginate_all_index > 0){
+            if (this.state.paginate_all_index - 1 === 0){
+                this.setState({
+                    canPaginateLeftAll: false,
+                    canPaginateRightAll: true
+                })
+            }
+            else {
+                this.setState({
+                    canPaginateLeftAll: true,
+                    canPaginateRightAll: true
+                })
+            }
             var all_platform_formats  
-            api.post('/platformFormat/getNonUserPlatforms/'+ this.state.username, {index: this.state.paginate_all_index - 1, max: 20, argumentForAllPlatforms: this.state.argumentForAllPlatforms})
+            api.post('/platformFormat/getNonUserPlatforms/'+ this.state.username, {index: this.state.paginate_all_index - 1, max: 20, argumentForAllPlatforms: this.state.argumentForAllPlatforms, filterBy: this.state.filterBy, userSearch: this.state.searchBy})
             .then(all_plat_ids => {
                 //Received array of platformFormat Ids
                 var platform_formats = all_plat_ids.data;
@@ -279,9 +323,6 @@ export default class Dashboard extends Component {
                     for(var i = 0; i < all_platforms.length; i++){
                         var specific_platform_format_id = all_platforms[i].platform_id;
                         var correct_index = index_dict[specific_platform_format_id];
-                        console.log("GETTING ALL PLATFORM VALUES " + all_platforms[i])
-                        //platform_formats[correct_index] = all_platforms[i]
-                       // platform_formats[correct_index].platform_id = all_platforms[i].platform_id;
                         platform_formats[correct_index].completed_pages = all_platforms[i].completed_pages;
                         platform_formats[correct_index].is_favorited = all_platforms[i].is_favorited;
                         platform_formats[correct_index].recently_played = all_platforms[i].recently_played;
@@ -301,13 +342,24 @@ export default class Dashboard extends Component {
 
     rightAllPlatforms(){
         var all_platform_formats
-        api.post('/platformFormat/getNonUserPlatforms/'+ this.state.username, {index: this.state.paginate_all_index + 1, max: 20, argumentForAllPlatforms: this.state.argumentForAllPlatforms})
+        api.post('/platformFormat/getNonUserPlatforms/'+ this.state.username, {index: this.state.paginate_all_index + 1, max: 21, argumentForAllPlatforms: this.state.argumentForAllPlatforms, filterBy: this.state.filterBy, userSearch: this.state.searchBy})
             .then(all_plat_ids => {
-                if (all_plat_ids.data.length === 0){
-                    return
+                var platform_formats
+                if (all_plat_ids.data.length > 20){
+                    platform_formats = all_plat_ids.data.slice(0,20)
+                    this.setState({
+                        canPaginateRightAll: true,
+                        canPaginateLeftAll: true
+                    })
+                }
+                else {
+                    platform_formats = all_plat_ids.data
+                    this.setState({
+                        canPaginateRightAll: false,
+                        canPaginateLeftAll: true
+                    })
                 }
                 //Received array of platformFormat Ids
-                var platform_formats = all_plat_ids.data;
                 var platform_format_ids = [];
                 var index_dict = {};
                 for(var i = 0; i < platform_formats.length; i++){
@@ -326,9 +378,6 @@ export default class Dashboard extends Component {
                     for(var i = 0; i < all_platforms.length; i++){
                         var specific_platform_format_id = all_platforms[i].platform_id;
                         var correct_index = index_dict[specific_platform_format_id];
-                        console.log("GETTING ALL PLATFORM VALUES " + all_platforms[i])
-                        //platform_formats[correct_index] = all_platforms[i]
-                       // platform_formats[correct_index].platform_id = all_platforms[i].platform_id;
                         platform_formats[correct_index].completed_pages = all_platforms[i].completed_pages;
                         platform_formats[correct_index].is_favorited = all_platforms[i].is_favorited;
                         platform_formats[correct_index].recently_played = all_platforms[i].recently_played;
@@ -347,6 +396,18 @@ export default class Dashboard extends Component {
 
     leftRecentPlatforms(){
         if (this.state.paginate_rec_index > 0){
+            if (this.state.paginate_rec_index - 1 === 0){
+                this.setState({
+                    canPaginateLeftRecent: false,
+                    canPaginateRightRecent: true
+                })
+            }
+            else {
+                this.setState({
+                    canPaginateLeftRecent: true,
+                    canPaginateRightRecent: true
+                })
+            }
             var recent_platforms
             api.post('platformData/getRecentPlatforms', {user_id: this.state.id, index: this.state.paginate_rec_index - 1, max: 5})
                         .then(all_plat_ids => {
@@ -366,7 +427,6 @@ export default class Dashboard extends Component {
                             api.post('/platformFormat/returnFormats', {ids: platform_format_ids})
                             .then(all_plat_data_ids => {
                                 var all_platforms = all_plat_data_ids.data;
-                                console.log("ALL PLATFORMS", all_platforms)
                                 for(var i = 0; i < all_platforms.length; i++){
                                     var specific_platform_format_id = all_platforms[i]._id;
                                     var correct_index = index_dict[specific_platform_format_id];
@@ -388,12 +448,23 @@ export default class Dashboard extends Component {
     //TO DISABLE BUTTON, CHANGE MAX TO 6 AND SEE IF 6 ARE ACTUALLY RETURNED. IF 5 OR LESS, DISABLE BUTTON
     rightRecentPlatforms(){
         var recent_platforms
-            api.post('platformData/getRecentPlatforms', {user_id: this.state.id, index: this.state.paginate_rec_index + 1, max: 5})
+            api.post('platformData/getRecentPlatforms', {user_id: this.state.id, index: this.state.paginate_rec_index + 1, max: 6})
                         .then(all_plat_ids => {
-                            if (all_plat_ids.data.length === 0){
-                                return
+                            var platform_datas
+                            if (all_plat_ids.data.length > 5){
+                                platform_datas = all_plat_ids.data.slice(0,5)
+                                this.setState({
+                                    canPaginateRightRecent: true,
+                                    canPaginateLeftRecent: true
+                                })
                             }
-                            var platform_datas = all_plat_ids.data;
+                            else {
+                                platform_datas = all_plat_ids.data.slice(0, all_plat_ids.data.length)
+                                this.setState({
+                                    canPaginateRightRecent: false,
+                                    canPaginateLeftRecent: true
+                                })
+                            }
                             var platform_format_ids = [];
                             var index_dict = {};
                             for (var i = 0; i < platform_datas.length; i++){
@@ -409,7 +480,6 @@ export default class Dashboard extends Component {
                             api.post('/platformFormat/returnFormats', {ids: platform_format_ids})
                             .then(all_plat_data_ids => {
                                 var all_platforms = all_plat_data_ids.data;
-                                console.log("ALL PLATFORMS", all_platforms)
                                 for(var i = 0; i < all_platforms.length; i++){
                                     var specific_platform_format_id = all_platforms[i]._id;
                                     var correct_index = index_dict[specific_platform_format_id];
@@ -422,7 +492,6 @@ export default class Dashboard extends Component {
                                     
                                     
                                 }
-                                console.log("PLATFORM DATAS", platform_datas)
                                 recent_platforms = platform_datas.slice()
                                 this.setState({recent_platforms: recent_platforms, paginate_rec_index: this.state.paginate_rec_index + 1});
                             })
@@ -574,13 +643,11 @@ export default class Dashboard extends Component {
     }
     
     searchPlatforms(e) {
-        // if (e.key === "Enter") {
             var userSearch = document.getElementById("userSearch")
             this.setState({
                 searchBy: userSearch.value
             })
             this.retrieveAllPlatforms(this.state.argumentForAllPlatforms, this.state.filterBy, userSearch.value)
-        // }
         
     }
 
@@ -608,8 +675,6 @@ export default class Dashboard extends Component {
                 for(var i = 0; i < all_platforms.length; i++){
                     var specific_platform_format_id = all_platforms[i].platform_id;
                     var correct_index = index_dict[specific_platform_format_id];
-                    //platform_formats[correct_index] = all_platforms[i]
-                // platform_formats[correct_index].platform_id = all_platforms[i].platform_id;
                     platform_formats[correct_index].completed_pages = all_platforms[i].completed_pages;
                     platform_formats[correct_index].is_favorited = all_platforms[i].is_favorited;
                     platform_formats[correct_index].recently_played = all_platforms[i].recently_played;
@@ -637,8 +702,8 @@ export default class Dashboard extends Component {
                         <div className="white_text">
                             Your Recent Platforms
                         </div>
-                        <button style={{marginLeft: "70%"}} className = "paginate_arrows" onClick = {() => this.leftRecentPlatforms()}><FontAwesomeIcon icon={faAngleLeft} /></button>
-                        <button style={{marginLeft: "auto", marginRight: "3%"}} className = "paginate_arrows" onClick = {() => this.rightRecentPlatforms()}><FontAwesomeIcon icon={faAngleRight} /></button>
+                        <button disabled={!this.state.canPaginateLeftRecent} style={{marginLeft: "70%"}} className = "paginate_arrows" onClick = {() => this.leftRecentPlatforms()}><FontAwesomeIcon icon={faAngleLeft} /></button>
+                        <button disabled={!this.state.canPaginateRightRecent} style={{marginLeft: "auto", marginRight: "3%"}} className = "paginate_arrows" onClick = {() => this.rightRecentPlatforms()}><FontAwesomeIcon icon={faAngleRight} /></button>
                     </div>
                     <div style={{display: "flex"}}>
                         {this.state.recent_platforms.map((platform, index) => (
@@ -663,8 +728,8 @@ export default class Dashboard extends Component {
                         <div className="white_text">
                             Explore All Learning Platforms
                         </div>
-                        <button style={{marginLeft: "64%"}} className = "paginate_arrows" onClick = {() => this.leftAllPlatforms()}><FontAwesomeIcon icon={faAngleLeft} /></button>
-                        <button style={{marginLeft: "auto", marginRight: "3%"}} className = "paginate_arrows" onClick = {() => this.rightAllPlatforms()}><FontAwesomeIcon icon={faAngleRight} /></button>
+                        <button disabled={!this.state.canPaginateLeftAll} style={{marginLeft: "64%"}} className = "paginate_arrows" onClick = {() => this.leftAllPlatforms()}><FontAwesomeIcon icon={faAngleLeft} /></button>
+                        <button disabled={!this.state.canPaginateRightAll} style={{marginLeft: "auto", marginRight: "3%"}} className = "paginate_arrows" onClick = {() => this.rightAllPlatforms()}><FontAwesomeIcon icon={faAngleRight} /></button>
                     </div>
                     <div style={{display: "flex", marginLeft: "3%"}}>
                         <div className="dashboard_sort" style={{width: "26%", paddingLeft: "5px"}}>
