@@ -29,6 +29,7 @@ export default class TempDashboard extends Component {
         this.onChangeSortBy = this.onChangeSortBy.bind(this);
         this.onChangeFilterBy = this.onChangeFilterBy.bind(this);
         this.searchPlatforms = this.searchPlatforms.bind(this);
+        this.clickPlatform = this.clickPlatform.bind(this);
 
         this.state = {
             username: "",
@@ -285,6 +286,11 @@ export default class TempDashboard extends Component {
             })
     }
 
+    clickPlatform(plat_id){
+        //need to check if platform is private and if we need to enter pass to enter 
+        this.props.history.push("/platform/"+plat_id);
+    }
+
     render() {
         
         return (
@@ -356,7 +362,7 @@ export default class TempDashboard extends Component {
                             {this.state.all_platforms.map((platform, index) => (
                                 <Card className = "card_top itemsContainer">
                                 <FontAwesomeIcon className="play_button" icon={faPlay} />
-                                <Card.Img variant="top" src={platform.cover_photo === "" ? DefaultCoverPhoto : platform.cover_photo} className = "card_image"/>
+                                <Card.Img variant="top" onClick={() => this.clickPlatform(platform._id)} src={platform.cover_photo === "" ? DefaultCoverPhoto : platform.cover_photo} className = "card_image"/>
                                     <Card.Body className = "card_body">
                                         <Card.Title className = "card_info">{platform.plat_name}</Card.Title>
                                         <Card.Text className = "card_info">
