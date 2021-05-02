@@ -6,7 +6,7 @@ import SignUp from "./components/signup.component";
 import Login from "./components/login.component";
 import ForgotPassword from "./components/forgot_password.component";
 //import Dashboard from "./components/dashboard.component";
-import UsePlatform from "./components/useplatform.component"
+import UseCategory from "./components/usecategory.component"
 import EditPlatform from './components/editplatform.component';
 import EditPage from './components/editpage.component';
 import TempDashboard from "./components/tempdashboard.component"
@@ -25,10 +25,10 @@ function App() {
         <Route path="/forgot" exact component={ForgotPassword} />
         <Route path="/dashboard" exact component={TempDashboard} />
         <Route path="/platform/:id" component = {Platform} />
-        <Route path="/useplatform/:id" component = {UsePlatform}/>
+        <Route path="/usecategory/:id/:id" component = {UseCategory}/>
         <Route path="/editplatform/:id" component = {EditPlatform}/>
         <Route path="/editcategory/:id/:id" component = {EditCategory}/>
-        <Route path="/editpage/:id/:id" component = {EditPage}/>
+        <Route path="/editpage/:id/:id/:id" component = {EditPage}/>
       </div>
     </Router>
   ); 
