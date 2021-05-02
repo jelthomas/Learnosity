@@ -181,7 +181,10 @@ export default class SignUp extends Component {
             email: this.state.email,
             password: this.state.password,
             security_question: this.state.securityQuestion,
-            security_answer:    this.state.securityAnswer
+            security_answer: this.state.securityAnswer,
+            created_platforms: [],
+            created_categories: [],
+            favorited_platforms: []
         }
 
         api.post('/user/signup',(user));

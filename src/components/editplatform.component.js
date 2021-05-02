@@ -12,21 +12,21 @@ export default class EditPlatform extends Component {
         super(props);
         
         this.updatePlatformFormat = this.updatePlatformFormat.bind(this);
-        this.addPageToPlatform = this.addPageToPlatform.bind(this);
+        this.addCategoryToPlatform = this.addCategoryToPlatform.bind(this);
         this.setFileName = this.setFileName.bind(this);
         this.setPlatformCoverPage = this.setPlatformCoverPage.bind(this);
         this.setPlatformPrivacy = this.setPlatformPrivacy.bind(this);
         this.setPlatformPublish = this.setPlatformPublish.bind(this);
         this.changePlatName = this.changePlatName.bind(this);
         this.changePrivacyPass = this.changePrivacyPass.bind(this);
-        this.updateAllPageInfo = this.updateAllPageInfo.bind(this);
-        this.editPage = this.editPage.bind(this);
+        this.updateAllCategoryInfo = this.updateAllCategoryInfo.bind(this);
+        this.editCategory = this.editCategory.bind(this);
         
         this.state = {
             user_id: '',
             platformFormat:'',
             fileName:'',
-            allPageInfo:[]
+            allCategoriesInfo:[]
         }
     }
 
@@ -48,12 +48,12 @@ export default class EditPlatform extends Component {
         });
     }
 
-    updateAllPageInfo(){
+    updateAllCategoryInfo(){
 
         console.log("INSIDE updatePlatformFormat")
         
         var platform_format_id = this.props.location.pathname.substring(14);
-        var allPages
+        var allCategories
 
 
         api.get('/platformFormat/getSpecificPlatformFormat/'+platform_format_id)
@@ -61,16 +61,15 @@ export default class EditPlatform extends Component {
             console.log(response)
             this.setState({platformFormat:response.data[0]})
 
-            
-            var pageArray = response.data[0].pages
+            var categoriesArray = response.data[0].categories
 
-            api.post('/pageFormat/getAllPages',{pages_id:pageArray})
+            api.post('/categoryFormat/getAllCategories',{categories_id:categoriesArray})
             .then(response =>{
                 
-                allPages = response.data
-                console.log(allPages)
+                allCategories = response.data
+                console.log(allCategories)
 
-                this.setState({allPageInfo:allPages})
+                this.setState({allCategoriesInfo:allCategories})
             })
             .catch(error => {
                 console.log(error.response)
@@ -83,40 +82,32 @@ export default class EditPlatform extends Component {
 
 
 
-    addPageToPlatform(){
-        console.log("adding page to platform")
+    addCategoryToPlatform(){
+        console.log("adding category to platform")
 
 
-        //create page 
-        const newPage= {
-            type:"Multiple Choice",
-            prompt : "Default MC",
-            audio_file : "",
-            page_title : "Default Page",
-            multiple_choices : ["choice"],
-            multiple_choice_answer : "answer",
-            matching_pairs: "",
-            fill_in_the_blank_answers:"",
-            clock:1,
-            timer_answers:[],
-            order: this.state.platformFormat.pages.length
-
+        //create category
+        const newCategory= {
+            cat_name:"Default Category",
+            platform_id : this.props.location.pathname.substring(14),
+            cat_photo:"",
+            pages : []
         }
-        //create page
-        api.post('/pageFormat/add',newPage)
+        //create category in database
+        api.post('/categoryFormat/add',newCategory)
         .then(response => {
             console.log(response.data._id)
 
-            //add page to platform 
-            const addToPlat = {
+            //add category to platform 
+            const addToCat = {
                 platform_format_id:this.state.platformFormat._id,
-                page_format_id : response.data._id
+                category_id : response.data._id
             }
-            api.post('/platformFormat/addToPages',addToPlat)
+            api.post('/platformFormat/addToCategories',addToCat)
             .then(response => {
                 console.log(response)
                 //updates platform format so page is rendered properly
-                this.updateAllPageInfo();
+                this.updateAllCategoryInfo();
               })
             .catch(error => {
                 console.log(error.response)
@@ -308,19 +299,20 @@ export default class EditPlatform extends Component {
         }
     }
 
-    editPage(page_id){
-        console.log(page_id)
+    editCategory(category_id){
+        console.log(category_id)
 
         var platform_format_id = this.props.location.pathname.substring(14);
 
-        this.props.history.push(`/editPage/`+ platform_format_id +'/' +page_id);
+        //need to fix editCategory url and 
+        this.props.history.push(`/editCategory/`+ platform_format_id +'/' + category_id);
     }
 
     //REMEMBER TO GRAB THE PLATFORM_FORMAT BASED ON THE URL 
     //SAVE VALUES TO A STATE VARIABLE
     componentDidMount(){
         var token = localStorage.getItem('usertoken');
-        var allPages;
+        var allCategories;
         var validToken = false;
         if(token){
             //Token in session storage
@@ -355,15 +347,16 @@ export default class EditPlatform extends Component {
                         .then(response => {
 							this.setState({platformFormat:response.data[0]})
 
-                            var pageArray = response.data[0].pages
+                            var categoriesArray = response.data[0].categories
 
-                            api.post('/pageFormat/getAllPages',{pages_id:pageArray})
+                            //
+                            api.post('/categoryFormat/getAllCategories',{categories_id:categoriesArray})
                             .then(response =>{
                                 
-                                allPages = response.data
-                                console.log(allPages)
+                                allCategories = response.data
+                                console.log(allCategories)
 
-                                this.setState({allPageInfo:allPages})
+                                this.setState({allCategoriesInfo:allCategories})
                             })
                             .catch(error => {
                                 console.log(error.response)
@@ -397,7 +390,7 @@ render() {
         
     return (
         <div style={{height: "100vh", background: "#edd2ae", verticalAlign:"middle"}}>
-            <button onClick={this.addPageToPlatform}>Add Page</button>
+            <button onClick={this.addCategoryToPlatform}>Add Category</button>
             <img  
                 src={this.state.platformFormat.cover_photo === "" ? DefaultCoverPhoto : this.state.platformFormat.cover_photo} 
                 width = {200}
@@ -427,8 +420,8 @@ render() {
             </select>
             <input type="password" id="privacyPassword" disabled={this.state.platformFormat.is_public} value = {this.state.platformFormat.privacy_password} onChange = {this.changePrivacyPass}/>
             <div>
-            {this.state.allPageInfo.map((page) => (
-                <button onClick={() => this.editPage(page._id)}>{page.page_title}</button>
+            {this.state.allCategoriesInfo.map((category) => (
+                <button onClick={() => this.editCategory(category._id)}>{category.category_name}</button>
             ))}
             </div>
         </div>
