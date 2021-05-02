@@ -11,7 +11,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFlag, faCheckCircle, faTimesCircle } from "@fortawesome/free-regular-svg-icons";
 require('dotenv').config();
 
-export default class UsePlatform extends Component {
+export default class UseCategory extends Component {
     constructor(props){
         super(props);
 
@@ -27,13 +27,15 @@ export default class UsePlatform extends Component {
             user_id: '',
             username: '',
             plat_id: '',
+            cat_id:'',
             platData_id: '',
+            catData_id:'',
             pageIndex: '',
             filterPages: '',
             currentPage: '',
             progressVal: 0,
             progressIncrement: 0,
-            completedPlatform: false,
+            completedCategory: false,
             submittedAnswer: false,
             shouldShuffle: true,
             current_mc_array: [],
@@ -74,9 +76,14 @@ export default class UsePlatform extends Component {
                         var user_id = response.data._id;
 
                         //Use platform format ID to grab all data
-                        var platform_format_id = this.props.location.pathname.substring(13);
+                        //get category id 
+                        //url is usecategory/platid/categoryid
+                        //       useplatform/
+                        var category_format_id = this.props.location.pathname.substring(38);
 
-                        api.get('/platformFormat/getPages/'+platform_format_id)
+                        console.log(category_format_id)
+
+                        api.get('/categoryFormat/getPages/'+category_format_id)
                         .then(response => {
                             //Successfully received pages_array
                             var pages_array = response.data.pages;
@@ -87,11 +94,11 @@ export default class UsePlatform extends Component {
                                 //Successfully received all pages information ordered by the order attribute
                                 var page_info_arr = response.data;
 
-                                //Now receive platformData completed_pages for specific platform_format_id and user_id
-                                api.post('/platformData/getPlatformDataCompletedPages', {id: user_id, platid: platform_format_id})
+                                //Now receive categoryData completed_pages for specific category_format_id and user_id
+                                api.post('/categoryData/getCategoryDataCurrentProgressPages', {id: user_id, catid: category_format_id})
                                 .then(response => {
-                                    //Successfully received completed_pages array
-                                    var completed_pages = response.data.completed_pages;
+                                    //Successfully received current_progress array
+                                    var current_progress = response.data.currentProgress_pages;
 
                                     //Now filter pages array by removing objects that contain page_ids that are in the completed_pages array
                                     var filtered_page_info = page_info_arr.slice();
@@ -99,12 +106,12 @@ export default class UsePlatform extends Component {
                                     
                                     //removes values from array if they exist in completed_pages
                                     filtered_page_info = page_info_arr.filter(function(element) {
-                                        return completed_pages.indexOf(element._id) === -1;
+                                        return current_progress.indexOf(element._id) === -1;
                                     }); 
 
                                     //Calculate progress by (length of pages_arr - length of filtered_page_info) / length of pages_arr
                                    
-                                    var completedPlat = (filtered_page_info.length === 0);
+                                    var completedCat = (filtered_page_info.length === 0);
 
                                     //select a page to display
                                     var current_page = filtered_page_info[0];
@@ -139,22 +146,22 @@ export default class UsePlatform extends Component {
                                         matching_values = Object.values(matching_pairs);
                                         matching_pairs_answered = new Array(matching_values.length).fill("");
                                     }
-                                    this.setState({matching_pairs_answered: matching_pairs_answered, matching_pairs_values: matching_values, current_mc_array: arr, segmented: segmented, filterPages: filtered_page_info, pageIndex: 0, currentPage: current_page, progressVal:((page_info_arr.length - filtered_page_info.length)/page_info_arr.length) *100, progressIncrement:(1/page_info_arr.length) *100, completedPlatform: completedPlat})
+                                    this.setState({matching_pairs_answered: matching_pairs_answered, matching_pairs_values: matching_values, current_mc_array: arr, segmented: segmented, filterPages: filtered_page_info, pageIndex: 0, currentPage: current_page, progressVal:((page_info_arr.length - filtered_page_info.length)/page_info_arr.length) *100, progressIncrement:(1/page_info_arr.length) *100, completedCategory: completedCat})
                                 })
                             })
                         })
-                        .catch(err => console.log("Error receiving platform format pages array: " + err));
+                        .catch(err => console.log("Error receiving category format pages array: " + err));
 
                         var username = response.data.username;
                         user_id = decoded._id; 
-                        // this.setState({username: response.data.username, user_id: decoded._id, plat_id:platform_format_id});
+
                         const info ={
                             id: user_id,
-                            platid : platform_format_id
+                            catid : category_format_id
                         }
-                        api.post('/platformData/getSpecificPlatformData/',info)
+                        api.post('/categoryData/getSpecificCategoryData/',info)
                         .then(response=>{
-                            this.setState({platData_id : response.data[0]._id, username: username, user_id: user_id, plat_id:platform_format_id})
+                            this.setState({catData_id : response.data[0]._id, username: username, user_id: user_id, cat_id:category_format_id})
                         })
                     }
                     else{
@@ -216,21 +223,22 @@ export default class UsePlatform extends Component {
             }
         }
     
-        var completed_plat = false;
+        var completed_category = false;
         var current_mc_array = [];
         var segmented = [];
         var matching_values;
         var matching_pairs_answered;
         if(this.state.pageIndex + 1 >= this.state.filterPages.length){
-            completed_plat = true;
-            //set the platformData is_completed to true in database
+            completed_category = true;
+            //set the categoryData is_completed to true in database
             
+            //once completed we need to score accuracy 
             const val = {
                 user_id : this.state.user_id,
-                platform_id : this.state.plat_id
+                cat_id : this.state.cat_id
             }
 
-            api.post('/platformData/setCompletedTrue/',val)
+            api.post('/categoryData/setCompletedTrue/',val)
 
 
         }
@@ -268,7 +276,7 @@ export default class UsePlatform extends Component {
         }
 
 
-        this.setState({matching_pairs_answered: matching_pairs_answered, matching_pairs_values: matching_values, shouldShuffle: true, current_mc_array: current_mc_array, progressVal:this.state.progressVal + this.state.progressIncrement, pageIndex: this.state.pageIndex + 1, completedPlatform: completed_plat, currentPage: current_page,segmented:segmented,submittedAnswer:false,submitted_fib:""});
+        this.setState({matching_pairs_answered: matching_pairs_answered, matching_pairs_values: matching_values, shouldShuffle: true, current_mc_array: current_mc_array, progressVal:this.state.progressVal + this.state.progressIncrement, pageIndex: this.state.pageIndex + 1, completedCategory: completed_category, currentPage: current_page,segmented:segmented,submittedAnswer:false,submitted_fib:""});
     }
 
     shuffleArray(array) {
@@ -299,12 +307,14 @@ export default class UsePlatform extends Component {
         //else  
         const info = {
             user_id : this.state.user_id,
-            platform_id : this.state.plat_id,
-            page_id : this.state.currentPage._id,
+            cat_id : this.state.cat_id,
+            page_id : this.state.currentPage._id,   
         }
 
 
-        api.post('/platformData/updateCompletedPage/',info)
+        // api.post('/categoryData/updateCompletedPage/',info)
+        // api.post('/categoryData/updateCurrentProgress/',info)
+        api.post('/categoryData/updatePageArrays/',info)
 
         this.setState({submittedAnswer:true, shouldShuffle: false, submitted_answer_bool: submitted_answer_bool});
     }
@@ -379,12 +389,12 @@ export default class UsePlatform extends Component {
         //Update completed_pages
         const info = {
             user_id : this.state.user_id,
-            platform_id : this.state.plat_id,
+            cat_id : this.state.cat_id,
             page_id : this.state.currentPage._id,
         }
 
 
-        api.post('/platformData/updateCompletedPage/',info)
+        api.post('/categoryData/updatePageArrays/',info)
         
         this.setState({submittedAnswer: true, submitted_fib: submitted_fib})
     }
@@ -446,14 +456,22 @@ export default class UsePlatform extends Component {
         document.getElementById("matching_bottom").style.marginTop = '10%';
 
         //Update completed_pages
+        // const info = {
+        //     user_id : this.state.user_id,
+        //     platform_id : this.state.plat_id,
+        //     page_id : this.state.currentPage._id,
+        // }
+
+
+        // api.post('/platformData/updateCompletedPage/',info)
+
         const info = {
             user_id : this.state.user_id,
-            platform_id : this.state.plat_id,
+            cat_id : this.state.cat_id,
             page_id : this.state.currentPage._id,
         }
 
-
-        api.post('/platformData/updateCompletedPage/',info)
+        api.post('/categoryData/updatePageArrays/',info)
         
         this.setState({submittedAnswer: true, submitted_fib: submitted_fib})
     }
@@ -534,10 +552,10 @@ export default class UsePlatform extends Component {
                 <div>
                     <button onClick={() => this.props.history.push(`/dashboard`)} className="x_button">X</button>
                 </div>
-                {this.state.completedPlatform === true
+                {this.state.completedCategory === true
                     ?
                         <div style={{textAlign: "center", margin: "auto", fontSize: "40px", padding: "155px"}}>
-                            <p>Congratulations you have finished the platform!</p>
+                            <p>Congratulations you have finished the category!</p>
                             <p>Click below to continue learning</p>
                             <Link to="/dashboard">Explore More</Link>
                         </div>
