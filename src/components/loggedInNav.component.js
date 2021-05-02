@@ -24,30 +24,30 @@ export default class LoggedInNav extends Component {
 
   createPlatform()
   {
-      console.log("CREATE PLATFORM CLICKED")
+      // console.log("CREATE PLATFORM CLICKED")
 
-      const createPlatFormat = {
-          plat_name : "Untitled",
-          owner : this.state.loggedInUser,
-          is_public : true,
-          privacy_password :"",
-          cover_photo :"",
-          pages : [],
-          is_published : false
-      }
+      // const createPlatFormat = {
+      //     plat_name : "Untitled",
+      //     owner : this.state.loggedInUser,
+      //     is_public : true,
+      //     privacy_password :"",
+      //     cover_photo :"",
+      //     pages : [],
+      //     is_published : false
+      // }
 
-      api.post("/platformFormat/add",createPlatFormat)
-      .then(response => {
+      // api.post("/platformFormat/add",createPlatFormat)
+      // .then(response => {
 
-        var platID = response.data._id
+      //   var platID = response.data._id
 
-        console.log(response.data._id)
+      //   console.log(response.data._id)
 
-        this.props.props.history.push('/editPlatform/'+platID)
-      })
-      .catch(error => {
-          console.log(error.response)
-      });
+      //   this.props.props.history.push('/editPlatform/'+platID)
+      // })
+      // .catch(error => {
+      //     console.log(error.response)
+      // });
       
 
 

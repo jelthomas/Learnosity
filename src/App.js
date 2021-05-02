@@ -5,10 +5,13 @@ import Home from "./components/home.component";
 import SignUp from "./components/signup.component";
 import Login from "./components/login.component";
 import ForgotPassword from "./components/forgot_password.component";
-import Dashboard from "./components/dashboard.component";
+//import Dashboard from "./components/dashboard.component";
 import UsePlatform from "./components/useplatform.component"
 import EditPlatform from './components/editplatform.component';
 import EditPage from './components/editpage.component';
+import TempDashboard from "./components/tempdashboard.component"
+import Platform from "./components/platform.component"
+import EditCategory from './components/editcategory.component';
 
 function App() {
   return (
@@ -20,9 +23,11 @@ function App() {
         <Route path="/signup" exact component={SignUp}/>
         <Route path="/login" exact component={Login} />
         <Route path="/forgot" exact component={ForgotPassword} />
-        <Route path="/dashboard" exact component={Dashboard} />
+        <Route path="/dashboard" exact component={TempDashboard} />
+        <Route path="/platform/:id" component = {Platform} />
         <Route path="/useplatform/:id" component = {UsePlatform}/>
         <Route path="/editplatform/:id" component = {EditPlatform}/>
+        <Route path="/editcategory/:id/:id" component = {EditCategory}/>
         <Route path="/editpage/:id/:id" component = {EditPage}/>
       </div>
     </Router>
