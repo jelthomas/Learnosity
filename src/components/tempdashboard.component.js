@@ -120,13 +120,17 @@ export default class TempDashboard extends Component {
                             .then(response => {
                                 if (response.data.length > 5){
                                     canPaginateRightRecent = true
+                                    for (var i = 0; i < 5; i++){
+                                        recent_platforms.push({})
+                                    }
                                 }
                                 else {
                                     canPaginateRightRecent = false
+                                    for (var i = 0; i < response.data.length; i++){
+                                        recent_platforms.push({})
+                                    }
                                 }
-                                for (var i = 0; i < 5; i++){
-                                    recent_platforms.push({})
-                                }
+                                
                                 var recent_platform_formats = response.data
                                 console.log("WHAT IS THIS", recent_platform_formats)
                                 var correct_index
