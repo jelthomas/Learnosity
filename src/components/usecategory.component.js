@@ -26,7 +26,6 @@ export default class UseCategory extends Component {
         this.state = {
             user_id: '',
             username: '',
-            plat_id: '',
             cat_id:'',
             platData_id: '',
             catData_id:'',
@@ -43,7 +42,8 @@ export default class UseCategory extends Component {
             submitted_fib_correct: '',
             segmented: [],
             matching_pairs_values: [],
-            matching_pairs_answered: []
+            matching_pairs_answered: [],
+            platformFormat: ''
         }
     }
 
@@ -80,8 +80,8 @@ export default class UseCategory extends Component {
                         //url is usecategory/platid/categoryid
                         //       useplatform/
                         var category_format_id = this.props.location.pathname.substring(38);
-
-                        console.log(category_format_id)
+                        
+                        var plat_id = this.props.location.pathname.substring(13,37);
 
                         api.get('/categoryFormat/getPages/'+category_format_id)
                         .then(response => {
@@ -99,6 +99,7 @@ export default class UseCategory extends Component {
                                 .then(response => {
                                     //Successfully received current_progress array
                                     var current_progress = response.data.currentProgress_pages;
+                                    var is_completed = response.data.is_completed;
 
                                     //Now filter pages array by removing objects that contain page_ids that are in the completed_pages array
                                     var filtered_page_info = page_info_arr.slice();
@@ -143,10 +144,15 @@ export default class UseCategory extends Component {
                                     var matching_pairs_answered;
                                     if(filtered_page_info.length !== 0 && current_page.type === "Matching"){
                                         var matching_pairs = current_page.matching_pairs;
-                                        matching_values = Object.values(matching_pairs);
+                                        matching_values = this.shuffleArray(Object.values(matching_pairs));
                                         matching_pairs_answered = new Array(matching_values.length).fill("");
                                     }
-                                    this.setState({matching_pairs_answered: matching_pairs_answered, matching_pairs_values: matching_values, current_mc_array: arr, segmented: segmented, filterPages: filtered_page_info, pageIndex: 0, currentPage: current_page, progressVal:((page_info_arr.length - filtered_page_info.length)/page_info_arr.length) *100, progressIncrement:(1/page_info_arr.length) *100, completedCategory: completedCat})
+                                    api.get("/platformFormat/getSpecificPlatformFormat/"+ plat_id)
+                                    .then(platform => {
+                                        var platformFormat = {name: platform.data[0].plat_name, id: plat_id};
+                                        this.setState({is_completed: is_completed, platformFormat: platformFormat, matching_pairs_answered: matching_pairs_answered, matching_pairs_values: matching_values, current_mc_array: arr, segmented: segmented, filterPages: filtered_page_info, pageIndex: 0, currentPage: current_page, progressVal:((page_info_arr.length - filtered_page_info.length)/page_info_arr.length) *100, progressIncrement:(1/page_info_arr.length) *100, completedCategory: completedCat})
+                                    })
+                                    
                                 })
                             })
                         })
@@ -238,8 +244,26 @@ export default class UseCategory extends Component {
                 cat_id : this.state.cat_id
             }
 
-            api.post('/categoryData/setCompletedTrue/',val)
-
+            if(!this.state.is_completed){
+                //Divide accuracy by length of completed_pages
+                api.post('/categoryData/getAccuracy_and_completed_pages', {id: this.state.user_id, cat_id: this.state.cat_id})
+                .then((res) => {
+                    console.log(res);
+                    var accuracy = res.data.accuracy;
+                    var completed_pages = res.data.completed_pages;
+                    console.log("Accuracy:");
+                    console.log(accuracy);
+                    console.log(completed_pages);
+                    api.post('/categoryData/divide_accuracy', {user_id: this.state.user_id, cat_id: this.state.cat_id, completed_pages_len: completed_pages.length, accuracy: accuracy})
+                    .then(() => {
+                        api.post('/categoryData/setCompletedTrue/',val)
+                    })
+                .catch(err => console.log(err));
+                })
+            }
+            else{
+                api.post('/categoryData/setCompletedTrue/',val)
+            }
 
         }
         else{
@@ -303,7 +327,13 @@ export default class UseCategory extends Component {
 
         
         //if platform has not been completed award experience 
-
+        if(!this.state.is_completed && submitted_answer_bool){
+            //User got this MC question correct
+            //Increase accuracy by 100
+            api.post('/categoryData/increment_accuracy_by', {user_id : this.state.user_id, cat_id : this.state.cat_id, inc: 100})
+            .then()
+            .catch(err => console.log(err));
+        }
         //else  
         const info = {
             user_id : this.state.user_id,
@@ -386,6 +416,15 @@ export default class UseCategory extends Component {
             submitted_fib = 'incorrect';
         }
 
+        if(!this.state.is_completed){
+            //Calculate increment value
+            var inc = (total_correct / users_correct.length).toFixed(2) * 100;
+
+            api.post('/categoryData/increment_accuracy_by', {user_id : this.state.user_id, cat_id : this.state.cat_id, inc: inc})
+            .then()
+            .catch(err => console.log(err));
+        }
+
         //Update completed_pages
         const info = {
             user_id : this.state.user_id,
@@ -453,17 +492,18 @@ export default class UseCategory extends Component {
             submitted_fib = 'incorrect';
         }
 
+        if(!this.state.is_completed){
+            //Calculate increment value
+            var inc = (total_correct / users_correct.length).toFixed(2) * 100;
+            console.log("Incremement by: ");
+            console.log(inc);
+            api.post('/categoryData/increment_accuracy_by', {user_id : this.state.user_id, cat_id : this.state.cat_id, inc: inc})
+            .then()
+            .catch(err => console.log(err));
+        }
+
         document.getElementById("matching_bottom").style.marginTop = '10%';
 
-        //Update completed_pages
-        // const info = {
-        //     user_id : this.state.user_id,
-        //     platform_id : this.state.plat_id,
-        //     page_id : this.state.currentPage._id,
-        // }
-
-
-        // api.post('/platformData/updateCompletedPage/',info)
 
         const info = {
             user_id : this.state.user_id,
@@ -545,19 +585,26 @@ export default class UseCategory extends Component {
     }
 
     render() {
-        
+
+        var plat_id;
+        var plat_name;
+        if(this.state.platformFormat.id !== ''){
+            plat_id = this.state.platformFormat.id;
+            plat_name = this.state.platformFormat.name;
+        }
+
         return (
             <div style={{height: "100vh", background: "#edd2ae", verticalAlign:"middle", overflowY:"auto"}}>
                 <ProgressBar style={{background: "rgb(139 139 139)"}} now={this.state.progressVal} />
                 <div>
-                    <button onClick={() => this.props.history.push(`/dashboard`)} className="x_button">X</button>
+                    <button onClick={() => this.props.history.push("/platform/" + plat_id)} className="x_button">X</button>
                 </div>
                 {this.state.completedCategory === true
                     ?
                         <div style={{textAlign: "center", margin: "auto", fontSize: "40px", padding: "155px"}}>
-                            <p>Congratulations you have finished the category!</p>
-                            <p>Click below to continue learning</p>
-                            <Link to="/dashboard">Explore More</Link>
+                            <p>Congratulations you have finished the quiz!</p>
+                            <p>Click below to continue learning from {plat_name}</p>
+                            <Link className = "explore_more" to={"/platform/" + plat_id}>Explore More</Link>
                         </div>
                     :
                         (this.state.currentPage !== ''
