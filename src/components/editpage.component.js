@@ -13,6 +13,10 @@ export default class EditPage extends Component {
         this.changePageName = this.changePageName.bind(this);
         this.changePrompt = this.changePrompt.bind(this);
         this.changePageType = this.changePageType.bind(this);
+        this.changeMCC = this.changeMCC.bind(this);
+        this.changeMCA = this.changeMCA.bind(this);
+        this.addMCC = this.addMCC.bind(this);
+        this.removeMCC = this.removeMCC.bind(this);
 
         this.state = {
             user_id: '',
@@ -21,7 +25,7 @@ export default class EditPage extends Component {
     }
 
     updatePageFormat(){
-        var page_id = this.props.location.pathname.substring(35);
+        var page_id = this.props.location.pathname.substring(60);
 
                         
         api.get('/pageFormat/getSpecificPage/'+page_id)
@@ -120,6 +124,130 @@ export default class EditPage extends Component {
         });
     }
 
+    changeMCC(ind) {
+        //method for changing value inside of a multiple choice 
+        //needs to update in state and database 
+        var inputVal = document.getElementById('changeMCC'+ind).value
+
+        if(inputVal.length < 1)
+        {
+            var MCC = this.state.pageFormat;
+            MCC.multiple_choices[ind] = inputVal;
+
+            document.getElementById('changeMCC'+ind).placeholder = "Multiple Choice Choice Required";
+
+            this.setState({pageFormat:MCC});
+            return
+        }   
+        else 
+        {
+            //temp variable with updated value at index
+            var MCC = this.state.pageFormat;
+            MCC.multiple_choices[ind] = inputVal;
+
+
+            const newMCC = {
+                pageID : this.state.pageFormat._id,
+                newChoices : MCC.multiple_choices
+            }
+
+            //call update page name
+            api.post('/pageFormat/updateMultipleChoiceChoice',newMCC)
+            .then(response => {
+                console.log(response)
+                //updates platform format so page is rendered properly
+                this.updatePageFormat();
+            })
+            .catch(error => {
+                console.log(error)
+            });
+        }
+    }
+
+    changeMCA() {
+        //method for changing value of a multiple choice answer
+        //needs to update in state and database 
+
+        var inputVal = document.getElementById('changeMCA').value
+
+        if(inputVal.length < 1)
+        {
+            var MCA = this.state.pageFormat;
+            MCA.multiple_choice_answer = inputVal;
+
+            document.getElementById('changeMCA').placeholder = "Multiple Choice Answer Required";
+
+            this.setState({pageFormat:MCA});
+            return
+        }   
+        else 
+        {
+            const newMCA = {
+                pageID : this.state.pageFormat._id,
+                newMCAnswer : inputVal
+            }
+
+            //call update page name
+            api.post('/pageFormat/updateMultipleChoiceAnswer',newMCA)
+            .then(response => {
+                console.log(response)
+                //updates platform format so page is rendered properly
+                this.updatePageFormat();
+            })
+            .catch(error => {
+                console.log(error)
+            });
+        }
+    }
+
+    addMCC() {
+        //adds multiple choice choice to the array 
+        //will be disabled when there are 5 choices 
+
+        var page_id = this.props.location.pathname.substring(60);
+
+        const newMCC = {
+            page_format_id : page_id,
+            value : "New Choice"
+        }
+
+        api.post('/pageFormat/addToMCC',newMCC)
+        .then(response => {
+            //console.log(response)
+            //updates page format so page is rendered properly
+            this.updatePageFormat();
+        })
+        .catch(error => {
+            console.log(error)
+        });
+    }
+
+    removeMCC(ind) {
+
+
+        var mcArray = this.state.pageFormat.multiple_choices;
+        mcArray.splice(ind,1)
+
+        console.log(mcArray)
+
+        const newMCC = {
+            pageID : this.state.pageFormat._id,
+            newChoices : mcArray
+        }
+
+        //call update page name
+        api.post('/pageFormat/updateMultipleChoiceChoice',newMCC)
+        .then(response => {
+            console.log(response)
+            //updates platform format so page is rendered properly
+            this.updatePageFormat();
+        })
+        .catch(error => {
+            console.log(error)
+        });
+
+    }
+
     componentDidMount(){
         var token = localStorage.getItem('usertoken');
         var validToken = false;
@@ -149,7 +277,7 @@ export default class EditPage extends Component {
                         var user_id = response.data._id;
 
 
-                        var page_id = this.props.location.pathname.substring(35);
+                        var page_id = this.props.location.pathname.substring(60);
 
                         
                         api.get('/pageFormat/getSpecificPage/'+page_id)
@@ -194,6 +322,50 @@ render() {
                 <option value="Matching">Matching</option>
                 <option value="Timer">Timer</option>
             </select>
+
+            {this.state.pageFormat.type === "Multiple Choice"
+                ?
+                    <div >
+                        <p>Multiple Choice Type </p>
+                        <button onClick={this.addMCC} disabled = {this.state.pageFormat.multiple_choices.length > 4 ? true : false}>Add Choice</button>
+                        <p>Choices:</p>
+                        {this.state.pageFormat.multiple_choices.map((choice,index) => (
+                            <div>
+                            <input type="text" id={"changeMCC"+ index} value = {choice} onChange = {()=>this.changeMCC(index)}/>
+                            <button onClick={()=>this.removeMCC(index)} disabled = {this.state.pageFormat.multiple_choices.length < 2 ? true : false}>X</button>
+                            </div>
+                        ))}
+                        <p>Answer:</p>
+                        <input type="text" id="changeMCA" value = {this.state.pageFormat.multiple_choice_answer} onChange = {this.changeMCA}/>
+                    </div>
+                :
+                    (this.state.pageFormat.type === "Fill in the Blank"
+                    ?
+                        <div >
+                            <p>Fill in the Blank Type </p>
+                        </div>
+                        
+                    :
+
+                        (this.state.pageFormat.type === "Matching"
+                        ?
+                            <div >
+                                <p>Matching Type </p>
+                            </div>
+                        :
+                            (this.state.pageFormat.type === "Timer"
+                            ?
+                                <div >
+                                    <p>Timer Type </p>
+                                </div>
+                            :
+                                <div >
+                                    <p>IMPOSSIBLE</p>
+                                </div>
+                            )
+                        )
+                    )
+            }
         </div>
     );
 }
