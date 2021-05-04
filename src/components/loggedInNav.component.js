@@ -112,13 +112,13 @@ export default class LoggedInNav extends Component {
         <ul class="navbar-nav ml-auto">
           <div style={{display:'flex'}}>
             <li className="navbar-item">
-              <Link onClick={this.createPlatform} className="nav-link navbarDropdown" style={{padding: '5px',color:'#00db00',fontFamily:"Quando",fontSize:'25px', paddingRight: "55px"}}>Create Platform</Link>
+              <Link onClick={this.createPlatform} className="nav-link navbarDropdown logged_link" style={{padding: '5px',color:'#00db00',fontFamily:"Quando",fontSize:'25px', paddingRight: "55px"}}>Create Platform</Link>
             </li>
             <li className="navbar-item">
-              <Link to ="/dashboard" className="nav-link navbarDropdown"  style={{padding: '5px',color:'#00db00',fontFamily:"Quando",fontSize:'25px', paddingRight: "55px"}}  >Leaderboard</Link>
+              <Link to ="/dashboard" className="nav-link navbarDropdown logged_link"  style={{padding: '5px',color:'#00db00',fontFamily:"Quando",fontSize:'25px', paddingRight: "55px", color: "rgb(0, 219, 0) !imporant"}}  >Leaderboard</Link>
             </li>
             <li className="navbar-item">
-              <Link to ="/dashboard" className="nav-link navbarDropdown"  style={{padding: '5px',color:'#00db00',fontFamily:"Quando",fontSize:'25px', paddingRight: "55px"}}  >My Platforms</Link>
+              <Link to ="/dashboard" className="nav-link navbarDropdown logged_link"  style={{padding: '5px',color:'#00db00',fontFamily:"Quando",fontSize:'25px', paddingRight: "55px", color: "rgb(0, 219, 0) !imporant"}}  >My Platforms</Link>
             </li>
           </div>
             <Dropdown style={{marginTop:'.7%'}}>

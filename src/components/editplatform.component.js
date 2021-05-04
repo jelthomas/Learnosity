@@ -349,6 +349,8 @@ export default class EditPlatform extends Component {
 
                             var categoriesArray = response.data[0].categories
 
+                            console.log(response.data[0].categories)
+
                             //
                             api.post('/categoryFormat/getAllCategories',{categories_id:categoriesArray})
                             .then(response =>{
