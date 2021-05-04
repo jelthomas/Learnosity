@@ -25,6 +25,8 @@ export default class TempDashboard extends Component {
 
         this.leftAllPlatforms = this.leftAllPlatforms.bind(this);
         this.rightAllPlatforms = this.rightAllPlatforms.bind(this);
+        this.leftRecentPlatforms = this.leftRecentPlatforms.bind(this);
+        this.rightRecentPlatforms = this.rightRecentPlatforms.bind(this);
         this.retrieveAllPlatforms = this.retrieveAllPlatforms.bind(this);
         this.onChangeSortBy = this.onChangeSortBy.bind(this);
         this.onChangeFilterBy = this.onChangeFilterBy.bind(this);
@@ -35,6 +37,7 @@ export default class TempDashboard extends Component {
             username: "",
             id: "",
             users_favorite_platforms: [],
+            users_recent_platforms: [],
             recent_platforms: [],
             all_platforms: [],
             paginate_rec_index: 0,
@@ -81,24 +84,21 @@ export default class TempDashboard extends Component {
                         
                         //Begin getting platforms for display
                         var favorite_platforms = response.data.favorited_platforms;
-                        var user_recent_platforms = response.data.recently_played;
+                        var user_recent_platforms = response.data.recent_platforms;
                         api.post('/platformFormat/getNonUserPlatforms/'+ response.data.username, {index: this.state.paginate_all_index, max: 21, argumentForAllPlatforms: this.state.argumentForAllPlatforms, filterBy: this.state.filterBy, userSearch: this.state.searchBy})
                         .then(all_plat_ids => {
                             var platform_formats
+                            var canPaginateRightAll
                             if (all_plat_ids.data.length > 20){
                                 platform_formats = all_plat_ids.data.slice(0,20)
-                                this.setState({
-                                    canPaginateRightAll: true
-                                })
+                                canPaginateRightAll= true
                             }
                             else {
                                 platform_formats = all_plat_ids.data.slice(0, all_plat_ids.data.length)
-                                this.setState({
-                                    canPaginateRightAll: false
-                                })
+                                canPaginateRightAll= false
                             }
                             for(var i = 0; i < platform_formats.length; i++){
-                                if (favorite_platforms.includes(platform_formats[i])){
+                                if (favorite_platforms.includes(platform_formats[i]._id)){
                                     platform_formats[i].is_favorited = true;
                                 }
                                 else {
@@ -106,9 +106,66 @@ export default class TempDashboard extends Component {
                                 }
                             }
 
-                            this.setState({
-                                all_platforms: platform_formats, users_favorite_platforms: favorite_platforms, username: response.data.username, id: decoded._id 
+                            var canPaginateRightRecent
+                            var index_dict = {};
+                            console.log("USER FAVORITE PLATFORMS", favorite_platforms, platform_formats)
+                            var temp = user_recent_platforms.slice(0,5)
+                            for (var i = 0; i < temp.length; i++){
+                                index_dict[temp[i]] = i
+                            }
+                            console.log("INDEX DICT", index_dict)
+                            //Start of getting recent platforms
+                            var recent_platforms = [];
+                            api.post('/platformFormat/returnFormats/', {ids: user_recent_platforms.slice(0, 6)})
+                            .then(response => {
+                                if (response.data.length > 5){
+                                    canPaginateRightRecent = true
+                                }
+                                else {
+                                    canPaginateRightRecent = false
+                                }
+                                for (var i = 0; i < 5; i++){
+                                    recent_platforms.push({})
+                                }
+                                var recent_platform_formats = response.data
+                                console.log("WHAT IS THIS", recent_platform_formats)
+                                var correct_index
+                                for (var i = 0; i < recent_platform_formats.length; i++){
+                                    if (index_dict[recent_platform_formats[i]._id] !== undefined){
+                                        correct_index = index_dict[recent_platform_formats[i]._id];
+                                        recent_platforms[correct_index].plat_name = recent_platform_formats[i].plat_name 
+                                        recent_platforms[correct_index].owner = recent_platform_formats[i].owner
+                                        recent_platforms[correct_index].is_public = recent_platform_formats[i].is_public
+                                        recent_platforms[correct_index].privacy_password = recent_platform_formats[i].privacy_password
+                                        recent_platforms[correct_index].cover_photo = recent_platform_formats[i].cover_photo
+                                        recent_platforms[correct_index]._id = recent_platform_formats[i]._id
+                                    }
+                                }
+                                for (var i = 0; i < recent_platforms.length; i++){
+                                    if (favorite_platforms.includes(recent_platforms[i]._id)){
+                                        recent_platforms[i].is_favorited = true
+                                    }
+                                    else {
+                                        recent_platforms[i].is_favorited = false
+                                    }
+                                }
+                                this.setState({
+                                    all_platforms: platform_formats, 
+                                    recent_platforms: recent_platforms,
+                                    users_favorite_platforms: favorite_platforms,
+                                    users_recent_platforms: user_recent_platforms, 
+                                    username: response.data.username, 
+                                    id: decoded._id,
+                                    canPaginateRightRecent: canPaginateRightRecent,
+                                    canPaginateRightAll: canPaginateRightAll
+                                })
+                                
+                                // console.log("AHAHHAHHAH". this.state.recent_platforms[0])
+                                
                             })
+
+
+                            
                         })
                     }
                     else{
@@ -135,6 +192,7 @@ export default class TempDashboard extends Component {
     //SHOULD BE ABLE TO REMOVE FIRST IF STATEMENT WHEN DISABLING BUTTON WORKS
     leftAllPlatforms(){
         if (this.state.paginate_all_index > 0){
+            var canPaginateLeftAll
             if (this.state.paginate_all_index - 1 === 0){
                 this.setState({
                     canPaginateLeftAll: false
@@ -149,9 +207,17 @@ export default class TempDashboard extends Component {
             api.post('/platformFormat/getNonUserPlatforms/'+ this.state.username, {index: this.state.paginate_all_index-1, max: 21, argumentForAllPlatforms: this.state.argumentForAllPlatforms, filterBy: this.state.filterBy, userSearch: this.state.searchBy})
             .then(all_plat_ids => {
                 var platform_formats = all_plat_ids
-                
+                var canPaginateRightAll
+                if (all_plat_ids.data.length > 20){
+                    canPaginateRightAll = true
+                    platform_formats = all_plat_ids.data.splice(0,20)
+                }
+                else {
+                    canPaginateRightAll = false
+                    platform_formats = all_plat_ids.data
+                }
                 for(var i = 0; i < platform_formats.length; i++){
-                    if (favorite_platforms.includes(platform_formats[i])){
+                    if (this.state.users_favorite_platforms.includes(platform_formats[i]._id)){
                         platform_formats[i].is_favorited = true;
                     }
                     else {
@@ -161,7 +227,9 @@ export default class TempDashboard extends Component {
 
                 this.setState({
                     all_platforms: platform_formats,
-                    paginate_all_index: this.state.paginate_all_index - 1
+                    paginate_all_index: this.state.paginate_all_index - 1,
+                    canPaginateLeftAll: canPaginateLeftAll,
+                    canPaginateRightAll: canPaginateRightAll
                 })
             })
 
@@ -188,7 +256,7 @@ export default class TempDashboard extends Component {
                     })
                 }
                 for(var i = 0; i < platform_formats.length; i++){
-                    if (favorite_platforms.includes(platform_formats[i])){
+                    if (favorite_platforms.includes(platform_formats[i]._id)){
                         platform_formats[i].is_favorited = true;
                     }
                     else {
@@ -201,6 +269,141 @@ export default class TempDashboard extends Component {
                     paginate_all_index: this.state.paginate_all_index + 1
                 })
             })       
+    }
+
+    leftRecentPlatforms() {
+        var index_dict = {};
+        var canPaginateRightRecent
+        var temp = this.state.users_recent_platforms.slice((this.state.paginate_rec_index-1)*5, (this.state.paginate_rec_index) * 5)
+        for (var i = 0; i < temp.length; i++){
+            index_dict[temp[i]] = i
+        }
+        //Start of getting recent platforms
+        var recent_platforms = [];
+        var favorite_platforms = this.state.users_favorite_platforms
+        api.post('/platformFormat/returnFormats/', {ids: temp})
+        .then(response => {
+            canPaginateRightRecent = true
+            for (var i = 0; i < response.data.length; i++){
+                recent_platforms.push({})
+            }
+            var recent_platform_formats = response.data;
+            var correct_index
+            for (var i = 0; i < recent_platform_formats.length; i++){
+                correct_index = index_dict[recent_platform_formats[i]._id];
+                recent_platforms[correct_index] = recent_platform_formats[i]
+            }
+
+            for(var i = 0; i < recent_platforms.length; i++){
+                if (favorite_platforms.includes(recent_platforms[i]._id)){
+                    recent_platforms[i].is_favorited = true;
+                }
+                else {
+                    recent_platforms[i].is_favorited = false;
+                }
+            }
+            this.setState({
+                recent_platforms: recent_platforms,
+                canPaginateRightRecent: canPaginateRightRecent,
+                paginate_rec_index: this.state.paginate_rec_index - 1
+            })
+            
+        })
+        
+    }
+
+    rightRecentPlatforms() {
+        var index_dict = {};
+        var canPaginateRightRecent
+        var favorite_platforms = this.state.users_favorite_platforms
+        var temp = this.state.users_recent_platforms.slice((this.state.paginate_rec_index+1)*5, (this.state.paginate_rec_index+2) * 5 + 1)
+        for (var i = 0; i < temp.length; i++){
+            index_dict[temp[i]] = i
+        }
+        //Start of getting recent platforms
+        var recent_platforms = [];
+        api.post('/platformFormat/returnFormats/', {ids: temp})
+        .then(response => {
+            if (response.data.length > 5){
+                canPaginateRightRecent = true
+            }
+            else {
+                canPaginateRightRecent = false
+            }
+            for (var i = 0; i < response.data.length; i++){
+                recent_platforms.push({})
+            }
+            var recent_platform_formats = response.data;
+            var correct_index
+            for (var i = 0; i < recent_platform_formats.length; i++){
+                correct_index = index_dict[recent_platform_formats[i]._id];
+                recent_platforms[correct_index] = recent_platform_formats[i]
+                console.log("CORRECT INDEX", correct_index, recent_platforms)
+            }
+
+            for(var i = 0; i < recent_platforms.length; i++){
+                if (favorite_platforms.includes(recent_platforms[i]._id)){
+                    recent_platforms[i].is_favorited = true;
+                }
+                else {
+                    recent_platforms[i].is_favorited = false;
+                }
+            }
+            this.setState({
+                recent_platforms: recent_platforms,
+                canPaginateRightRecent: canPaginateRightRecent,
+                paginate_rec_index: this.state.paginate_rec_index + 1
+            })
+            
+        })
+        
+    }
+
+    toggleFavoriteRecent(index){
+        //Update is_favorited attribute for recent platform at index
+        var recent_plats = this.state.recent_platforms;
+        recent_plats[index].is_favorited = !recent_plats[index].is_favorited;
+        var fav_plats = this.state.users_favorite_platforms
+        if (fav_plats.includes(recent_plats[index]._id)){
+            fav_plats = fav_plats.filter(item => item !== recent_plats[index]._id)
+        }
+        else {
+            fav_plats.push(recent_plats[index]._id)
+        }
+        var all_plats = this.state.all_platforms
+        for (var i = 0; i < all_plats.length; i++){
+            if (all_plats[i]._id === recent_plats[index]._id){
+                all_plats[i].is_favorited = !all_plats[i].is_favorited
+            }
+        }
+        api.post('/user/updateFavoritePlatforms', {userID: this.state.id, fav_plats: fav_plats})
+        .then();
+        this.setState({recent_platforms: recent_plats, all_platforms: all_plats, users_favorite_platforms: fav_plats});
+
+    }
+
+    toggleFavoriteAll(index){
+        //Update is_favorited attribute for recent platform at index
+        var all_plats = this.state.all_platforms;
+        all_plats[index].is_favorited = !all_plats[index].is_favorited;
+        var fav_plats = this.state.users_favorite_platforms
+        if (fav_plats.includes(all_plats[index]._id)){
+            fav_plats = fav_plats.filter(item => item !== all_plats[index]._id)
+        }
+        else {
+            fav_plats.push(all_plats[index]._id)
+        }
+        var recent_plats = this.state.recent_platforms
+        for (var i = 0; i < recent_plats.length; i++){
+            if (recent_plats[i]._id === all_plats[index]._id){
+                recent_plats[i].is_favorited = !recent_plats[i].is_favorited
+            }
+        }
+
+        api.post('/user/updateFavoritePlatforms', {userID: this.state.id, fav_plats: fav_plats})
+        .then();
+        this.setState({all_platforms: all_plats, recent_platforms: recent_plats, users_favorite_platforms: fav_plats});
+
     }
 
     onChangeSortBy() {
@@ -288,11 +491,29 @@ export default class TempDashboard extends Component {
 
     clickPlatform(plat_id){
         //need to check if platform is private and if we need to enter pass to enter 
+        if (!this.state.users_recent_platforms.includes(plat_id)){
+            this.setState({
+                users_recent_platforms: this.state.users_recent_platforms.unshift(plat_id)
+            })
+        }
+        else {
+            console.log("BEFORE", this.state.users_recent_platforms)
+            var temp = this.state.users_recent_platforms
+            var index = temp.indexOf(plat_id)
+            temp.splice(index, 1)
+            temp.unshift(plat_id)
+            this.setState({
+                users_recent_platforms: temp
+            })
+            console.log("AFTER", temp)
+        }
+        api.post('/user/updateRecentlyPlayed/', {userID: this.state.id, recent_platforms: this.state.users_recent_platforms})
+        .then()
+
         this.props.history.push("/platform/"+plat_id);
     }
 
     render() {
-        
         return (
             <div>
                 <LoggedInNav props={this.props}/>
@@ -306,9 +527,37 @@ export default class TempDashboard extends Component {
                         <div className="white_text">
                             Your Recent Platforms
                         </div>
+                        {this.state.paginate_rec_index === 0
+                        ?
+                            <button disabled="true" style={{marginLeft: "70%", color:"grey"}} className = "paginate_arrows" onClick = {() => this.leftRecentPlatforms()}><FontAwesomeIcon icon={faAngleLeft} /></button>
+                        :
+                            <button style={{marginLeft: "70%"}} className = "paginate_arrows" onClick = {() => this.leftRecentPlatforms()}><FontAwesomeIcon icon={faAngleLeft} /></button>
+                        }
+                        {this.state.canPaginateRightRecent
+                        ?
+                            <button style={{marginLeft: "auto", marginRight: "3%"}} className = "paginate_arrows" onClick = {() => this.rightRecentPlatforms()}><FontAwesomeIcon icon={faAngleRight} /></button>
+                        :
+                            <button disabled="true" style={{marginLeft: "auto", marginRight: "3%", color: "grey"}} className = "paginate_arrows" onClick = {() => this.rightRecentPlatforms()}><FontAwesomeIcon icon={faAngleRight} /></button>
+                        }
+
                     </div>
-
-
+                    <div style={{display: "flex", flexWrap: "wrap"}}>
+                            {this.state.recent_platforms.map((platform, index) => (
+                                <Card className = "card_top itemsContainer">
+                                <FontAwesomeIcon className="play_button" icon={faPlay} />
+                                <Card.Img variant="top" onClick={() => this.clickPlatform(platform._id)} src={platform.cover_photo === "" ? DefaultCoverPhoto : platform.cover_photo} className = "card_image"/>
+                                    <Card.Body className = "card_body">
+                                        <Card.Title className = "card_info">{platform.plat_name}</Card.Title>
+                                        <Card.Text className = "card_info">
+                                        {platform.owner}
+                                        </Card.Text>
+                                        <div style={{width: "fit-content"}} onClick={() => this.toggleFavoriteRecent(index)}>
+                                            <FavoriteButton isfavorited={platform.is_favorited}/>
+                                        </div>
+                                    </Card.Body>
+                                </Card>
+                            ))}
+                            </div>
 
                 </div>
 
@@ -368,7 +617,7 @@ export default class TempDashboard extends Component {
                                         <Card.Text className = "card_info">
                                         {platform.owner}
                                         </Card.Text>
-                                        <div style={{width: "fit-content"}}>
+                                        <div style={{width: "fit-content"}} onClick={() => this.toggleFavoriteAll(index)}>
                                             <FavoriteButton isfavorited={platform.is_favorited}/>
                                         </div>
                                     </Card.Body>
