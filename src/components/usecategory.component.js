@@ -9,6 +9,9 @@ import {Droppable} from 'react-beautiful-dnd';
 import {Draggable} from 'react-beautiful-dnd';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFlag, faCheckCircle, faTimesCircle } from "@fortawesome/free-regular-svg-icons";
+import Timer from "./timer.component";
+import { faThList } from '@fortawesome/free-solid-svg-icons';
+
 require('dotenv').config();
 
 export default class UseCategory extends Component {
@@ -22,11 +25,13 @@ export default class UseCategory extends Component {
         this.removeClass = this.removeClass.bind(this);
         this.handleOnDragEnd = this.handleOnDragEnd.bind(this);
         this.submitMatching = this.submitMatching.bind(this);
+        this.startTimer = this.startTimer.bind(this);
+        this.timer_finished = this.timer_finished.bind(this);
+        this.timer_submit = this.timer_submit.bind(this);
 
         this.state = {
             user_id: '',
             username: '',
-            plat_id: '',
             cat_id:'',
             platData_id: '',
             catData_id:'',
@@ -43,7 +48,13 @@ export default class UseCategory extends Component {
             submitted_fib_correct: '',
             segmented: [],
             matching_pairs_values: [],
-            matching_pairs_answered: []
+            matching_pairs_answered: [],
+            platformFormat: '',
+            clock: '',
+            timer_answers: [],
+            user_timer_answers: [],
+            clock_started: false,
+            clock_finished: false
         }
     }
 
@@ -80,8 +91,8 @@ export default class UseCategory extends Component {
                         //url is usecategory/platid/categoryid
                         //       useplatform/
                         var category_format_id = this.props.location.pathname.substring(38);
-
-                        console.log(category_format_id)
+                        
+                        var plat_id = this.props.location.pathname.substring(13,37);
 
                         api.get('/categoryFormat/getPages/'+category_format_id)
                         .then(response => {
@@ -99,6 +110,7 @@ export default class UseCategory extends Component {
                                 .then(response => {
                                     //Successfully received current_progress array
                                     var current_progress = response.data.currentProgress_pages;
+                                    var is_completed = response.data.is_completed;
 
                                     //Now filter pages array by removing objects that contain page_ids that are in the completed_pages array
                                     var filtered_page_info = page_info_arr.slice();
@@ -143,10 +155,26 @@ export default class UseCategory extends Component {
                                     var matching_pairs_answered;
                                     if(filtered_page_info.length !== 0 && current_page.type === "Matching"){
                                         var matching_pairs = current_page.matching_pairs;
-                                        matching_values = Object.values(matching_pairs);
+                                        matching_values = this.shuffleArray(Object.values(matching_pairs));
                                         matching_pairs_answered = new Array(matching_values.length).fill("");
                                     }
-                                    this.setState({matching_pairs_answered: matching_pairs_answered, matching_pairs_values: matching_values, current_mc_array: arr, segmented: segmented, filterPages: filtered_page_info, pageIndex: 0, currentPage: current_page, progressVal:((page_info_arr.length - filtered_page_info.length)/page_info_arr.length) *100, progressIncrement:(1/page_info_arr.length) *100, completedCategory: completedCat})
+
+                                    var seconds;
+                                    var minutes;
+                                    var timer_answers;
+                                    if(filtered_page_info.length !== 0 && current_page.type === "Timer"){
+                                        let clock = current_page.clock;
+                                        minutes = Math.floor(clock/60);
+                                        seconds = clock % 60;
+                                        timer_answers = current_page.timer_answers;
+                                    }
+
+                                    api.get("/platformFormat/getSpecificPlatformFormat/"+ plat_id)
+                                    .then(platform => {
+                                        var platformFormat = {name: platform.data[0].plat_name, id: plat_id};
+                                        this.setState({seconds: seconds, minutes: minutes, timer_answers: timer_answers, is_completed: is_completed, platformFormat: platformFormat, matching_pairs_answered: matching_pairs_answered, matching_pairs_values: matching_values, current_mc_array: arr, segmented: segmented, filterPages: filtered_page_info, pageIndex: 0, currentPage: current_page, progressVal:((page_info_arr.length - filtered_page_info.length)/page_info_arr.length) *100, progressIncrement:(1/page_info_arr.length) *100, completedCategory: completedCat})
+                                    })
+                                    
                                 })
                             })
                         })
@@ -238,8 +266,26 @@ export default class UseCategory extends Component {
                 cat_id : this.state.cat_id
             }
 
-            api.post('/categoryData/setCompletedTrue/',val)
-
+            if(!this.state.is_completed){
+                //Divide accuracy by length of completed_pages
+                api.post('/categoryData/getAccuracy_and_completed_pages', {id: this.state.user_id, cat_id: this.state.cat_id})
+                .then((res) => {
+                    console.log(res);
+                    var accuracy = res.data.accuracy;
+                    var completed_pages = res.data.completed_pages;
+                    console.log("Accuracy:");
+                    console.log(accuracy);
+                    console.log(completed_pages);
+                    api.post('/categoryData/divide_accuracy', {user_id: this.state.user_id, cat_id: this.state.cat_id, completed_pages_len: completed_pages.length, accuracy: accuracy})
+                    .then(() => {
+                        api.post('/categoryData/setCompletedTrue/',val)
+                    })
+                .catch(err => console.log(err));
+                })
+            }
+            else{
+                api.post('/categoryData/setCompletedTrue/',val)
+            }
 
         }
         else{
@@ -303,7 +349,13 @@ export default class UseCategory extends Component {
 
         
         //if platform has not been completed award experience 
-
+        if(!this.state.is_completed && submitted_answer_bool){
+            //User got this MC question correct
+            //Increase accuracy by 100
+            api.post('/categoryData/increment_accuracy_by', {user_id : this.state.user_id, cat_id : this.state.cat_id, inc: 100})
+            .then()
+            .catch(err => console.log(err));
+        }
         //else  
         const info = {
             user_id : this.state.user_id,
@@ -386,6 +438,15 @@ export default class UseCategory extends Component {
             submitted_fib = 'incorrect';
         }
 
+        if(!this.state.is_completed){
+            //Calculate increment value
+            var inc = (total_correct / users_correct.length).toFixed(2) * 100;
+
+            api.post('/categoryData/increment_accuracy_by', {user_id : this.state.user_id, cat_id : this.state.cat_id, inc: inc})
+            .then()
+            .catch(err => console.log(err));
+        }
+
         //Update completed_pages
         const info = {
             user_id : this.state.user_id,
@@ -453,17 +514,18 @@ export default class UseCategory extends Component {
             submitted_fib = 'incorrect';
         }
 
+        if(!this.state.is_completed){
+            //Calculate increment value
+            var inc = (total_correct / users_correct.length).toFixed(2) * 100;
+            console.log("Incremement by: ");
+            console.log(inc);
+            api.post('/categoryData/increment_accuracy_by', {user_id : this.state.user_id, cat_id : this.state.cat_id, inc: inc})
+            .then()
+            .catch(err => console.log(err));
+        }
+
         document.getElementById("matching_bottom").style.marginTop = '10%';
 
-        //Update completed_pages
-        // const info = {
-        //     user_id : this.state.user_id,
-        //     platform_id : this.state.plat_id,
-        //     page_id : this.state.currentPage._id,
-        // }
-
-
-        // api.post('/platformData/updateCompletedPage/',info)
 
         const info = {
             user_id : this.state.user_id,
@@ -544,20 +606,39 @@ export default class UseCategory extends Component {
         }
     }
 
+    startTimer(){
+        this.setState({clock_started: true});
+    }
+
+    timer_finished(){
+        this.setState({clock_finished: true});
+    }
+
+    timer_submit(){
+
+    }
+
     render() {
-        
+
+        var plat_id;
+        var plat_name;
+        if(this.state.platformFormat.id !== ''){
+            plat_id = this.state.platformFormat.id;
+            plat_name = this.state.platformFormat.name;
+        }
+
         return (
             <div style={{height: "100vh", background: "#edd2ae", verticalAlign:"middle", overflowY:"auto"}}>
                 <ProgressBar style={{background: "rgb(139 139 139)"}} now={this.state.progressVal} />
                 <div>
-                    <button onClick={() => this.props.history.push(`/dashboard`)} className="x_button">X</button>
+                    <button onClick={() => this.props.history.push("/platform/" + plat_id)} className="x_button">X</button>
                 </div>
                 {this.state.completedCategory === true
                     ?
                         <div style={{textAlign: "center", margin: "auto", fontSize: "40px", padding: "155px"}}>
-                            <p>Congratulations you have finished the category!</p>
-                            <p>Click below to continue learning</p>
-                            <Link to="/dashboard">Explore More</Link>
+                            <p>Congratulations you have finished the quiz!</p>
+                            <p>Click below to continue learning from {plat_name}</p>
+                            <Link className = "explore_more" to={"/platform/" + plat_id}>Explore More</Link>
                         </div>
                     :
                         (this.state.currentPage !== ''
@@ -839,27 +920,74 @@ export default class UseCategory extends Component {
                                         </div>
                                     :
                                         (this.state.currentPage.type === "Timer"
-                                        ?
+                                        ?   
+                                            (this.state.clock_started
+                                            ?
                                             <div>
-                                                <p style={{color: "white"}}>Timer</p>
+                                                {this.state.clock_finished
+                                                ?
+                                                    <div>
+                                                        <p className="mc_prompt">{this.state.currentPage.prompt}</p>
+                                                        {this.timer_submit()}
+                                                    </div>
+                                                :
+                                                    
+                                                <div>
+                                                    <p className="mc_prompt">{this.state.currentPage.prompt}</p>
+                                                    <div style={{display: "flex", marginTop: "5%"}}>
+                                                        <div className = "enter_answer_timer">
+                                                            <div style={{marginLeft: "-2%"}}>
+                                                                Enter Answer: 
+                                                            </div>
+                                                            <input style={{marginLeft: "2%", borderRadius: "5px", border: "1px solid"}}></input>
+                                                        </div>
+                                                        <div className="time_remaining">
+                                                            <Timer minutes={this.state.minutes} seconds={this.state.seconds} end_clock={this.timer_finished}/>
+                                                            <button onClick={() => console.log("Gave up")}>Give Up</button>
+                                                        </div>
+                                                    </div>
+                                                    <div className="your_answers">
+                                                            Your Answers:
+                                                    </div>
+                                                    <div className="user_timer_answers">
+                                                        
+                                                    </div>
+                                                </div>
+                                                  
+                                                }
+                                            
                                             </div>
+                                            
+                                            :
+                                            <div>
+                                                <p className="mc_prompt">Your prompt will appear as soon as you start the clock. Press "Enter" on your keyboard to submit an answer</p>
+                                                <div style={{display: "flex", marginTop: "5%"}}>
+                                                    <div className = "enter_answer_timer">
+                                                        <div style={{marginLeft: "-2%"}}>
+                                                            Enter Answer: 
+                                                        </div>
+                                                        <input style={{marginLeft: "2%", borderRadius: "5px", border: "1px solid"}}></input>
+                                                    </div>
+                                                    <div className="time_remaining">
+                                                        <p>Time Remaining: {this.state.minutes}:{this.state.seconds < 10 ? `0${this.state.seconds}` : this.state.seconds}</p>
+                                                        <button className = "continue_button_correct" onClick={() => this.startTimer()}>Start</button>
+                                                    </div>
+                                                </div>
+                                                <div className="your_answers">
+                                                        Your Answers:
+                                                </div>
+                                                <div className="user_timer_answers">
+                                                    
+                                                </div>
+                                            </div>
+                                            )
                                         :
-                                            <p style={{color: "white"}}>IMPOSSIBLE</p>
+                                            <p></p>
                                         )
                                     )
                                 )
                             )
-                            // <div>
-                            // <ProgressBar now={this.state.progressVal} />
-                            // <p style={{color:"white"}}>{this.state.currentPage.prompt}</p>
-                            // {
-                            // (this.state.currentPage.multiple_choices.map((choice) =>
-                            
-                            // <p style={{color:"white"}}>{choice}</p>
-                            // ))
-                            // }
-                            // <Button onClick={() => this.continueButton()}>Continue</Button>
-                            // </div>
+                           
                         :
                         <div style={{height: "100vh", background: "#edd2ae", verticalAlign:"middle"}}>
                             <p style={{color: "white"}}></p>
