@@ -19,6 +19,29 @@
   -webkit-text-stroke: 0.2px black
 }
 
+.time_remaining{
+  text-align: center;
+  margin-right: 5%;
+  margin-left: auto;
+  font-size: 25px;
+}
+
+.user_timer_answers{
+  background: white;
+  border: 2px solid;
+  margin-left: 2%;
+  margin-right: 2%;
+  height: 200px;
+  border-radius: 10px;
+  margin-top: 2%;
+}
+
+.your_answers{
+  text-decoration: underline;
+  text-align: center;
+  font-size: 30px;
+}
+
 #dash {
     font-size: 30px; 
     color: rgb(0, 219, 0); 
@@ -188,6 +211,14 @@
   background: rgb(5, 197, 5);
 }
 
+.enter_answer_timer{
+  margin-left: 30%;
+  font-size: 25px;
+  display: flex;
+  height: fit-content;
+  width: fit-content;
+}
+
 .red_place_holder::-webkit-input-placeholder { /* Edge */
   color: red;
 }
@@ -287,6 +318,8 @@
   color: black;
   font-size: 40px;
   text-align: center;
+  margin-left: 1%;
+  margin-right: 1%;
 }
 
 .mc_choices {

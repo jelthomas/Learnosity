@@ -9,6 +9,9 @@ import {Droppable} from 'react-beautiful-dnd';
 import {Draggable} from 'react-beautiful-dnd';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFlag, faCheckCircle, faTimesCircle } from "@fortawesome/free-regular-svg-icons";
+import Timer from "./timer.component";
+import { faThList } from '@fortawesome/free-solid-svg-icons';
+
 require('dotenv').config();
 
 export default class UseCategory extends Component {
@@ -22,6 +25,9 @@ export default class UseCategory extends Component {
         this.removeClass = this.removeClass.bind(this);
         this.handleOnDragEnd = this.handleOnDragEnd.bind(this);
         this.submitMatching = this.submitMatching.bind(this);
+        this.startTimer = this.startTimer.bind(this);
+        this.timer_finished = this.timer_finished.bind(this);
+        this.timer_submit = this.timer_submit.bind(this);
 
         this.state = {
             user_id: '',
@@ -43,7 +49,12 @@ export default class UseCategory extends Component {
             segmented: [],
             matching_pairs_values: [],
             matching_pairs_answered: [],
-            platformFormat: ''
+            platformFormat: '',
+            clock: '',
+            timer_answers: [],
+            user_timer_answers: [],
+            clock_started: false,
+            clock_finished: false
         }
     }
 
@@ -147,10 +158,21 @@ export default class UseCategory extends Component {
                                         matching_values = this.shuffleArray(Object.values(matching_pairs));
                                         matching_pairs_answered = new Array(matching_values.length).fill("");
                                     }
+
+                                    var seconds;
+                                    var minutes;
+                                    var timer_answers;
+                                    if(filtered_page_info.length !== 0 && current_page.type === "Timer"){
+                                        let clock = current_page.clock;
+                                        minutes = Math.floor(clock/60);
+                                        seconds = clock % 60;
+                                        timer_answers = current_page.timer_answers;
+                                    }
+
                                     api.get("/platformFormat/getSpecificPlatformFormat/"+ plat_id)
                                     .then(platform => {
                                         var platformFormat = {name: platform.data[0].plat_name, id: plat_id};
-                                        this.setState({is_completed: is_completed, platformFormat: platformFormat, matching_pairs_answered: matching_pairs_answered, matching_pairs_values: matching_values, current_mc_array: arr, segmented: segmented, filterPages: filtered_page_info, pageIndex: 0, currentPage: current_page, progressVal:((page_info_arr.length - filtered_page_info.length)/page_info_arr.length) *100, progressIncrement:(1/page_info_arr.length) *100, completedCategory: completedCat})
+                                        this.setState({seconds: seconds, minutes: minutes, timer_answers: timer_answers, is_completed: is_completed, platformFormat: platformFormat, matching_pairs_answered: matching_pairs_answered, matching_pairs_values: matching_values, current_mc_array: arr, segmented: segmented, filterPages: filtered_page_info, pageIndex: 0, currentPage: current_page, progressVal:((page_info_arr.length - filtered_page_info.length)/page_info_arr.length) *100, progressIncrement:(1/page_info_arr.length) *100, completedCategory: completedCat})
                                     })
                                     
                                 })
@@ -584,6 +606,18 @@ export default class UseCategory extends Component {
         }
     }
 
+    startTimer(){
+        this.setState({clock_started: true});
+    }
+
+    timer_finished(){
+        this.setState({clock_finished: true});
+    }
+
+    timer_submit(){
+
+    }
+
     render() {
 
         var plat_id;
@@ -886,27 +920,74 @@ export default class UseCategory extends Component {
                                         </div>
                                     :
                                         (this.state.currentPage.type === "Timer"
-                                        ?
+                                        ?   
+                                            (this.state.clock_started
+                                            ?
                                             <div>
-                                                <p style={{color: "white"}}>Timer</p>
+                                                {this.state.clock_finished
+                                                ?
+                                                    <div>
+                                                        <p className="mc_prompt">{this.state.currentPage.prompt}</p>
+                                                        {this.timer_submit()}
+                                                    </div>
+                                                :
+                                                    
+                                                <div>
+                                                    <p className="mc_prompt">{this.state.currentPage.prompt}</p>
+                                                    <div style={{display: "flex", marginTop: "5%"}}>
+                                                        <div className = "enter_answer_timer">
+                                                            <div style={{marginLeft: "-2%"}}>
+                                                                Enter Answer: 
+                                                            </div>
+                                                            <input style={{marginLeft: "2%", borderRadius: "5px", border: "1px solid"}}></input>
+                                                        </div>
+                                                        <div className="time_remaining">
+                                                            <Timer minutes={this.state.minutes} seconds={this.state.seconds} end_clock={this.timer_finished}/>
+                                                            <button onClick={() => console.log("Gave up")}>Give Up</button>
+                                                        </div>
+                                                    </div>
+                                                    <div className="your_answers">
+                                                            Your Answers:
+                                                    </div>
+                                                    <div className="user_timer_answers">
+                                                        
+                                                    </div>
+                                                </div>
+                                                  
+                                                }
+                                            
                                             </div>
+                                            
+                                            :
+                                            <div>
+                                                <p className="mc_prompt">Your prompt will appear as soon as you start the clock. Press "Enter" on your keyboard to submit an answer</p>
+                                                <div style={{display: "flex", marginTop: "5%"}}>
+                                                    <div className = "enter_answer_timer">
+                                                        <div style={{marginLeft: "-2%"}}>
+                                                            Enter Answer: 
+                                                        </div>
+                                                        <input style={{marginLeft: "2%", borderRadius: "5px", border: "1px solid"}}></input>
+                                                    </div>
+                                                    <div className="time_remaining">
+                                                        <p>Time Remaining: {this.state.minutes}:{this.state.seconds < 10 ? `0${this.state.seconds}` : this.state.seconds}</p>
+                                                        <button className = "continue_button_correct" onClick={() => this.startTimer()}>Start</button>
+                                                    </div>
+                                                </div>
+                                                <div className="your_answers">
+                                                        Your Answers:
+                                                </div>
+                                                <div className="user_timer_answers">
+                                                    
+                                                </div>
+                                            </div>
+                                            )
                                         :
-                                            <p style={{color: "white"}}>IMPOSSIBLE</p>
+                                            <p></p>
                                         )
                                     )
                                 )
                             )
-                            // <div>
-                            // <ProgressBar now={this.state.progressVal} />
-                            // <p style={{color:"white"}}>{this.state.currentPage.prompt}</p>
-                            // {
-                            // (this.state.currentPage.multiple_choices.map((choice) =>
-                            
-                            // <p style={{color:"white"}}>{choice}</p>
-                            // ))
-                            // }
-                            // <Button onClick={() => this.continueButton()}>Continue</Button>
-                            // </div>
+                           
                         :
                         <div style={{height: "100vh", background: "#edd2ae", verticalAlign:"middle"}}>
                             <p style={{color: "white"}}></p>
