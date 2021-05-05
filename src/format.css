@@ -15,6 +15,13 @@
   color: rgb(0, 219, 0) !important; 
 }
 
+.logged_out_nav{
+  padding: 5px;
+  color: #00db00 !important;
+  font-family: Quando;
+  font-size: 25px
+}
+
 .navbarDropdown {
   -webkit-text-stroke: 0.2px black
 }

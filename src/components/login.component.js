@@ -7,6 +7,8 @@ import jwt_decode from 'jwt-decode';
 import "../format.css";
 import { myObject } from "./forgot_password.component"
 import Navbar from "./navbar.component";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEyeSlash} from "@fortawesome/free-regular-svg-icons";
 require('dotenv').config();
 
 export default class Login extends Component {
@@ -15,12 +17,18 @@ export default class Login extends Component {
         
         this.handleLogin = this.handleLogin.bind(this);
         this.onChange = this.onChange.bind(this);
+        this.toggle_password_vis = this.toggle_password_vis.bind(this);
 
         this.state = {
             identifier: '',
             password: '',
-            message: ''
+            message: '',
+            hidden: false
         }
+    }
+
+    toggle_password_vis(){
+        this.setState({ hidden: !this.state.hidden });
     }
 
     componentDidMount(){
@@ -61,7 +69,6 @@ export default class Login extends Component {
         }  
         else{
             //Not a Valid Token
-            console.log("Not valid");
             localStorage.removeItem('usertoken');
         }
         if (myObject.value !== "") {
@@ -85,15 +92,9 @@ export default class Login extends Component {
             .then(res => {
                 if(res.data.payload){
                     //Successfully logged in
-                    console.log("Logged In");
-                    console.log(res.data.payload);
-                    console.log("Secret:");
-                    console.log(process.env.REACT_APP_SECRET);
                     let user_token = jwt.sign(res.data.payload, process.env.REACT_APP_SECRET, {
                         algorithm: "HS256"
                     })      
-                    console.log("Token:")
-                    console.log(user_token);
                     localStorage.setItem('usertoken', user_token);
                     this.props.history.push(`/dashboard`);
                 }
@@ -130,7 +131,10 @@ export default class Login extends Component {
                         </div>
                         <div className = "form-group" style={{marginLeft: "10%"}}>
                             <label style = {{color: "black"}}> Password:</label>
-                            <input type = "password" style = {{width: "90%", borderColor: "black"}} className = "form-control" name = "password" placeholder = "Password" value = {this.state.password} onChange = {this.onChange} required/>
+                            <div style={{display: "flex"}}>
+                                <input type={this.state.hidden ? 'text' : 'password'} style = {{width: "90%", borderColor: "black"}} className = "form-control" name = "password" placeholder = "Password" value = {this.state.password} onChange = {this.onChange} required/>
+                                <button type="button" onClick = {this.toggle_password_vis} style={{border: "transparent", background: "transparent", transform: "translate(-35px)"}}><FontAwesomeIcon icon={faEyeSlash} /></button>
+                            </div>
                         </div>
                         <Link to="/forgot" style={{color: "blue", justifyContent: "center", display: "flex"}}>Forgot Password?</Link>
                         <button type= "submit" style = {{margin: "auto", marginTop: "10px", display: "block", backgroundColor: "limegreen", fontSize: "25px", borderStyle: "solid", borderRadius: "20px", borderColor: "grey", borderWidth: "1px", width: "45%", paddingBottom: "1.5%", paddingTop: "0.5%", color: "white"}}>
