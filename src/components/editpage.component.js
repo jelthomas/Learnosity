@@ -3,6 +3,9 @@ import {api} from "../axios_api.js";
 import jwt from 'jsonwebtoken';
 import { Link } from 'react-router-dom';
 import jwt_decode from 'jwt-decode';
+import Modal from "react-bootstrap/Modal"
+import Button from "react-bootstrap/Button"
+import Alert from "react-bootstrap/Alert"
 require('dotenv').config();
 
 export default class EditPage extends Component {
@@ -17,10 +20,30 @@ export default class EditPage extends Component {
         this.changeMCA = this.changeMCA.bind(this);
         this.addMCC = this.addMCC.bind(this);
         this.removeMCC = this.removeMCC.bind(this);
+        this.handleClose = this.handleClose.bind(this);
+        this.handleSubmitModal = this.handleSubmitModal.bind(this);
+        this.revealModal = this.revealModal.bind(this);
+        this.removeMP = this.removeMP.bind(this);
+
+        this.editMP = this.editMP.bind(this);
+        this.revealEditModal = this.revealEditModal.bind(this);
+        this.handleEditClose = this.handleEditClose.bind(this);
+        this.handleSubmitEditModal = this.handleSubmitEditModal.bind(this);
+        this.changeEditKey = this.changeEditKey.bind(this);
+        this.changeEditVal = this.changeEditVal.bind(this);
 
         this.state = {
             user_id: '',
-            pageFormat:'',
+            pageFormat: '',
+            showModal: false,
+            showEditModal:false,
+            showEmptyAlert: false,
+            showEmptyAlert2:false,
+            editKey:'',
+            editVal:'',
+            originalKey:'',
+            originalVal:'',
+            editIndex:0
         }
     }
 
@@ -248,6 +271,198 @@ export default class EditPage extends Component {
 
     }
 
+    revealModal(ind){
+        this.setState({
+            showModal:true
+        })
+    }
+
+    handleClose(e) {
+        this.setState({
+            showModal: false
+        })
+    }
+
+    handleSubmitModal() {
+        console.log("submitting modal ")
+
+        var inputP1 = document.getElementById('inputpair1').value
+        var inputP2 = document.getElementById('inputpair2').value
+        //checks if either field is empty 
+        if (inputP1 === "" || inputP2 === ""){
+            console.log("EMPTY INPUTS")
+            //need to make empty alert become false after some time 
+            this.setState({
+                showEmptyAlert: true
+            })
+
+            return
+        }
+
+        var page_id = this.props.location.pathname.substring(60);
+        inputP1 = "matching_pairs." + inputP1
+
+        //creating obj to insert into database
+        var testObj= {};
+
+        testObj[inputP1] = inputP2
+
+
+        console.log(inputP1)
+        const newMP= {
+            page_format_id : page_id,
+            newPair: testObj
+        }
+
+        api.post('/pageFormat/addToMP',newMP)
+        .then(response => {
+            console.log(response)
+            //updates page format so page is rendered properly
+            this.updatePageFormat();
+        })
+        .catch(error => {
+            console.log(error)
+        });
+
+        this.handleClose()
+    }
+
+    removeMP(ind) {
+        console.log("inside removeMP")
+        console.log(this.state.pageFormat.matching_pairs)
+
+        var tempArr = this.state.pageFormat.matching_pairs
+
+        var removeKey = Object.keys(this.state.pageFormat.matching_pairs)[ind]
+
+        //research if there is a better way then delete
+        // tempArr[removeKey] = undefined
+
+        delete tempArr[removeKey]
+
+        console.log(tempArr)
+
+        var page_id = this.props.location.pathname.substring(60);
+
+        const newMP= {
+            pageID : page_id,
+            newMatching: tempArr
+        }
+
+        api.post('/pageFormat/updateMatchingPair',newMP)
+        .then(response => {
+            console.log(response)
+            //updates page format so page is rendered properly
+            this.updatePageFormat();
+        })
+        .catch(error => {
+            console.log(error)
+        });
+
+    }
+
+    editMP(ind)
+    {
+        //save the key and value into state variables 
+        //allow user to edit 
+        //when they click submit 
+        //remove the key and value
+        //add new key value 
+    }
+
+    revealEditModal(ind){
+
+        this.setState({showEmptyAlert2:false})
+        //will also set state variables so we have the proper values 
+        this.setState({
+            showEditModal: true
+        })
+
+        var editK = Object.keys(this.state.pageFormat.matching_pairs)[ind]
+        var editV = Object.values(this.state.pageFormat.matching_pairs)[ind]
+
+
+        this.setState({editKey:editK,editVal:editV,originalKey:editK,originalVal:editV,editIndex:ind})
+    }
+
+    handleEditClose(){
+        this.setState({
+            showEditModal: false
+        })
+    }
+
+    handleSubmitEditModal(){
+        //when submit button is pressed
+        //save the key and value into state variables 
+        //allow user to edit 
+        //when they click submit 
+        //remove the key and value
+        //add new key value 
+        
+        //checks if inputs are empty 
+        //checks if either value is in either keys or value 
+        var tempArr;
+        if(this.state.editKey === "" || this.state.editVal === "")
+        {
+            this.setState({showEmptyAlert2:true})
+            return
+        }
+        else if (this.state.editKey === this.state.originalKey)
+        {
+            tempArr = this.state.pageFormat.matching_pairs
+            tempArr[this.state.editKey] = this.state.editVal
+        }   
+        else 
+        {
+            console.log(this.state.editKey)
+            console.log(this.state.editVal)
+
+
+            var convertArr = Object.entries(this.state.pageFormat.matching_pairs)
+
+            convertArr.splice(this.state.editIndex,0,[this.state.editKey,this.state.editVal])
+
+            var changedArr = Object.fromEntries(convertArr)
+
+            delete changedArr[this.state.originalKey]
+
+            console.log(changedArr)
+
+            tempArr = changedArr
+
+        }
+
+        var page_id = this.props.location.pathname.substring(60);
+
+        const newMP= {
+            pageID : page_id,
+            newMatching: tempArr
+        }
+
+        api.post('/pageFormat/updateMatchingPair',newMP)
+        .then(response => {
+            console.log(response)
+            //updates page format so page is rendered properly
+            this.updatePageFormat();
+        })
+        .catch(error => {
+            console.log(error)
+        });
+        
+    
+        this.handleEditClose();
+    }
+
+    changeEditKey(val){
+        console.log(val)
+        this.setState({editKey : val})
+    }
+
+    changeEditVal(val){
+        console.log(val)
+        this.setState({editVal : val})
+    }
+
     componentDidMount(){
         var token = localStorage.getItem('usertoken');
         var validToken = false;
@@ -283,6 +498,7 @@ export default class EditPage extends Component {
                         api.get('/pageFormat/getSpecificPage/'+page_id)
                         .then(response => {
                             console.log(response.data)
+                            console.log(Object.keys(response.data.matching_pairs))
                             this.setState({pageFormat : response.data})
                           })
                         .catch(error => {
@@ -309,13 +525,11 @@ export default class EditPage extends Component {
 
 }
 render() {
-        
+
     return (
         <div style={{height: "100vh", background: "#edd2ae", verticalAlign:"middle"}}>
             <p>Page Name</p>
             <input type="text" id="changePageName" value = {this.state.pageFormat.page_title} onChange = {this.changePageName}/> 
-            <p>Prompt</p>
-            <input type="text" id="changePrompt" value = {this.state.pageFormat.prompt} onChange = {this.changePrompt}/>
             <select onChange = {this.changePageType} value = {this.state.pageFormat.type} id = "pType">
                 <option value="Multiple Choice">Multiple Choice</option>
                 <option value="Fill in the Blank">Fill in the Blank</option>
@@ -326,6 +540,8 @@ render() {
             {this.state.pageFormat.type === "Multiple Choice"
                 ?
                     <div >
+                        <p>Prompt</p>
+                        <input type="text" id="changePrompt" value = {this.state.pageFormat.prompt} onChange = {this.changePrompt}/>
                         <p>Multiple Choice Type </p>
                         <button onClick={this.addMCC} disabled = {this.state.pageFormat.multiple_choices.length > 4 ? true : false}>Add Choice</button>
                         <p>Choices:</p>
@@ -343,6 +559,13 @@ render() {
                     ?
                         <div >
                             <p>Fill in the Blank Type </p>
+                            {Object.keys(this.state.pageFormat.fill_in_the_blank_answers)[0] === "0" && Object.values(this.state.pageFormat.fill_in_the_blank_answers)[0] === ""
+                            ?
+                                <p> DEFAULT</p>
+                            :
+                                <p>NOT DEFAULT</p>
+
+                            }
                         </div>
                         
                     :
@@ -350,7 +573,78 @@ render() {
                         (this.state.pageFormat.type === "Matching"
                         ?
                             <div >
+                                <p>Prompt</p>
+                                <input type="text" id="changePrompt" value = {this.state.pageFormat.prompt} onChange = {this.changePrompt}/>        
                                 <p>Matching Type </p>
+                                <button onClick={this.revealModal} disabled = {Object.keys(this.state.pageFormat.matching_pairs).length > 10 ? true : false}>Add Pair</button>
+                                
+                                <Modal
+                                show={this.state.showModal}
+                                onHide={this.handleClose}
+                                backdrop="static"
+                                keyboard={true}>
+                                <Modal.Header closeButton>
+                                <Modal.Title>Add Matching Pair</Modal.Title>
+                                </Modal.Header>
+                                <Modal.Body>
+                                <div className = "form-group" style={{marginLeft: "10%"}}>
+                                    <label style = {{color: "black"}}>Pair Value 1:</label>
+                                    <input type = "text" style = {{width: "90%", borderColor: "black"}} className = "form-control" id = "inputpair1" placeholder = "Enter Pair 1" required/>
+                                </div>
+                                <div className = "form-group" style={{marginLeft: "10%"}}>
+                                    <label style = {{color: "black"}}>Pair Value 2:</label>
+                                    <input type = "text" style = {{width: "90%", borderColor: "black"}} className = "form-control" id = "inputpair2" placeholder = "Enter Pair 2" required/>
+                                </div>
+                                <Alert show = {this.state.showEmptyAlert} variant = 'danger'>
+                                    The text fields can not be empty
+                                </Alert>
+                                </Modal.Body>
+                                <Modal.Footer>
+                                <Button variant="secondary" onClick={this.handleClose}>
+                                    Close
+                                </Button>
+                                <Button variant="primary" onClick={this.handleSubmitModal}>Submit</Button>
+                                </Modal.Footer>
+                                </Modal>
+
+
+                                {Object.keys(this.state.pageFormat.matching_pairs).map((key,index) => (
+                                    <div>
+                                        <p>{key}</p>
+                                        <p>{Object.values(this.state.pageFormat.matching_pairs)[index]}</p>
+                                        <button onClick={()=>this.removeMP(index)} disabled = {Object.keys(this.state.pageFormat.matching_pairs).length < 3 ? true : false}>X</button>
+                                        <button onClick={()=>this.revealEditModal(index)}>Edit</button>
+                                    </div>
+                                ))}
+
+                                <Modal
+                                show={this.state.showEditModal}
+                                onHide={this.handleEditClose}
+                                backdrop="static"
+                                keyboard={true}>
+                                <Modal.Header closeButton>
+                                <Modal.Title>Edit Matching Pair</Modal.Title>
+                                </Modal.Header>
+                                <Modal.Body>
+                                <div  style={{marginLeft: "10%"}}>
+                                    <label style = {{color: "black"}}>Edit Value 1:</label>
+                                    <input type = "text" style = {{width: "90%", borderColor: "black"}} id = "inputedit1" value={this.state.editKey} onChange = {e => this.changeEditKey(e.target.value)} required/>
+                                </div>
+                                <div  style={{marginLeft: "10%"}}>
+                                    <label style = {{color: "black"}}>Edit Value 2:</label>
+                                    <input type = "text" style = {{width: "90%", borderColor: "black"}} id = "inputedit2" value={this.state.editVal} onChange = {e => this.changeEditVal(e.target.value)} required/>
+                                </div>
+                                <Alert show = {this.state.showEmptyAlert2} variant = 'danger'>
+                                    The text fields can not be empty
+                                </Alert>
+                                </Modal.Body>
+                                <Modal.Footer>
+                                <Button variant="secondary" onClick={this.handleEditClose}>
+                                    Close
+                                </Button>
+                                <Button variant="primary" onClick={this.handleSubmitEditModal}>Submit</Button>
+                                </Modal.Footer>
+                                </Modal>
                             </div>
                         :
                             (this.state.pageFormat.type === "Timer"
