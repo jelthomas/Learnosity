@@ -3,9 +3,10 @@ import {api} from "../axios_api.js";
 import jwt from 'jsonwebtoken';
 import { Link } from 'react-router-dom';
 import jwt_decode from 'jwt-decode';
-import Modal from "react-bootstrap/Modal"
-import Button from "react-bootstrap/Button"
-import Alert from "react-bootstrap/Alert"
+import Modal from "react-bootstrap/Modal";
+import Button from "react-bootstrap/Button";
+import Alert from "react-bootstrap/Alert";
+import LoggedInNav from "./loggedInNav.component";
 require('dotenv').config();
 
 export default class EditPage extends Component {
@@ -741,59 +742,115 @@ export default class EditPage extends Component {
 render() {
 
     return (
-        <div style={{height: "100vh", background: "#edd2ae", verticalAlign:"middle"}}>
-            <p>Page Name</p>
-            <input type="text" id="changePageName" value = {this.state.pageFormat.page_title} onChange = {this.changePageName}/> 
-            <select onChange = {this.changePageType} value = {this.state.pageFormat.type} id = "pType">
-                <option value="Multiple Choice">Multiple Choice</option>
-                <option value="Fill in the Blank">Fill in the Blank</option>
-                <option value="Matching">Matching</option>
-                <option value="Timer">Timer</option>
-            </select>
-
+        <div>
+            <LoggedInNav props={this.props}/>
+            <div style={{margin: "auto", color: "white", fontSize: "30px", borderBottom: "2px solid white", width: "fit-content"}}>
+                Edit Question: 
+            </div>
             {this.state.pageFormat.type === "Multiple Choice"
                 ?
-                    <div >
-                        <p>Prompt</p>
-                        <input type="text" id="changePrompt" value = {this.state.pageFormat.prompt} onChange = {this.changePrompt}/>
-                        <p>Multiple Choice Type </p>
-                        <button onClick={this.addMCC} disabled = {this.state.pageFormat.multiple_choices.length > 4 ? true : false}>Add Choice</button>
-                        <p>Choices:</p>
-                        {this.state.pageFormat.multiple_choices.map((choice,index) => (
-                            <div>
-                            <input type="text" id={"changeMCC"+ index} value = {choice} onChange = {()=>this.changeMCC(index)}/>
-                            <button onClick={()=>this.removeMCC(index)} disabled = {this.state.pageFormat.multiple_choices.length < 2 ? true : false}>X</button>
+                    <div>
+                        <div style={{display: "flex", justifyContent: "center", color: "white", marginTop: "2%", marginBottom: "2%"}}>
+                            <div style={{display: "flex", margin: "auto"}}>
+                                <div style={{marginLeft: "-2%", fontSize: "25px", height: "fit-content"}}>
+                                    Question Name: 
+                                </div>
+                                <input style={{marginLeft: "2%", fontSize: "20px", borderRadius: "8px", padding: "5px", height: "fit-content"}} type="text" id="changePageName" value = {this.state.pageFormat.page_title} onChange = {this.changePageName}/> 
                             </div>
-                        ))}
-                        <p>Answer:</p>
-                        <input type="text" id="changeMCA" value = {this.state.pageFormat.multiple_choice_answer} onChange = {this.changeMCA}/>
+                            <div style={{display: "flex", margin: "auto"}}>
+                                <div style={{marginLeft: "-2%", fontSize: "25px", height: "fit-content"}}>
+                                    Question Type: 
+                                </div>
+                                <select style={{marginLeft: "2%", fontSize: "20px", borderRadius: "8px", padding: "5px"}} onChange = {this.changePageType} value = {this.state.pageFormat.type} id = "pType">
+                                    <option value="Multiple Choice">Multiple Choice</option>
+                                    <option value="Fill in the Blank">Fill in the Blank</option>
+                                    <option value="Matching">Matching</option>
+                                    <option value="Timer">Timer</option>
+                                </select>
+                            </div>
+                            <button style={{margin: "auto", fontSize: "20px", borderRadius: "8px", padding: "5px", background: "white"}} onClick={this.addMCC} disabled = {this.state.pageFormat.multiple_choices.length > 4 ? true : false}>Add Choice</button>
+                        </div>
+                        <div style={{background: "#edd2ae", textAlign: "center", marginLeft: "5%", marginRight: "5%", borderRadius: "8px", padding: "5%"}}>
+                            <div>
+                                <div style={{display: "flex", justifyContent: "center", marginBottom: "2%", marginRight: "3%"}}>
+                                    <div style={{marginLeft: "-1%", fontSize: "25px"}}>
+                                        Prompt:
+                                    </div>
+                                    <input style={{marginLeft: "1%", width: "41%", fontSize: "20px", borderRadius: "8px", padding: "5px"}} type="text" id="changePrompt" value = {this.state.pageFormat.prompt} placeholder= "Enter your multiple choice question: " onChange = {this.changePrompt}/>
+                                </div>
+                                <div>
+                                    {this.state.pageFormat.multiple_choices.map((choice,index) => (
+                                        <div style={{display:"flex", justifyContent: "center", marginTop: "0.5%"}}>
+                                            <div style={{marginLeft: "-1%", fontSize: "20px"}}>
+                                                Incorrect: 
+                                            </div>
+                                            <input style={{marginLeft: "1%", width: "40%", fontSize: "15px", borderRadius: "8px", padding: "5px"}} type="text" id={"changeMCC"+ index} value = {choice} onChange = {()=>this.changeMCC(index)}/>
+                                            <button style = {{background: "red", border: "transparent", borderRadius: "8px", marginLeft: "1%"}} onClick={()=>this.removeMCC(index)} disabled = {this.state.pageFormat.multiple_choices.length < 2 ? true : false}>X</button>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div style={{display: "flex", justifyContent: "center", marginTop: "2%", marginRight: "7%"}}>
+                                    <div style={{marginLeft: "-1%", fontSize: "20px"}}>
+                                        Correct Answer: 
+                                    </div>
+                                    <input style={{marginLeft: "1%", width: "43%", fontSize: "15px", borderRadius: "8px", padding: "5px"}} type="text" id="changeMCA" value = {this.state.pageFormat.multiple_choice_answer} onChange = {this.changeMCA}/>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 :
                     (this.state.pageFormat.type === "Fill in the Blank"
                     ?
-                        <div >
-                            <p>Fill in the Blank Type </p>
-                            {this.state.fibArray.map((input,index) => (
-                                (index %2 ==0    
-                                ?
-                                    <div>
-                                        <input type="text" id={"fibInput"+index} value = {input} onChange = {() => this.updateFIBInput(index)} size={50}></input>
+                            <div >
+                                <div style={{display: "flex", justifyContent: "center", color: "white", marginTop: "2%", marginBottom: "2%"}}>
+                                    <div style={{display: "flex", margin: "auto"}}>
+                                        <div style={{marginLeft: "-2%", fontSize: "25px", height: "fit-content"}}>
+                                            Question Name: 
+                                        </div>
+                                        <input style={{marginLeft: "2%", fontSize: "20px", borderRadius: "8px", padding: "5px", height: "fit-content"}} type="text" id="changePageName" value = {this.state.pageFormat.page_title} onChange = {this.changePageName}/> 
                                     </div>
-                                :
-                                    <div>
-                                        <input type="text" id={"fibInput"+index} style={{borderColor: "red"}} value = {input} onChange = {() => this.updateFIBInput(index)} size={50}></input>
-                                        <button onClick={()=>this.removeFIB(index)} disabled = {Object.keys(this.state.pageFormat.fill_in_the_blank_answers).length < 2 ? true : false}>X</button>
+                                    <div style={{display: "flex", margin: "auto"}}>
+                                        <div style={{marginLeft: "-2%", fontSize: "25px", height: "fit-content"}}>
+                                            Question Type: 
+                                        </div>
+                                        <select style={{marginLeft: "2%", fontSize: "20px", borderRadius: "8px", padding: "5px"}} onChange = {this.changePageType} value = {this.state.pageFormat.type} id = "pType">
+                                            <option value="Multiple Choice">Multiple Choice</option>
+                                            <option value="Fill in the Blank">Fill in the Blank</option>
+                                            <option value="Matching">Matching</option>
+                                            <option value="Timer">Timer</option>
+                                        </select>
                                     </div>
-                                )
-                            ))}
-                            <Alert show = {this.state.showEmptyAlert3} variant = 'danger'>
-                                The text fields can not be empty
-                            </Alert>
-                            <Alert show = {this.state.showBothEndsAlert} variant = 'danger'>
-                                Front and End Prompt can not be empty when there is only one blank 
-                            </Alert>
-                            <button onClick={this.insertBlank} disabled = {this.state.fibArray.length <11 ? false : true}>Insert Blank</button>
-                            <button onClick={this.submitFIB}>Submit</button>
+                                    <button style={{margin: "auto", fontSize: "20px", borderRadius: "8px", padding: "5px", background: "white"}} onClick={this.insertBlank} disabled = {this.state.fibArray.length <11 ? false : true}>Insert Blank</button>
+                                </div>
+                                <div style={{background: "#edd2ae", marginLeft: "5%", marginRight: "5%", borderRadius: "8px", padding: "2% 5% 5% 5%"}}>
+                                    <div style={{display: "flex", flexWrap: "wrap"}}>
+                                        <div style={{marginLeft: "auto", fontSize: "25px", marginTop: "2%"}}>
+                                            Prompt:
+                                        </div>
+                                        {this.state.fibArray.map((input,index) => (
+                                            (index %2 ==0    
+                                            ?
+                                                <div style={{maxWidth: "325px", marginRight: "2%", marginTop: "2%"}}>
+                                                    <input style={{width: "-webkit-fill-available", fontSize: "15px", borderRadius: "8px", padding: "5px", marginLeft: "3%"}} type="text" id={"fibInput"+index} value = {input} placeholder = "If needed, enter your prompt here:" onChange = {() => this.updateFIBInput(index)} size={50}></input>
+                                                </div>
+                                            :
+                                                <div style={{display: "flex", maxWidth: "195px", marginRight: "2%", marginTop: "2%"}}>
+                                                    <input type="text" id={"fibInput"+index} style={{borderColor: "red", width: "-webkit-fill-available", fontSize: "15px", borderRadius: "8px", padding: "5px"}} placeholder = "Answer is required: " value = {input} onChange = {() => this.updateFIBInput(index)} size={50}></input>
+                                                    <button style = {{background: "red", border: "transparent", borderRadius: "8px", marginLeft: "1%"}} onClick={()=>this.removeFIB(index)} disabled = {Object.keys(this.state.pageFormat.fill_in_the_blank_answers).length < 2 ? true : false}>X</button>
+                                                </div>
+                                            )
+                                        ))}
+                                        <Alert show = {this.state.showEmptyAlert3} variant = 'danger'>
+                                            The text fields can not be empty
+                                        </Alert>
+                                        <Alert show = {this.state.showBothEndsAlert} variant = 'danger'>
+                                            Front and End Prompt can not be empty when there is only one blank 
+                                        </Alert>
+                                    </div>
+                                </div>
+                                <div style={{textAlign: "center", marginTop: "4%"}}>
+                                    <button className="continue_button_correct" onClick={this.submitFIB}>Save Changes</button>
+                                </div>
 
                         </div>
                         
@@ -802,77 +859,110 @@ render() {
                         (this.state.pageFormat.type === "Matching"
                         ?
                             <div >
-                                <p>Prompt</p>
-                                <input type="text" id="changePrompt" value = {this.state.pageFormat.prompt} onChange = {this.changePrompt}/>        
-                                <p>Matching Type </p>
-                                <button onClick={this.revealModal} disabled = {Object.keys(this.state.pageFormat.matching_pairs).length > 10 ? true : false}>Add Pair</button>
+                                <div style={{display: "flex", justifyContent: "center", color: "white", marginTop: "2%", marginBottom: "2%"}}>
+                                    <div style={{display: "flex", margin: "auto"}}>
+                                        <div style={{marginLeft: "-2%", fontSize: "25px", height: "fit-content"}}>
+                                            Question Name: 
+                                        </div>
+                                        <input style={{marginLeft: "2%", fontSize: "20px", borderRadius: "8px", padding: "5px", height: "fit-content"}} type="text" id="changePageName" value = {this.state.pageFormat.page_title} onChange = {this.changePageName}/> 
+                                    </div>
+                                    <div style={{display: "flex", margin: "auto"}}>
+                                        <div style={{marginLeft: "-2%", fontSize: "25px", height: "fit-content"}}>
+                                            Question Type: 
+                                        </div>
+                                        <select style={{marginLeft: "2%", fontSize: "20px", borderRadius: "8px", padding: "5px"}} onChange = {this.changePageType} value = {this.state.pageFormat.type} id = "pType">
+                                            <option value="Multiple Choice">Multiple Choice</option>
+                                            <option value="Fill in the Blank">Fill in the Blank</option>
+                                            <option value="Matching">Matching</option>
+                                            <option value="Timer">Timer</option>
+                                        </select>
+                                    </div>
+                                    <button style={{margin: "auto", fontSize: "20px", borderRadius: "8px", padding: "5px", background: "white"}} onClick={this.revealModal} disabled = {Object.keys(this.state.pageFormat.matching_pairs).length > 10 ? true : false}>Add Pair</button>
+                                </div>
+                                <div style={{background: "#edd2ae", textAlign: "center", marginLeft: "5%", marginRight: "5%", marginBottom: "5%", borderRadius: "8px", padding: "5%"}}>
+                                    <div>
+                                        <div style={{display: "flex", justifyContent: "center", marginBottom: "5%", marginRight: "3%"}}>
+                                            <div style={{marginLeft: "-1%", fontSize: "25px"}}>
+                                                Prompt:
+                                            </div>
+                                            <input style={{marginLeft: "1%", width: "41%", fontSize: "20px", borderRadius: "8px", padding: "5px"}} type="text" id="changePrompt" value = {this.state.pageFormat.prompt} onChange = {this.changePrompt}/> 
+                                        </div>
+                                        <div style={{background: "white", width: "50%", margin: "auto", padding: "3%", borderRadius: "8px", border: "2px solid"}}>
+                                            <div style={{width: "max-content", margin: "auto"}}>
+                                                {Object.keys(this.state.pageFormat.matching_pairs).map((key,index) => (
+                                                    <div style={{display: "flex"}}>
+                                                        <div style={{display: "flex"}}>
+                                                            <p style={{background: "white", padding: "5px", borderRadius: "8px", marginLeft: "-5%", border: "1px solid"}}>
+                                                                {key}
+                                                            </p>
+                                                            <p style={{background: "white", padding: "5px", borderRadius: "8px", marginLeft: "5%", border: "1px solid"}}>
+                                                                {Object.values(this.state.pageFormat.matching_pairs)[index]}
+                                                            </p>
+                                                        </div>
+                                                        <div style={{display: "flex", marginLeft: "auto", height: "fit-content"}}>
+                                                            <button style = {{background: "red", border: "1px solid", borderRadius: "8px", marginLeft: "15%", padding: "5px"}} onClick={()=>this.removeMP(index)} disabled = {Object.keys(this.state.pageFormat.matching_pairs).length < 3 ? true : false}>X</button>
+                                                            <button style = {{background: "rgb(0,219,0)", border: "1px solid", borderRadius: "8px", marginLeft: "15%", padding: "5px"}} onClick={()=>this.revealEditModal(index)}>Edit</button>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                   
                                 
-                                <Modal
-                                show={this.state.showModal}
-                                onHide={this.handleClose}
-                                backdrop="static"
-                                keyboard={true}>
+                                <Modal show={this.state.showModal} onHide={this.handleClose} backdrop="static" keyboard={true}>
                                 <Modal.Header closeButton>
-                                <Modal.Title>Add Matching Pair</Modal.Title>
+                                    <Modal.Title>Add Matching Pair</Modal.Title>
                                 </Modal.Header>
                                 <Modal.Body>
-                                <div className = "form-group" style={{marginLeft: "10%"}}>
-                                    <label style = {{color: "black"}}>Pair Value 1:</label>
-                                    <input type = "text" style = {{width: "90%", borderColor: "black"}} className = "form-control" id = "inputpair1" placeholder = "Enter Pair 1" required/>
-                                </div>
-                                <div className = "form-group" style={{marginLeft: "10%"}}>
-                                    <label style = {{color: "black"}}>Pair Value 2:</label>
-                                    <input type = "text" style = {{width: "90%", borderColor: "black"}} className = "form-control" id = "inputpair2" placeholder = "Enter Pair 2" required/>
-                                </div>
-                                <Alert show = {this.state.showEmptyAlert} variant = 'danger'>
-                                    The text fields can not be empty
-                                </Alert>
+                                    <div className = "form-group" style={{marginLeft: "10%"}}>
+                                        <label style = {{color: "black"}}>Pair Value 1:</label>
+                                        <input type = "text" style = {{width: "90%", borderColor: "black"}} className = "form-control" id = "inputpair1" placeholder = "Enter Pair 1" required/>
+                                    </div>
+                                    <div className = "form-group" style={{marginLeft: "10%"}}>
+                                        <label style = {{color: "black"}}>Pair Value 2:</label>
+                                        <input type = "text" style = {{width: "90%", borderColor: "black"}} className = "form-control" id = "inputpair2" placeholder = "Enter Pair 2" required/>
+                                    </div>
+                                    <Alert show = {this.state.showEmptyAlert} variant = 'danger'>
+                                        The text fields can not be empty
+                                    </Alert>
                                 </Modal.Body>
                                 <Modal.Footer>
-                                <Button variant="secondary" onClick={this.handleClose}>
-                                    Close
-                                </Button>
-                                <Button variant="primary" onClick={this.handleSubmitModal}>Submit</Button>
+                                    <Button variant="secondary" onClick={this.handleClose}>
+                                        Close
+                                    </Button>
+                                    <Button variant="primary" onClick={this.handleSubmitModal}>
+                                        Submit
+                                    </Button>
                                 </Modal.Footer>
                                 </Modal>
 
-
-                                {Object.keys(this.state.pageFormat.matching_pairs).map((key,index) => (
-                                    <div>
-                                        <p>{key}</p>
-                                        <p>{Object.values(this.state.pageFormat.matching_pairs)[index]}</p>
-                                        <button onClick={()=>this.removeMP(index)} disabled = {Object.keys(this.state.pageFormat.matching_pairs).length < 3 ? true : false}>X</button>
-                                        <button onClick={()=>this.revealEditModal(index)}>Edit</button>
-                                    </div>
-                                ))}
-
-                                <Modal
-                                show={this.state.showEditModal}
-                                onHide={this.handleEditClose}
-                                backdrop="static"
-                                keyboard={true}>
-                                <Modal.Header closeButton>
-                                <Modal.Title>Edit Matching Pair</Modal.Title>
-                                </Modal.Header>
-                                <Modal.Body>
-                                <div  style={{marginLeft: "10%"}}>
-                                    <label style = {{color: "black"}}>Edit Value 1:</label>
-                                    <input type = "text" style = {{width: "90%", borderColor: "black"}} id = "inputedit1" value={this.state.editKey} onChange = {e => this.changeEditKey(e.target.value)} required/>
-                                </div>
-                                <div  style={{marginLeft: "10%"}}>
-                                    <label style = {{color: "black"}}>Edit Value 2:</label>
-                                    <input type = "text" style = {{width: "90%", borderColor: "black"}} id = "inputedit2" value={this.state.editVal} onChange = {e => this.changeEditVal(e.target.value)} required/>
-                                </div>
-                                <Alert show = {this.state.showEmptyAlert2} variant = 'danger'>
-                                    The text fields can not be empty
-                                </Alert>
-                                </Modal.Body>
-                                <Modal.Footer>
-                                <Button variant="secondary" onClick={this.handleEditClose}>
-                                    Close
-                                </Button>
-                                <Button variant="primary" onClick={this.handleSubmitEditModal}>Submit</Button>
-                                </Modal.Footer>
+                                <Modal show={this.state.showEditModal} onHide={this.handleEditClose} backdrop="static" keyboard={true}>
+                                    <Modal.Header closeButton>
+                                        <Modal.Title>Edit Matching Pair</Modal.Title>
+                                    </Modal.Header>
+                                    <Modal.Body>
+                                        <div  style={{marginLeft: "10%"}}>
+                                            <label style = {{color: "black"}}>Edit Value 1:</label>
+                                            <input type = "text" style = {{width: "90%", borderColor: "black"}} id = "inputedit1" value={this.state.editKey} onChange = {e => this.changeEditKey(e.target.value)} required/>
+                                        </div>
+                                        <div  style={{marginLeft: "10%"}}>
+                                            <label style = {{color: "black"}}>Edit Value 2:</label>
+                                            <input type = "text" style = {{width: "90%", borderColor: "black"}} id = "inputedit2" value={this.state.editVal} onChange = {e => this.changeEditVal(e.target.value)} required/>
+                                        </div>
+                                        <Alert show = {this.state.showEmptyAlert2} variant = 'danger'>
+                                            The text fields can not be empty
+                                        </Alert>
+                                    </Modal.Body>
+                                    <Modal.Footer>
+                                        <Button variant="secondary" onClick={this.handleEditClose}>
+                                            Close
+                                        </Button>
+                                        <Button variant="primary" onClick={this.handleSubmitEditModal}>
+                                            Submit
+                                        </Button>
+                                    </Modal.Footer>
                                 </Modal>
                             </div>
                         :

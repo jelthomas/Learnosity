@@ -12,6 +12,7 @@ import EditPage from './components/editpage.component';
 import TempDashboard from "./components/tempdashboard.component"
 import Platform from "./components/platform.component"
 import EditCategory from './components/editcategory.component';
+import MyPlatforms from './components/myplatforms.component';
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
         <Route path="/login" exact component={Login} />
         <Route path="/forgot" exact component={ForgotPassword} />
         <Route path="/dashboard" exact component={TempDashboard} />
+        <Route path ="/myplatforms" exact component={MyPlatforms}></Route>
         <Route path="/platform/:id" component = {Platform} />
         <Route path="/usecategory/:id/:id" component = {UseCategory}/>
         <Route path="/editplatform/:id" component = {EditPlatform}/>
