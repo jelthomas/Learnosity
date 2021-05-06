@@ -10,7 +10,7 @@ import {Draggable} from 'react-beautiful-dnd';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFlag, faCheckCircle, faTimesCircle } from "@fortawesome/free-regular-svg-icons";
 import Timer from "./timer.component";
-import { faThList } from '@fortawesome/free-solid-svg-icons';
+
 
 require('dotenv').config();
 
@@ -27,7 +27,9 @@ export default class UseCategory extends Component {
         this.submitMatching = this.submitMatching.bind(this);
         this.startTimer = this.startTimer.bind(this);
         this.timer_finished = this.timer_finished.bind(this);
-        this.timer_submit = this.timer_submit.bind(this);
+        // this.timer_submit = this.timer_submit.bind(this);
+        this.timer_answer = this.timer_answer.bind(this);
+        this.missed_answers = this.missed_answers.bind(this);
 
         this.state = {
             user_id: '',
@@ -54,7 +56,58 @@ export default class UseCategory extends Component {
             timer_answers: [],
             user_timer_answers: [],
             clock_started: false,
-            clock_finished: false
+            clock_finished: false,
+            status: ''
+        }
+    }
+
+
+    missed_answers(){
+        var users_answers = this.state.user_timer_answers;
+        var all_answers = this.state.timer_answers;
+        var missed_answers = [];
+        for(let i = 0; i < all_answers.length; i++){
+            var answer = all_answers[i];
+            if(!users_answers.includes(answer)){
+                missed_answers.push(answer);
+            }
+        }
+        missed_answers = missed_answers.join(', ');
+
+        return(
+            <div style={{fontSize: "25px", marginLeft: "2%", marginRight: "2%", color: "black"}}>
+                {missed_answers}
+            </div>
+        )
+    }
+
+
+    timer_answer(){
+        var input = document.getElementById("timer_answer_input");
+        var answer = input.value.toLowerCase();
+        if(answer === ' '){
+            input.value = '';
+            return;
+        }
+        var correct_answers = this.state.timer_answers;
+        var users_answers = this.state.user_timer_answers;
+        var add_to_user_timer_answers = [];
+        var answered_correctly = false;
+        for(var i = 0; i < correct_answers.length; i++){
+            var whole_string = correct_answers[i];
+            //separate will split the answer by spaces and grab the last string in the array
+            var separate = whole_string.split(" ");
+            separate = separate[separate.length - 1];
+            if((answer === whole_string.toLowerCase() || answer === separate.toLowerCase()) && !users_answers.includes(whole_string)){
+                //Correct answer... add_to_user_timer_answers
+                add_to_user_timer_answers.push(whole_string);
+                answered_correctly = true;
+            }
+        }
+        if(answered_correctly){
+            //Set state and clear input value
+            input.value = '';
+            this.setState({user_timer_answers: users_answers.concat(add_to_user_timer_answers)})
         }
     }
 
@@ -213,6 +266,7 @@ export default class UseCategory extends Component {
     continueButton(){
         
         var current_page = this.state.currentPage;
+        //Resetting visual displays
         if(current_page.type === "Multiple Choice"){
             var button = document.getElementsByClassName("mc_button_submitted")[0];
             button.classList.remove('mc_button_submitted');
@@ -256,6 +310,9 @@ export default class UseCategory extends Component {
         var segmented = [];
         var matching_values;
         var matching_pairs_answered;
+        var seconds;
+        var minutes;
+        var timer_answers;
         if(this.state.pageIndex + 1 >= this.state.filterPages.length){
             completed_category = true;
             //set the categoryData is_completed to true in database
@@ -270,12 +327,10 @@ export default class UseCategory extends Component {
                 //Divide accuracy by length of completed_pages
                 api.post('/categoryData/getAccuracy_and_completed_pages', {id: this.state.user_id, cat_id: this.state.cat_id})
                 .then((res) => {
-                    console.log(res);
                     var accuracy = res.data.accuracy;
                     var completed_pages = res.data.completed_pages;
                     console.log("Accuracy:");
                     console.log(accuracy);
-                    console.log(completed_pages);
                     api.post('/categoryData/divide_accuracy', {user_id: this.state.user_id, cat_id: this.state.cat_id, completed_pages_len: completed_pages.length, accuracy: accuracy})
                     .then(() => {
                         api.post('/categoryData/setCompletedTrue/',val)
@@ -292,9 +347,11 @@ export default class UseCategory extends Component {
             current_page = this.state.filterPages[this.state.pageIndex + 1];
 
             if(current_page.type === "Multiple Choice"){
-                current_mc_array = current_page.multiple_choices.slice();
-                current_mc_array.push(current_page.multiple_choice_answer);
-                current_mc_array = this.shuffleArray(current_mc_array);
+                if(this.state.filterPages.length !== 0){
+                    current_mc_array = current_page.multiple_choices.slice();
+                    current_mc_array.push(current_page.multiple_choice_answer);
+                    current_mc_array = this.shuffleArray(current_mc_array);
+                }
             }
 
             else if(current_page.type === "Fill in the Blank"){
@@ -319,10 +376,17 @@ export default class UseCategory extends Component {
                     matching_pairs_answered = new Array(matching_values.length).fill("");
                 }
             }
+            else if(current_page.type === 'Timer'){
+                if(this.state.filterPages.length !== 0){
+                    let clock = current_page.clock;
+                    minutes = Math.floor(clock/60);
+                    seconds = clock % 60;
+                    timer_answers = current_page.timer_answers;
+                }
+            }
         }
 
-
-        this.setState({matching_pairs_answered: matching_pairs_answered, matching_pairs_values: matching_values, shouldShuffle: true, current_mc_array: current_mc_array, progressVal:this.state.progressVal + this.state.progressIncrement, pageIndex: this.state.pageIndex + 1, completedCategory: completed_category, currentPage: current_page,segmented:segmented,submittedAnswer:false,submitted_fib:""});
+        this.setState({seconds: seconds, minutes: minutes, timer_answers: timer_answers, matching_pairs_answered: matching_pairs_answered, matching_pairs_values: matching_values, shouldShuffle: true, current_mc_array: current_mc_array, progressVal:this.state.progressVal + this.state.progressIncrement, pageIndex: this.state.pageIndex + 1, completedCategory: completed_category, currentPage: current_page,segmented:segmented,submittedAnswer:false,submitted_fib:""});
     }
 
     shuffleArray(array) {
@@ -441,7 +505,8 @@ export default class UseCategory extends Component {
         if(!this.state.is_completed){
             //Calculate increment value
             var inc = (total_correct / users_correct.length).toFixed(2) * 100;
-
+            console.log("FIB Inc:");
+            console.log(inc);
             api.post('/categoryData/increment_accuracy_by', {user_id : this.state.user_id, cat_id : this.state.cat_id, inc: inc})
             .then()
             .catch(err => console.log(err));
@@ -611,12 +676,74 @@ export default class UseCategory extends Component {
     }
 
     timer_finished(){
-        this.setState({clock_finished: true});
+        var correct_answers = this.state.timer_answers;
+        var total_correct = this.state.user_timer_answers.length;
+        var status = ''
+        if(total_correct === correct_answers.length){
+            status = 'correct';
+        }
+        else if(total_correct / correct_answers.length >= 0.5){
+            status = 'almost';
+        }
+        else{
+            status = 'incorrect';
+        }
+
+        if(!this.state.is_completed){
+            //Calculate increment value
+            var inc = (total_correct / correct_answers.length).toFixed(2) * 100;
+            console.log("Timer Increment by: ");
+            console.log(inc);
+            api.post('/categoryData/increment_accuracy_by', {user_id : this.state.user_id, cat_id : this.state.cat_id, inc: inc})
+            .then()
+            .catch(err => console.log(err));
+        }
+
+
+        const info = {
+            user_id : this.state.user_id,
+            cat_id : this.state.cat_id,
+            page_id : this.state.currentPage._id,
+        }
+
+        api.post('/categoryData/updatePageArrays/',info);
+
+        this.setState({clock_finished: true, status: status});
     }
 
-    timer_submit(){
+//    timer_submit(){
+//         var correct_answers = this.state.timer_answers;
+//         var total_correct = this.state.user_timer_answers.length;
+//         var status = ''
+//         if(total_correct === correct_answers.length){
+//             status = 'correct';
+//         }
+//         else if(total_correct / correct_answers.length >= 0.5){
+//             status = 'almost';
+//         }
+//         else{
+//             status = 'incorrect';
+//         }
 
-    }
+//         if(!this.state.is_completed){
+//             //Calculate increment value
+//             var inc = (total_correct / correct_answers.length).toFixed(2) * 100;
+//             console.log("Timer Increment by: ");
+//             console.log(inc);
+//             api.post('/categoryData/increment_accuracy_by', {user_id : this.state.user_id, cat_id : this.state.cat_id, inc: inc})
+//             .then()
+//             .catch(err => console.log(err));
+//         }
+
+
+//         const info = {
+//             user_id : this.state.user_id,
+//             cat_id : this.state.cat_id,
+//             page_id : this.state.currentPage._id,
+//         }
+
+//         api.post('/categoryData/updatePageArrays/',info);
+
 
     render() {
 
@@ -928,30 +1055,92 @@ export default class UseCategory extends Component {
                                                 ?
                                                     <div>
                                                         <p className="mc_prompt">{this.state.currentPage.prompt}</p>
-                                                        {this.timer_submit()}
+                                                        <div className="mc_prompt" style={{marginTop: "5%"}}>You answered {this.state.user_timer_answers.length} out of {this.state.timer_answers.length} correctly!</div>
+                                                        {this.state.user_timer_answers.length !== this.state.timer_answers.length
+                                                        ?  
+                                                            <div style={{color:"red"}} className="mc_prompt">
+                                                                Answers you missed: {this.missed_answers()}
+                                                            </div>
+                                                        :
+                                                            <br></br>
+                                                        }
+                                                        {(this.state.status === 'incorrect'
+                                                            ?
+                                                                <div className = "continue_incorrect">
+                                                                    <div>
+                                                                        <button className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
+                                                                    </div>
+                                                                    <div className = "correct">
+                                                                        Incorrect!
+                                                                    </div>
+                                                                    <div>
+                                                                        <button className="continue_button_incorrect" onClick={() => this.continueButton()}>Continue</button>
+                                                                    </div>
+                                                                </div>
+                                                            :
+
+                                                                (this.state.status === 'almost'
+                                                            ?
+                                                                <div className = "continue_incorrect">
+                                                                    <div>
+                                                                        <button className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
+                                                                    </div>
+                                                                    <div className = "correct">
+                                                                        You Almost Had It!
+                                                                    </div>
+                                                                    <div>
+                                                                        <button className="continue_button_incorrect" onClick={() => this.continueButton()}>Continue</button>
+                                                                    </div>
+                                                                </div>
+                                                            :
+
+                                                            
+                                                                <div className = "continue_correct">
+                                                                    <div>
+                                                                    <button className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
+                                                                    </div>
+                                                                    <div className = "correct">
+                                                                        You Nailed It!
+                                                                    </div>
+                                                                    <div>
+                                                                        <button className="continue_button_correct" onClick={() => this.continueButton()}>Continue</button>
+                                                                    </div>
+                                                                </div>
+                                                        )
+                                                        )}
+                                                        
                                                     </div>
                                                 :
                                                     
                                                 <div>
                                                     <p className="mc_prompt">{this.state.currentPage.prompt}</p>
-                                                    <div style={{display: "flex", marginTop: "5%"}}>
-                                                        <div className = "enter_answer_timer">
-                                                            <div style={{marginLeft: "-2%"}}>
+                                                    <div style={{textAlign: "center", fontSize: "25px", marginTop: "5%"}}>
+                                                        <div style={{justifyContent: "center"}}>
+                                                            <Timer style={{marginLeft: "-1%"}} minutes={this.state.minutes} seconds={this.state.seconds} end_clock={this.timer_finished} stopClock={click => this.stopClock = click}/>
+                                                            <button style={{marginLeft: "1%", border: "transparent", background: "transparent"}} className="explore_more" onClick={() => this.stopClock()}>Give Up</button>
+                                                        </div>
+                                                        <div style={{display: "flex", marginTop: "3%", marginBottom: "3%", justifyContent: "center"}}>
+                                                            <div style={{marginLeft: "-1%"}}>
                                                                 Enter Answer: 
                                                             </div>
-                                                            <input style={{marginLeft: "2%", borderRadius: "5px", border: "1px solid"}}></input>
+                                                            <input id = "timer_answer_input" onChange={this.timer_answer} style={{borderRadius: "5px", border: "1px solid", marginLeft: "1%"}}></input>
                                                         </div>
-                                                        <div className="time_remaining">
-                                                            <Timer minutes={this.state.minutes} seconds={this.state.seconds} end_clock={this.timer_finished}/>
-                                                            <button onClick={() => console.log("Gave up")}>Give Up</button>
+                                                </div>
+                                                <div className="your_answers">
+                                                        Your Answers:
+                                                </div>
+                                                <div style={{marginLeft: "93%", fontSize: "20px"}}>
+                                                    {this.state.user_timer_answers.length} / {this.state.timer_answers.length}
+                                                </div>
+                                                <div className="user_timer_answers">
+                                                    <div style={{display: "flex", flexWrap: "wrap", marginLeft: "0.5%", marginRight: "0.5%", overflowY: "auto", height: "100%"}}>
+                                                        {this.state.user_timer_answers.map((answer, index) =>
+                                                        <div className = "specific_timer_answer">
+                                                            {answer}
                                                         </div>
+                                                        )}
                                                     </div>
-                                                    <div className="your_answers">
-                                                            Your Answers:
-                                                    </div>
-                                                    <div className="user_timer_answers">
-                                                        
-                                                    </div>
+                                                </div>
                                                 </div>
                                                   
                                                 }
@@ -960,22 +1149,23 @@ export default class UseCategory extends Component {
                                             
                                             :
                                             <div>
-                                                <p className="mc_prompt">Your prompt will appear as soon as you start the clock. Press "Enter" on your keyboard to submit an answer</p>
-                                                <div style={{display: "flex", marginTop: "5%"}}>
-                                                    <div className = "enter_answer_timer">
-                                                        <div style={{marginLeft: "-2%"}}>
+                                                <p className="mc_prompt">Start the clock to begin playing!</p>
+                                                <div style={{textAlign: "center", fontSize: "25px", marginTop: "5%"}}>
+                                                    <div style={{display: "flex", justifyContent: "center"}}>
+                                                        <div style={{marginLeft: "-1%"}}>Time Remaining: {this.state.minutes}:{this.state.seconds < 10 ? `0${this.state.seconds}` : this.state.seconds}</div>
+                                                        <button style={{marginTop: "0", marginLeft: "1%"}}className = "continue_button_correct" onClick={() => this.startTimer()}>Start Clock</button>
+                                                    </div>
+                                                    <div style={{display: "flex", marginTop: "3%", marginBottom: "3%", justifyContent: "center"}}>
+                                                        <div style={{marginLeft: "-1%"}}>
                                                             Enter Answer: 
                                                         </div>
-                                                        <input style={{marginLeft: "2%", borderRadius: "5px", border: "1px solid"}}></input>
-                                                    </div>
-                                                    <div className="time_remaining">
-                                                        <p>Time Remaining: {this.state.minutes}:{this.state.seconds < 10 ? `0${this.state.seconds}` : this.state.seconds}</p>
-                                                        <button className = "continue_button_correct" onClick={() => this.startTimer()}>Start</button>
+                                                        <input style={{borderRadius: "5px", border: "1px solid", marginLeft: "1%"}}></input>
                                                     </div>
                                                 </div>
                                                 <div className="your_answers">
                                                         Your Answers:
                                                 </div>
+                                                
                                                 <div className="user_timer_answers">
                                                     
                                                 </div>

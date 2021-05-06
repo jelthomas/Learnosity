@@ -3,7 +3,8 @@ import React, { Component } from 'react'
 export default class Timer extends Component {
     constructor(props){
         super(props);
-    
+        this.stop = this.stop.bind(this);
+
         this.state = {
             minutes: this.props.minutes,
             seconds: this.props.seconds
@@ -14,8 +15,12 @@ export default class Timer extends Component {
     //     minutes: this.props.minutes,
     //     seconds: this.props.seconds,
     // }
+    stop(){
+        this.setState({minutes: 0, seconds: 0});
+    }
 
     componentDidMount() {
+        this.props.stopClock(this.stop);
         this.myInterval = setInterval(() => {
             const seconds = this.state.seconds;
             const minutes = this.state.minutes;
@@ -49,7 +54,7 @@ export default class Timer extends Component {
         return (
             <div>
                 { minutes === 0 && seconds === 0
-                    ? <h1></h1>
+                    ? <p>Time Remaining: 0:00</p>
                     : <p>Time Remaining: {minutes}:{seconds < 10 ? `0${seconds}` : seconds}</p>
                 }
             </div>
