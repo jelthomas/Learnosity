@@ -33,12 +33,12 @@ export default class EditCategory extends Component {
     updateCategoryFormat (){
         var category_format_id = this.props.location.pathname.substring(39);
 
-        console.log(category_format_id)
+        //console.log(category_format_id)
 
         //get specific category format
         api.get('/categoryFormat/getSpecificCategoryFormat/'+category_format_id)
         .then(response => {
-            console.log(response.data)
+            //console.log(response.data)
             this.setState({categoryFormat:response.data[0]})
 
         })
@@ -316,6 +316,11 @@ export default class EditCategory extends Component {
                 <p>TESTING EDIT CATEGORY</p>
                 <input type="text" id="changeCategoryName" value = {this.state.categoryFormat.category_name} onChange = {this.changeCatName}/> 
                 <button onClick={this.addPageToCategory}>Add Page</button>
+                <img  
+                src={this.state.categoryFormat.category_photo === "" ? DefaultCoverPhoto : this.state.categoryFormat.category_photo} 
+                width = {200}
+                alt="coverphoto"
+                />
                 <div className="input-group mb-3">
                     <div className="custom-file">
                     <input

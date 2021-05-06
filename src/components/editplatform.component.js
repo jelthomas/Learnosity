@@ -33,14 +33,14 @@ export default class EditPlatform extends Component {
     
     updatePlatformFormat(){
 
-        console.log("INSIDE updatePlatformFormat")
+        //console.log("INSIDE updatePlatformFormat")
         
         var platform_format_id = this.props.location.pathname.substring(14);
 
 
         api.get('/platformFormat/getSpecificPlatformFormat/'+platform_format_id)
         .then(response => {
-            console.log(response)
+            //console.log(response)
             this.setState({platformFormat:response.data[0]})
         })
         .catch(error => {
@@ -85,27 +85,47 @@ export default class EditPlatform extends Component {
     addCategoryToPlatform(){
         console.log("adding category to platform")
 
+        //add page to category
+        const newPage= {
+            type:"Multiple Choice",
+            prompt : "Default Question",
+            audio_file : "",
+            page_title : "Default Page",
+            multiple_choices : ["Choice"],
+            multiple_choice_answer : "Answer",
+            matching_pairs: {"PairA":"PairB","Pair1":"Pair2"},
+            fill_in_the_blank_answers:{"7":"Blank"},
+            fill_in_the_blank_prompt:"Prompt   Prompt",
+            clock:120,
+            timer_answers:[],
+            order: 0
+        }
+
+        var pf_id = this.state.platformFormat._id;
+
+        api.post('/pageFormat/add',newPage)
+        .then(response => {
+        console.log(response.data._id)
 
         //create category
         const newCategory= {
             cat_name:"Default Category",
             platform_id : this.props.location.pathname.substring(14),
             cat_photo:"",
-            pages : []
+            pages : [response.data._id]
         }
         //create category in database
         api.post('/categoryFormat/add',newCategory)
-        .then(response => {
-            console.log(response.data._id)
+        .then(res => {
 
             //add category to platform 
             const addToCat = {
-                platform_format_id:this.state.platformFormat._id,
-                category_id : response.data._id
+                platform_format_id:pf_id,
+                category_id : res.data._id
             }
             api.post('/platformFormat/addToCategories',addToCat)
-            .then(response => {
-                console.log(response)
+            .then(res2 => {
+                console.log(res2)
                 //updates platform format so page is rendered properly
                 this.updateAllCategoryInfo();
               })
@@ -116,7 +136,13 @@ export default class EditPlatform extends Component {
         .catch(error => {
             console.log(error.response)
         });
-        
+
+        })
+        .catch(error => {
+            console.log(error.response)
+        });
+
+       
     }
 
     setFileName() {
@@ -253,7 +279,7 @@ export default class EditPlatform extends Component {
             //call update platname 
             api.post('/platformFormat/updatePlatName',newName)
             .then(response => {
-                console.log(response)
+                //onsole.log(response)
                 //updates platform format so page is rendered properly
                 this.updatePlatformFormat();
             })
