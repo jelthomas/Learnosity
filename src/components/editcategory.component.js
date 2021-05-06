@@ -32,14 +32,15 @@ export default class EditCategory extends Component {
 
     updateCategoryFormat (){
         var category_format_id = this.props.location.pathname.substring(39);
-
+        console.log("In updateCategoryFormat:");
+        
         //console.log(category_format_id)
 
         //get specific category format
         api.get('/categoryFormat/getSpecificCategoryFormat/'+category_format_id)
         .then(response => {
-            //console.log(response.data)
-            this.setState({categoryFormat:response.data[0]})
+            console.log(response.data[0])
+            this.setState({categoryFormat: response.data[0]})
 
         })
         .catch(error => {
@@ -79,7 +80,6 @@ export default class EditCategory extends Component {
 
     changeCatName() {
         var inputVal = document.getElementById('changeCategoryName').value
-
         if(inputVal.length < 1)
         {
             var catName = this.state.categoryFormat;
@@ -87,11 +87,12 @@ export default class EditCategory extends Component {
 
             document.getElementById('changeCategoryName').placeholder = "Category Name Required";
 
-            this.setState({categoryFormat:catName});
+            this.setState({categoryFormat: catName});
             return
         }   
         else 
         {
+
             const newName = {
                 categoryID : this.state.categoryFormat._id,
                 newCatName : inputVal
@@ -100,9 +101,13 @@ export default class EditCategory extends Component {
             //call update platname 
             api.post('/categoryFormat/updateCatName',newName)
             .then(response => {
-                console.log(response)
+                console.log("Change Cat Name:")
+                console.log(response);
                 //updates platform format so page is rendered properly
-                this.updateCategoryFormat();
+                var catName = this.state.categoryFormat;
+                catName.category_name = inputVal;
+                this.setState({categoryFormat: catName});
+                // this.updateCategoryFormat();
             })
             .catch(error => {
                 console.log(error)
@@ -313,7 +318,6 @@ export default class EditCategory extends Component {
         
         return (
             <div>
-                <p>TESTING EDIT CATEGORY</p>
                 <input type="text" id="changeCategoryName" value = {this.state.categoryFormat.category_name} onChange = {this.changeCatName}/> 
                 <button onClick={this.addPageToCategory}>Add Page</button>
                 <img  
