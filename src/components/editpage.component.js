@@ -13,6 +13,7 @@ export default class EditPage extends Component {
         super(props);
 
         this.updatePageFormat = this.updatePageFormat.bind(this);
+        this.updatePageAndFIB = this.updatePageAndFIB.bind(this);
         this.changePageName = this.changePageName.bind(this);
         this.changePrompt = this.changePrompt.bind(this);
         this.changePageType = this.changePageType.bind(this);
@@ -25,12 +26,16 @@ export default class EditPage extends Component {
         this.revealModal = this.revealModal.bind(this);
         this.removeMP = this.removeMP.bind(this);
 
-        this.editMP = this.editMP.bind(this);
         this.revealEditModal = this.revealEditModal.bind(this);
         this.handleEditClose = this.handleEditClose.bind(this);
         this.handleSubmitEditModal = this.handleSubmitEditModal.bind(this);
         this.changeEditKey = this.changeEditKey.bind(this);
         this.changeEditVal = this.changeEditVal.bind(this);
+
+        this.submitFIB = this.submitFIB.bind(this);
+        this.insertBlank = this.insertBlank.bind(this);
+        this.removeFIB = this.removeFIB.bind(this);
+        this.updateFIBInput = this.updateFIBInput.bind(this);
 
         this.state = {
             user_id: '',
@@ -39,11 +44,14 @@ export default class EditPage extends Component {
             showEditModal:false,
             showEmptyAlert: false,
             showEmptyAlert2:false,
+            showEmptyAlert3:false,
+            showBothEndsAlert:false,
             editKey:'',
             editVal:'',
             originalKey:'',
             originalVal:'',
-            editIndex:0
+            editIndex:0,
+            fibArray:[]
         }
     }
 
@@ -59,6 +67,59 @@ export default class EditPage extends Component {
             console.log(error.response)
         });
     }
+
+    updatePageAndFIB(){
+        var page_id = this.props.location.pathname.substring(60);
+
+                        
+        api.get('/pageFormat/getSpecificPage/'+page_id)
+        .then(response => {
+            console.log(response.data)
+            if(Object.keys(response.data.fill_in_the_blank_answers)[0] === "0" && Object.values(response.data.fill_in_the_blank_answers)[0] === "")
+            {
+                this.setState({pageFormat : response.data,fibArray : ["","",""]})
+            }
+            else
+            {
+                //create custom fibArray with algorithm 
+                //this means that fib has saved values before 
+                var fibPrompt = response.data.fill_in_the_blank_prompt
+                var tempArr=[]
+                var num=0;
+                for(var j = 0; j < Object.keys(response.data.fill_in_the_blank_answers).length;j++)
+                {
+                    var pos = Object.keys(response.data.fill_in_the_blank_answers)[j];
+                    pos = parseInt(pos, 10)
+                    console.log(num,pos)
+                    var str="";
+                    if(num === 0)
+                    {
+                        str = fibPrompt.substring(num,pos-1)
+                    }
+                    else
+                    {
+                        str = fibPrompt.substring(num+1,pos-1)
+                    }
+                    tempArr.push(str)
+                    tempArr.push(Object.values(response.data.fill_in_the_blank_answers)[j])
+                    num = pos;
+                }
+                //after still need to substring once more 
+
+                var endStr = fibPrompt.substring(num+1)
+                tempArr.push(endStr)
+
+                console.log(tempArr)
+
+
+                this.setState({fibArray : tempArr,pageFormat : response.data})
+            }
+          })
+        .catch(error => {
+            console.log(error.response)
+        });
+    }
+
 
     changePageName(){
         var inputVal = document.getElementById('changePageName').value
@@ -228,10 +289,11 @@ export default class EditPage extends Component {
         //will be disabled when there are 5 choices 
 
         var page_id = this.props.location.pathname.substring(60);
+        var Questions = (this.state.pageFormat.multiple_choices.length)
 
         const newMCC = {
             page_format_id : page_id,
-            value : "New Choice"
+            value : "New Choice " + Questions
         }
 
         api.post('/pageFormat/addToMCC',newMCC)
@@ -361,15 +423,6 @@ export default class EditPage extends Component {
 
     }
 
-    editMP(ind)
-    {
-        //save the key and value into state variables 
-        //allow user to edit 
-        //when they click submit 
-        //remove the key and value
-        //add new key value 
-    }
-
     revealEditModal(ind){
 
         this.setState({showEmptyAlert2:false})
@@ -463,6 +516,127 @@ export default class EditPage extends Component {
         this.setState({editVal : val})
     }
 
+    submitFIB(){
+        var inputArr = this.state.fibArray
+
+        var newPrompt = ""
+        var newAnswers = {}
+        var newKey = ""
+
+        for(var i = 0; i < inputArr.length; i++)
+        {
+            if(inputArr.length === 3 && document.getElementById('fibInput'+0).value === "" && document.getElementById('fibInput'+(inputArr.length-1)).value === "")
+            {
+                this.setState({showBothEndsAlert:true})
+                return
+            } 
+            console.log('fibInput'+i,document.getElementById('fibInput'+i).value)
+
+            var input = document.getElementById('fibInput'+i).value
+            if(input === "" && i !== 0 && i !== inputArr.length-1)
+            {
+                this.setState({showEmptyAlert3:true})   
+                return
+            }
+
+            if(i % 2 === 0)
+            {
+                newPrompt = newPrompt + input
+                
+                if(input === "")
+                {
+                    newKey = "" + (newPrompt.length) 
+                }
+                else
+                {
+                    newKey = "" + (newPrompt.length +1) 
+                }
+                
+
+                if(i+1 !== inputArr.length)
+                {
+                    newPrompt = newPrompt + "  "
+                }
+            }
+            else
+            {
+                newAnswers[newKey] = input
+            }
+        }
+
+        console.log(newPrompt)
+        console.log(newAnswers)
+        
+        var page_id = this.props.location.pathname.substring(60);
+
+        const newFIB = {
+            pageID : page_id,
+            newfibAnswers: newAnswers,
+            newfibPrompt: newPrompt
+        }
+        
+        
+        api.post('/pageFormat/updatefibPromptAnswer',newFIB)
+        .then(response => {
+            console.log(response)
+            //updates page format so page is rendered properly
+            this.updatePageAndFIB();
+        })
+        .catch(error => {
+            console.log(error)
+        });
+
+    }
+
+    insertBlank(){
+        var tempArr = this.state.fibArray
+
+        tempArr.push("")
+        tempArr.push("")
+
+        //update the 
+        this.setState({fibArray:tempArr})
+    }
+
+    removeFIB(ind){
+        var tempArr = this.state.pageFormat.fill_in_the_blank_answers
+
+        var removeIndex = Math.round(ind/2) - 1
+
+        var deleteKey = Object.keys(tempArr)[removeIndex]
+
+        delete tempArr[deleteKey]
+
+        var page_id = this.props.location.pathname.substring(60);
+
+
+        const newInfo = {
+            pageID : page_id,
+            newfibAnswers:tempArr,
+        }
+
+        api.post('/pageFormat/updatefibAnswer',newInfo)
+        .then(response => {
+            //updates page format and fib state array
+            this.updatePageAndFIB();
+        })
+        .catch(error => {
+            console.log(error)
+        });
+
+    }
+
+    updateFIBInput(ind){
+        var val = document.getElementById('fibInput'+ind).value
+
+        var tempArr = this.state.fibArray.slice()
+
+        tempArr[ind]=val;
+
+        this.setState({fibArray:tempArr,showEmptyAlert3:false,showBothEndsAlert:false})
+    }
+
+
     componentDidMount(){
         var token = localStorage.getItem('usertoken');
         var validToken = false;
@@ -498,8 +672,48 @@ export default class EditPage extends Component {
                         api.get('/pageFormat/getSpecificPage/'+page_id)
                         .then(response => {
                             console.log(response.data)
-                            console.log(Object.keys(response.data.matching_pairs))
-                            this.setState({pageFormat : response.data})
+
+                            //create temp array that will be stored as state variable 
+                            
+                            if(Object.keys(response.data.fill_in_the_blank_answers)[0] === "0" && Object.values(response.data.fill_in_the_blank_answers)[0] === "")
+                            {
+                                this.setState({pageFormat : response.data,fibArray : ["","",""]})
+                            }
+                            else
+                            {
+                                //create custom fibArray with algorithm 
+                                //this means that fib has saved values before 
+                                var fibPrompt = response.data.fill_in_the_blank_prompt
+                                var tempArr=[]
+                                var num=0;
+                                for(var j = 0; j < Object.keys(response.data.fill_in_the_blank_answers).length;j++)
+                                {
+                                    var pos = Object.keys(response.data.fill_in_the_blank_answers)[j];
+                                    pos = parseInt(pos, 10)
+                                    console.log(num,pos)
+                                    var str="";
+                                    if(num === 0)
+                                    {
+                                        str = fibPrompt.substring(num,pos-1)
+                                    }
+                                    else
+                                    {
+                                        str = fibPrompt.substring(num+1,pos-1)
+                                    }
+                                    tempArr.push(str)
+                                    tempArr.push(Object.values(response.data.fill_in_the_blank_answers)[j])
+                                    num = pos;
+                                }
+                                //after still need to substring once more 
+
+                                var endStr = fibPrompt.substring(num+1)
+                                tempArr.push(endStr)
+
+                                console.log(tempArr)
+
+
+                                this.setState({pageFormat : response.data,fibArray : tempArr})
+                            }
                           })
                         .catch(error => {
                             console.log(error.response)
@@ -559,13 +773,28 @@ render() {
                     ?
                         <div >
                             <p>Fill in the Blank Type </p>
-                            {Object.keys(this.state.pageFormat.fill_in_the_blank_answers)[0] === "0" && Object.values(this.state.pageFormat.fill_in_the_blank_answers)[0] === ""
-                            ?
-                                <p> DEFAULT</p>
-                            :
-                                <p>NOT DEFAULT</p>
+                            {this.state.fibArray.map((input,index) => (
+                                (index %2 ==0    
+                                ?
+                                    <div>
+                                        <input type="text" id={"fibInput"+index} value = {input} onChange = {() => this.updateFIBInput(index)} size={50}></input>
+                                    </div>
+                                :
+                                    <div>
+                                        <input type="text" id={"fibInput"+index} style={{borderColor: "red"}} value = {input} onChange = {() => this.updateFIBInput(index)} size={50}></input>
+                                        <button onClick={()=>this.removeFIB(index)} disabled = {Object.keys(this.state.pageFormat.fill_in_the_blank_answers).length < 2 ? true : false}>X</button>
+                                    </div>
+                                )
+                            ))}
+                            <Alert show = {this.state.showEmptyAlert3} variant = 'danger'>
+                                The text fields can not be empty
+                            </Alert>
+                            <Alert show = {this.state.showBothEndsAlert} variant = 'danger'>
+                                Front and End Prompt can not be empty when there is only one blank 
+                            </Alert>
+                            <button onClick={this.insertBlank} disabled = {this.state.fibArray.length <11 ? false : true}>Insert Blank</button>
+                            <button onClick={this.submitFIB}>Submit</button>
 
-                            }
                         </div>
                         
                     :

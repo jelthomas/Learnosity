@@ -171,16 +171,19 @@ export default class EditCategory extends Component {
 
     addPageToCategory(){
         //need to grab the largest order value and increase by 1 
+
+        //CREATE A METHOD TO GET PROPER ORDER
         const newPage= {
             type:"Multiple Choice",
-            prompt : "Default MC",
+            prompt : "Default Question",
             audio_file : "",
             page_title : "Default Page",
-            multiple_choices : ["choice"],
-            multiple_choice_answer : "answer",
-            matching_pairs: "",
-            fill_in_the_blank_answers:"",
-            clock:1,
+            multiple_choices : ["Choice"],
+            multiple_choice_answer : "Answer",
+            matching_pairs: {"PairA":"PairB","Pair1":"Pair2"},
+            fill_in_the_blank_answers:{"7":"Blank"},
+            fill_in_the_blank_prompt:"Prompt   Prompt",
+            clock:120,
             timer_answers:[],
             order: this.state.categoryFormat.pages.length
         }
@@ -328,7 +331,9 @@ export default class EditCategory extends Component {
                 </div>
                 <div>
                 {this.state.allPagesInfo.map((page) => (
+                    <div>
                     <button onClick={() => this.editPage(page._id)}>{page.page_title}</button>
+                    </div>
                 ))}
                 </div>
             </div>
