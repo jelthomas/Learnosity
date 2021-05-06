@@ -8,6 +8,8 @@ import Alert from "react-bootstrap/Alert"
 import Navbar from "./navbar.component";
 import jwt from 'jsonwebtoken';
 import jwt_decode from 'jwt-decode';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEyeSlash} from "@fortawesome/free-regular-svg-icons";
 require('dotenv').config();
 
 export default class SignUp extends Component {
@@ -24,6 +26,8 @@ export default class SignUp extends Component {
         this.showPassAlert = this.showPassAlert.bind(this);
         this.showConfirmPassAlert = this.showConfirmPassAlert.bind(this);
         this.showSecurityAnswerAlert = this.showSecurityAnswerAlert.bind(this);
+        this.toggle_password_vis = this.toggle_password_vis.bind(this);
+
         this.state = {
             username: '',
             email:'',
@@ -191,6 +195,16 @@ export default class SignUp extends Component {
         this.props.history.push('/login');
     }
 
+    toggle_password_vis(id){
+        var input = document.getElementById(id);
+        if(input.type === 'password'){
+            input.type = 'text';
+        }
+        else{
+            input.type = 'password';
+        }
+    }
+
     componentDidMount(){
         var token = localStorage.getItem('usertoken');
         var validToken = false;
@@ -259,11 +273,17 @@ export default class SignUp extends Component {
                                 </div>
                                 <div className = "form-group" style={{marginLeft: "10%"}}>
                                     <label style = {{color: "black"}}> Password:</label>
-                                    <input type = "password" style = {{width: "90%", borderColor: "black"}} className = "form-control" name = "password" placeholder = "Password" value = {this.state.password} onChange = {this.onChange} required/>
+                                    <div style={{display: "flex"}}>
+                                        <input id = "password" type = "password" style = {{width: "90%", borderColor: "black"}} className = "form-control" name = "password" placeholder = "Password" value = {this.state.password} onChange = {this.onChange} required/>
+                                        <button onClick = {() => this.toggle_password_vis("password")} style={{border: "transparent", background: "transparent", transform: "translate(-35px)"}}><FontAwesomeIcon icon={faEyeSlash} /></button>
+                                    </div>
                                 </div>
                                 <div className = "form-group" style={{marginLeft: "10%"}}>
                                     <label style = {{color: "black"}}> Confirm Password:</label>
-                                    <input type = "password" style = {{width: "90%", borderColor: "black"}} className = "form-control" name = "confirmPassword" placeholder = "Enter Password Again" value = {this.state.confirmPassword} onChange = {this.onChange} required/>
+                                    <div style={{display: "flex"}}>
+                                        <input id = "confirm_password" type = "password" style = {{width: "90%", borderColor: "black"}} className = "form-control" name = "confirmPassword" placeholder = "Enter Password Again" value = {this.state.confirmPassword} onChange = {this.onChange} required/>
+                                        <button onClick = {() => this.toggle_password_vis("confirm_password")} style={{border: "transparent", background: "transparent", transform: "translate(-35px)"}}><FontAwesomeIcon icon={faEyeSlash} /></button>
+                                    </div>
                                 </div>
                                 <Form style={{marginLeft: "10%"}}>
                                     <Form.Group controlId="exampleForm.ControlSelect1">
@@ -277,7 +297,10 @@ export default class SignUp extends Component {
                                 </Form>
                                 <div className = "form-group" style={{marginLeft: "10%"}}>
                                     <label style = {{color: "black"}}> Security Answer:</label>
-                                    <input type = "password" style = {{width: "90%", borderColor: "black"}} className = "form-control" name = "securityAnswer" placeholder = "Security Answer" value = {this.state.securityAnswer} onChange = {this.onChange} required/>
+                                    <div style={{display: "flex"}}>
+                                        <input id="security_pass" type = "password" style = {{width: "90%", borderColor: "black"}} className = "form-control" name = "securityAnswer" placeholder = "Security Answer" value = {this.state.securityAnswer} onChange = {this.onChange} required/>
+                                        <button onClick = {() => this.toggle_password_vis("security_pass")} style={{border: "transparent", background: "transparent", transform: "translate(-35px)"}}><FontAwesomeIcon icon={faEyeSlash} /></button>
+                                    </div>
                                 </div>
                                 <Alert show = {this.state.userAlert} variant = 'danger'>
                                     User conditions not met.

@@ -24,17 +24,14 @@ export default class Home extends Component {
         var validToken = false;
         if(token){
             //Token in session storage
-            console.log("Token found");
             jwt.verify(token, process.env.REACT_APP_SECRET, function(err,res) {
                 if(err){
                     //Improper JWT format 
                     //Remove token and redirect back to home
-                    console.log("Improper format");
                     localStorage.removeItem('usertoken');
                 }
                 else{
                     //Properly formatted JWT
-                    console.log("Proper format");
                     validToken = true;
                 }});
         }
@@ -44,18 +41,14 @@ export default class Home extends Component {
             if (decoded._id){
                 //ID exists in token
                 //Check if ID exists as a user
-                console.log("ID exists");
-                console.log(decoded);
                 api.get('/user/getSpecificUser/'+ decoded._id)
                 .then(response => {
-                    console.log(response.data);
                     if (response) {
                         //Valid user
                         this.props.history.push(`/dashboard`);
                     }
                     else{
                         //Fake ID...
-                        console.log("Fake ID");
                         localStorage.removeItem('usertoken');
                     }
                 })
@@ -64,14 +57,12 @@ export default class Home extends Component {
         }  
         else{
             //Not a Valid Token
-            console.log("Not valid token");
             localStorage.removeItem('usertoken');
         }
     }
 
     onSubmit(e){
         e.preventDefault();
-        console.log("Here");
         api.get('/user')
             .then(res => console.log(res.data));
         // window.location = "/";

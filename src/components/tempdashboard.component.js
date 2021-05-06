@@ -81,7 +81,6 @@ export default class TempDashboard extends Component {
                 .then(response => {
                     if (response) {
                         //Valid user
-                        
                         //Begin getting platforms for display
                         var favorite_platforms = response.data.favorited_platforms;
                         var user_recent_platforms = response.data.recent_platforms;
@@ -108,17 +107,17 @@ export default class TempDashboard extends Component {
 
                             var canPaginateRightRecent
                             var index_dict = {};
-                            console.log("USER FAVORITE PLATFORMS", favorite_platforms, platform_formats)
-                            var temp = user_recent_platforms.slice(0,5)
+                            // console.log("USER FAVORITE PLATFORMS", favorite_platforms, platform_formats)
+                            var temp = user_recent_platforms.slice(0,5);
                             for (var i = 0; i < temp.length; i++){
                                 index_dict[temp[i]] = i
                             }
-                            console.log("INDEX DICT", index_dict)
+                            // console.log("INDEX DICT", index_dict)
                             //Start of getting recent platforms
                             var recent_platforms = [];
                             api.post('/platformFormat/returnFormats/', {ids: user_recent_platforms.slice(0, 6)})
-                            .then(response => {
-                                if (response.data.length > 5){
+                            .then(res => {
+                                if (res.data.length > 5){
                                     canPaginateRightRecent = true
                                     for (var i = 0; i < 5; i++){
                                         recent_platforms.push({})
@@ -126,14 +125,14 @@ export default class TempDashboard extends Component {
                                 }
                                 else {
                                     canPaginateRightRecent = false
-                                    for (var i = 0; i < response.data.length; i++){
+                                    for (var i = 0; i < res.data.length; i++){
                                         recent_platforms.push({})
                                     }
                                 }
                                 
-                                var recent_platform_formats = response.data
-                                console.log("WHAT IS THIS", recent_platform_formats)
-                                var correct_index
+                                var recent_platform_formats = res.data;
+                                // console.log("WHAT IS THIS", recent_platform_formats)
+                                var correct_index;
                                 for (var i = 0; i < recent_platform_formats.length; i++){
                                     if (index_dict[recent_platform_formats[i]._id] !== undefined){
                                         correct_index = index_dict[recent_platform_formats[i]._id];
@@ -153,6 +152,7 @@ export default class TempDashboard extends Component {
                                         recent_platforms[i].is_favorited = false
                                     }
                                 }
+                               
                                 this.setState({
                                     all_platforms: platform_formats, 
                                     recent_platforms: recent_platforms,
@@ -318,31 +318,31 @@ export default class TempDashboard extends Component {
 
     rightRecentPlatforms() {
         var index_dict = {};
-        var canPaginateRightRecent
-        var favorite_platforms = this.state.users_favorite_platforms
-        var temp = this.state.users_recent_platforms.slice((this.state.paginate_rec_index+1)*5, (this.state.paginate_rec_index+2) * 5 + 1)
+        var canPaginateRightRecent;
+        var favorite_platforms = this.state.users_favorite_platforms;
+        var temp = this.state.users_recent_platforms.slice((this.state.paginate_rec_index+1)*5, (this.state.paginate_rec_index+2) * 5 + 1);
         for (var i = 0; i < temp.length; i++){
-            index_dict[temp[i]] = i
+            index_dict[temp[i]] = i;
         }
         //Start of getting recent platforms
         var recent_platforms = [];
         api.post('/platformFormat/returnFormats/', {ids: temp})
         .then(response => {
             if (response.data.length > 5){
-                canPaginateRightRecent = true
+                canPaginateRightRecent = true;
             }
             else {
-                canPaginateRightRecent = false
+                canPaginateRightRecent = false;
             }
             for (var i = 0; i < response.data.length; i++){
-                recent_platforms.push({})
+                recent_platforms.push({});
             }
             var recent_platform_formats = response.data;
             var correct_index
             for (var i = 0; i < recent_platform_formats.length; i++){
                 correct_index = index_dict[recent_platform_formats[i]._id];
-                recent_platforms[correct_index] = recent_platform_formats[i]
-                console.log("CORRECT INDEX", correct_index, recent_platforms)
+                recent_platforms[correct_index] = recent_platform_formats[i];
+                // console.log("CORRECT INDEX", correct_index, recent_platforms)
             }
 
             for(var i = 0; i < recent_platforms.length; i++){
@@ -501,15 +501,15 @@ export default class TempDashboard extends Component {
             })
         }
         else {
-            console.log("BEFORE", this.state.users_recent_platforms)
-            var temp = this.state.users_recent_platforms
-            var index = temp.indexOf(plat_id)
-            temp.splice(index, 1)
-            temp.unshift(plat_id)
+            // console.log("BEFORE", this.state.users_recent_platforms)
+            var temp = this.state.users_recent_platforms;
+            var index = temp.indexOf(plat_id);
+            temp.splice(index, 1);
+            temp.unshift(plat_id);
             this.setState({
                 users_recent_platforms: temp
             })
-            console.log("AFTER", temp)
+            // console.log("AFTER", temp)
         }
         api.post('/user/updateRecentlyPlayed/', {userID: this.state.id, recent_platforms: this.state.users_recent_platforms})
         .then()
@@ -533,7 +533,7 @@ export default class TempDashboard extends Component {
                         </div>
                         {this.state.paginate_rec_index === 0
                         ?
-                            <button disabled="true" style={{marginLeft: "70%", color:"grey"}} className = "paginate_arrows" onClick = {() => this.leftRecentPlatforms()}><FontAwesomeIcon icon={faAngleLeft} /></button>
+                            <button disabled={true} style={{marginLeft: "70%", color:"grey"}} className = "paginate_arrows" onClick = {() => this.leftRecentPlatforms()}><FontAwesomeIcon icon={faAngleLeft} /></button>
                         :
                             <button style={{marginLeft: "70%"}} className = "paginate_arrows" onClick = {() => this.leftRecentPlatforms()}><FontAwesomeIcon icon={faAngleLeft} /></button>
                         }
@@ -541,7 +541,7 @@ export default class TempDashboard extends Component {
                         ?
                             <button style={{marginLeft: "auto", marginRight: "3%"}} className = "paginate_arrows" onClick = {() => this.rightRecentPlatforms()}><FontAwesomeIcon icon={faAngleRight} /></button>
                         :
-                            <button disabled="true" style={{marginLeft: "auto", marginRight: "3%", color: "grey"}} className = "paginate_arrows" onClick = {() => this.rightRecentPlatforms()}><FontAwesomeIcon icon={faAngleRight} /></button>
+                            <button disabled={true} style={{marginLeft: "auto", marginRight: "3%", color: "grey"}} className = "paginate_arrows" onClick = {() => this.rightRecentPlatforms()}><FontAwesomeIcon icon={faAngleRight} /></button>
                         }
 
                     </div>
@@ -572,7 +572,7 @@ export default class TempDashboard extends Component {
                         </div>
                         {this.state.paginate_all_index === 0
                         ?
-                            <button disabled="true" style={{marginLeft: "64%", color: "grey"}} className = "paginate_arrows" onClick = {() => this.leftAllPlatforms()}><FontAwesomeIcon icon={faAngleLeft} /></button>
+                            <button disabled={true} style={{marginLeft: "64%", color: "grey"}} className = "paginate_arrows" onClick = {() => this.leftAllPlatforms()}><FontAwesomeIcon icon={faAngleLeft} /></button>
                         :
                             <button style={{marginLeft: "64%"}} className = "paginate_arrows" onClick = {() => this.leftAllPlatforms()}><FontAwesomeIcon icon={faAngleLeft} /></button>
                         }   
@@ -580,7 +580,7 @@ export default class TempDashboard extends Component {
                         ?
                             <button style={{marginLeft: "auto", marginRight: "3%"}} className = "paginate_arrows" onClick = {() => this.rightAllPlatforms()}><FontAwesomeIcon icon={faAngleRight} /></button>
                         :
-                            <button disabled="true" style={{marginLeft: "auto", marginRight: "3%", color:"grey"}} className = "paginate_arrows" onClick = {() => this.rightAllPlatforms()}><FontAwesomeIcon icon={faAngleRight} /></button>
+                            <button disabled={true} style={{marginLeft: "auto", marginRight: "3%", color:"grey"}} className = "paginate_arrows" onClick = {() => this.rightAllPlatforms()}><FontAwesomeIcon icon={faAngleRight} /></button>
                         }
                     
                     </div>

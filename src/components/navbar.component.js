@@ -21,10 +21,10 @@ export default class Navbar extends Component {
     <div class="navbar-collapse w-100 order-3 dual-collapse2">
         <ul class="navbar-nav ml-auto">
             <li className="navbar-item">
-              <Link to="/signup" className="nav-link navbarDropdown" style={{padding: '5px',color:'#00db00',fontFamily:"Quando",fontSize:'25px'}}>Sign Up</Link>
+              <Link to="/signup" className="nav-link navbarDropdown logged_out_nav">Sign Up</Link>
             </li>
             <li className="navbar-item">
-              <Link to ="/login" className="nav-link navbarDropdown"  style={{padding: '5px',color:'#00db00',fontFamily:"Quando",fontSize:'25px'}}  >Log In</Link>
+              <Link to ="/login" className="nav-link navbarDropdown logged_out_nav" >Log In</Link>
             </li>
         </ul>
     </div>
