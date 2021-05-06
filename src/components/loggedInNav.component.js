@@ -18,36 +18,50 @@ export default class LoggedInNav extends Component {
 
     this.state = {
         loggedInUser: '',
-        profile_picture: ''
+        profile_picture: '',
+        user_id:''
     }
   }
 
   createPlatform()
   {
-      // console.log("CREATE PLATFORM CLICKED")
+      console.log("CREATE PLATFORM CLICKED")
 
-      // const createPlatFormat = {
-      //     plat_name : "Untitled",
-      //     owner : this.state.loggedInUser,
-      //     is_public : true,
-      //     privacy_password :"",
-      //     cover_photo :"",
-      //     pages : [],
-      //     is_published : false
-      // }
+      var uID = this.state.user_id
 
-      // api.post("/platformFormat/add",createPlatFormat)
-      // .then(response => {
+      const createPlatFormat = {
+          plat_name : "Untitled",
+          owner : this.state.loggedInUser,
+          is_public : true,
+          privacy_password :"",
+          cover_photo :"",
+          categories: [],
+          is_published : false
+      }
 
-      //   var platID = response.data._id
+      api.post("/platformFormat/add",createPlatFormat)
+      .then(response => {
 
-      //   console.log(response.data._id)
+        var platID = response.data._id
 
-      //   this.props.props.history.push('/editPlatform/'+platID)
-      // })
-      // .catch(error => {
-      //     console.log(error.response)
-      // });
+        console.log(response.data._id)
+
+        const UserInfo = {
+          userID : uID,
+          newPlat : response.data._id
+        }
+
+        api.post("/user/updateCreatedPlatforms",UserInfo)
+        .then(res => {
+          this.props.props.history.push('/editPlatform/'+platID)
+        })
+        .catch(err=>{
+          console.log(err.response)
+        })
+      })
+      .catch(error => {
+          console.log(error.response)
+      });
       
 
 
@@ -83,7 +97,7 @@ export default class LoggedInNav extends Component {
         api.get('/user/getSpecificUser/'+decoded._id)
           .then(response => {
             profile_pic = response.data.profile_picture;
-            this.setState({loggedInUser:decoded.username, profile_picture: profile_pic})
+            this.setState({loggedInUser:decoded.username, profile_picture: profile_pic,user_id:decoded._id})
           })
     }  
     else{
@@ -118,7 +132,7 @@ export default class LoggedInNav extends Component {
               <Link to ="/dashboard" className="nav-link navbarDropdown logged_link"  style={{padding: '5px',color:'#00db00',fontFamily:"Quando",fontSize:'25px', paddingRight: "55px", color: "rgb(0, 219, 0) !imporant"}}  >Leaderboard</Link>
             </li>
             <li className="navbar-item">
-              <Link to ="/dashboard" className="nav-link navbarDropdown logged_link"  style={{padding: '5px',color:'#00db00',fontFamily:"Quando",fontSize:'25px', paddingRight: "55px", color: "rgb(0, 219, 0) !imporant"}}  >My Platforms</Link>
+              <Link to ="/myplatforms" className="nav-link navbarDropdown logged_link"  style={{padding: '5px',color:'#00db00',fontFamily:"Quando",fontSize:'25px', paddingRight: "55px", color: "rgb(0, 219, 0) !imporant"}}  >My Platforms</Link>
             </li>
           </div>
             <Dropdown style={{marginTop:'.7%'}}>
