@@ -356,7 +356,7 @@ export default class UseCategory extends Component {
 
             else if(current_page.type === "Fill in the Blank"){
                 if(this.state.filterPages.length !== 0){
-                    var prompt = current_page.prompt;
+                    var prompt = current_page.fill_in_the_blank_prompt;
                     var blank_maps = current_page.fill_in_the_blank_answers;
                     var map_keys = Object.keys(blank_maps).sort();
                     var curr = 0;
