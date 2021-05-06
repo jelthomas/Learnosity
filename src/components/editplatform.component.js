@@ -365,8 +365,13 @@ export default class EditPlatform extends Component {
                         //Valid user
                         var user_id = response.data._id;
 
-
                         var platform_format_id = this.props.location.pathname.substring(14);
+
+                        console.log(response.data.created_platforms.includes(platform_format_id))
+                        
+                        if (response.data.created_platforms.includes(platform_format_id) === false) {
+                            this.props.history.push(`/dashboard`);
+                        }
 
 
                         api.get('/platformFormat/getSpecificPlatformFormat/'+platform_format_id)
