@@ -281,7 +281,10 @@ export default class EditPlatform extends Component {
             .then(response => {
                 //onsole.log(response)
                 //updates platform format so page is rendered properly
-                this.updatePlatformFormat();
+                var platName = this.state.platformFormat;
+                platName.plat_name = inputVal;
+                this.setState({platformFormat:platName});
+                // this.updatePlatformFormat();
             })
             .catch(error => {
                 console.log(error)
