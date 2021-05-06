@@ -82,7 +82,7 @@ export default class EditCategory extends Component {
 
         if(inputVal.length < 1)
         {
-            var catName = this.state.platformFormat;
+            var catName = this.state.categoryFormat;
             catName.category_name = inputVal;
 
             document.getElementById('changeCategoryName').placeholder = "Category Name Required";
