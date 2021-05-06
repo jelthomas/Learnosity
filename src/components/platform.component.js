@@ -66,6 +66,9 @@ export default class Platform extends Component {
             });
         }
         else{
+            //Update updatedAt field for category data
+            api.post('/categoryData/updatedAt', {user_id: this.state.id, category_format_id: cat_id});
+
             //Check if we need to clear currentProgress array
             var should_clear = true;
             for(let i = 0; i < category.pages.length; i++){
@@ -274,7 +277,10 @@ export default class Platform extends Component {
             //We can filter and then sort the array updatedAt
             sorted_categories = all_categories.filter((category) => {
                 return category.updatedAt !== null;
-            }).sort((a, b) => (Date(a.updatedAt) > Date(b.updatedAt)) ? 1 : -1);
+            }).sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+            for(var i = 0; i < sorted_categories.length; i++){
+                console.log(sorted_categories[i].updatedAt);
+            }
         }
         return(
             <div style={{display: "flex", flexWrap: "wrap"}}>
@@ -308,6 +314,7 @@ export default class Platform extends Component {
     }
 
     unplayed(){
+        console.log("HERE");
         //Filter all categories by updatedAt === null
         var all_categories = this.state.categoriesFormats;
         var filter_categories = [];

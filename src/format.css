@@ -40,7 +40,14 @@
   margin-right: 2%;
   height: 200px;
   border-radius: 10px;
-  margin-top: 2%;
+  margin-top: 1%;
+}
+
+.specific_timer_answer{
+  width: fit-content;
+  height: fit-content;
+  margin-right: 2%;
+  margin-top: 1%;
 }
 
 .your_answers{
@@ -451,6 +458,10 @@ a{
 
 .explore_more{
   color: #007bff !important;
+}
+
+.explore_more:hover{
+  text-decoration: underline;
 }
 
 .paginate_arrows{
