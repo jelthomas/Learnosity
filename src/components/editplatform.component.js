@@ -197,33 +197,39 @@ export default class EditPlatform extends Component {
         //var platID = this.state.platformFormat._id
         var tempPlat = this.state.platformFormat
         api(config)
-        .then(function (response) {
+        .then(response =>{
             console.log((response.data.data.link));
-
-            //Instead of calling update PlatformFormat we can update state
-
             tempPlat.cover_photo = response.data.data.link;
             this.setState({platformFormat : tempPlat})
-
-            // const updateCover = {
-            //     platformID : platID,
-            //     newCoverPhoto : response.data.data.link
-            // }
-
-            // api.post('/platformFormat/update_cover_photo',updateCover)
-            // .then(response => {
-            //     console.log(response.data)
-            //     //UPDATING PLATFORM FORMAT IS BROKEN for update cover photo 
-            //     this.updatePlatformFormat();
-            //   })
-            // .catch(error => {
-            //     console.log(error.response)
-            // });
-
         })
         .catch(function (error) {
-        console.log(error);
+            console.log(error);
         });
+        // .then(function (response) {
+        //     console.log((response.data.data.link));
+
+        //     //Instead of calling update PlatformFormat we can update state
+
+        //     tempPlat.cover_photo = response.data.data.link;
+        //     this.setState({platformFormat : tempPlat})
+
+        //     // const updateCover = {
+        //     //     platformID : platID,
+        //     //     newCoverPhoto : response.data.data.link
+        //     // }
+
+        //     // api.post('/platformFormat/update_cover_photo',updateCover)
+        //     // .then(response => {
+        //     //     console.log(response.data)
+        //     //     //UPDATING PLATFORM FORMAT IS BROKEN for update cover photo 
+        //     //     this.updatePlatformFormat();
+        //     //   })
+        //     // .catch(error => {
+        //     //     console.log(error.response)
+        //     // });
+
+        // })
+
 
         document.getElementById('inputGroupFile01').value = ""
     }
