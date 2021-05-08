@@ -172,7 +172,7 @@ export default class EditPlatform extends Component {
         }
 
         //checks the type of file
-        if(file[0].type !== "image/png" && file[0].type !== "image/jpg")
+        if(file[0].type !== "image/png" && file[0].type !== "image/jpeg")
         {
             console.log(file[0].type)
             console.log("Invalid Page Type")
