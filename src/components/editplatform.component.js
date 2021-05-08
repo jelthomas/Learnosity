@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken';
 import { Link } from 'react-router-dom';
 import jwt_decode from 'jwt-decode';
 import DefaultCoverPhoto from "../images/defaultCoverPhoto.png"
+import Alert from "react-bootstrap/Alert";
 require('dotenv').config();
 
 export default class EditPlatform extends Component {
@@ -21,12 +22,15 @@ export default class EditPlatform extends Component {
         this.changePrivacyPass = this.changePrivacyPass.bind(this);
         this.updateAllCategoryInfo = this.updateAllCategoryInfo.bind(this);
         this.editCategory = this.editCategory.bind(this);
+        this.submitChanges = this.submitChanges.bind(this);
         
         this.state = {
             user_id: '',
             platformFormat:'',
             fileName:'',
-            allCategoriesInfo:[]
+            allCategoriesInfo:[],
+            showEmptyPlatAlert:false,
+            showEmptyPassAlert:false
         }
     }
 
@@ -58,7 +62,7 @@ export default class EditPlatform extends Component {
 
         api.get('/platformFormat/getSpecificPlatformFormat/'+platform_format_id)
         .then(response => {
-            console.log(response)
+            console.log(response.data[0])
             this.setState({platformFormat:response.data[0]})
 
             var categoriesArray = response.data[0].categories
@@ -158,20 +162,24 @@ export default class EditPlatform extends Component {
         const file = document.getElementById('inputGroupFile01').files
         //checks if file is properly defined
         if(file[0] === undefined) {
+            console.log("File is Undefined")
             return
         }
         //checks if file size is greater then 10 MB
         if(file[0].size > 10000000) {
+            console.log("File Size is bigger then 10 MB")
             return
         }
 
         //checks the type of file
         if(file[0].type !== "image/png" && file[0].type !== "image/jpg")
         {
+            console.log(file[0].type)
+            console.log("Invalid Page Type")
             return
         }
 
-        console.log("Gets Pasts Type check")
+        console.log("Gets Pasts Checks For Image")
 
         const data = new FormData()
         console.log(file[0])
@@ -186,25 +194,31 @@ export default class EditPlatform extends Component {
             data : data
           };
     
-        var platID = this.state.platformFormat._id
+        //var platID = this.state.platformFormat._id
+        var tempPlat = this.state.platformFormat
         api(config)
         .then(function (response) {
             console.log((response.data.data.link));
 
-            const updateCover = {
-                platformID : platID,
-                newCoverPhoto : response.data.data.link
-            }
+            //Instead of calling update PlatformFormat we can update state
 
-            api.post('/platformFormat/update_cover_photo',updateCover)
-            .then(response => {
-                console.log(response.data)
-                //UPDATING PLATFORM FORMAT IS BROKEN for update cover photo 
-                this.updatePlatformFormat();
-              })
-            .catch(error => {
-                console.log(error.response)
-            });
+            tempPlat.cover_photo = response.data.data.link;
+            this.setState({platformFormat : tempPlat})
+
+            // const updateCover = {
+            //     platformID : platID,
+            //     newCoverPhoto : response.data.data.link
+            // }
+
+            // api.post('/platformFormat/update_cover_photo',updateCover)
+            // .then(response => {
+            //     console.log(response.data)
+            //     //UPDATING PLATFORM FORMAT IS BROKEN for update cover photo 
+            //     this.updatePlatformFormat();
+            //   })
+            // .catch(error => {
+            //     console.log(error.response)
+            // });
 
         })
         .catch(function (error) {
@@ -215,117 +229,163 @@ export default class EditPlatform extends Component {
     }
 
     setPlatformPrivacy(){
+
+        var tempPlat = this.state.platformFormat
+
         var privacyVal = document.getElementById('privacy').value
         console.log("In set platform privacy " + privacyVal)
 
-        const newPrivacy = {
-            platformID : this.state.platformFormat._id,
-            newPrivacyStatus : privacyVal
+        if(privacyVal === "false")
+        {
+            tempPlat.is_public = false
         }
+        else
+        {
+            tempPlat.is_public = true
+        }
+        
 
-        //call update platname 
-        api.post('/platformFormat/updatePlatPrivacy',newPrivacy)
-        .then(response => {
-            console.log(response)
-            //updates platform format so page is rendered properly
-            this.updatePlatformFormat();
-        })
-        .catch(error => {
-            console.log(error)
-        });
+        this.setState({platformFormat : tempPlat})
+
+        // const newPrivacy = {
+        //     platformID : this.state.platformFormat._id,
+        //     newPrivacyStatus : privacyVal
+        // }
+
+        // //call update platname 
+        // api.post('/platformFormat/updatePlatPrivacy',newPrivacy)
+        // .then(response => {
+        //     console.log(response)
+        //     //updates platform format so page is rendered properly
+        //     this.updatePlatformFormat();
+        // })
+        // .catch(error => {
+        //     console.log(error)
+        // });
 
     }
 
     setPlatformPublish(){
-        var publishVal = document.getElementById('publish').value
 
-        const newPublish = {
-            platformID : this.state.platformFormat._id,
-            newPublishStatus : publishVal
+        var tempPlat = this.state.platformFormat
+
+        var publishVal = document.getElementById('publish').value
+       
+        if(publishVal === "false")
+        {
+            tempPlat.is_published = false
+        }
+        else
+        {
+            tempPlat.is_published = true
         }
 
-        //call update platname 
-        api.post('/platformFormat/updatePlatPublish',newPublish)
-        .then(response => {
-            console.log(response)
-            //updates platform format so page is rendered properly
-            this.updatePlatformFormat();
-        })
-        .catch(error => {
-            console.log(error)
-        });
+        this.setState({platformFormat : tempPlat})
+
+        // const newPublish = {
+        //     platformID : this.state.platformFormat._id,
+        //     newPublishStatus : publishVal
+        // }
+
+        // //call update platname 
+        // api.post('/platformFormat/updatePlatPublish',newPublish)
+        // .then(response => {
+        //     console.log(response)
+        //     //updates platform format so page is rendered properly
+        //     this.updatePlatformFormat();
+        // })
+        // .catch(error => {
+        //     console.log(error)
+        // });
     }
 
-    changePlatName(){
-        var inputVal = document.getElementById('changePlatName').value
+    changePlatName(e){
+        //var inputVal = document.getElementById('changePlatName').value
 
-        if(inputVal.length < 1)
-        {
-            var platName = this.state.platformFormat;
-            platName.plat_name = inputVal;
+        var tempPlat = this.state.platformFormat
+        var eVal = e.target.value
 
-            document.getElementById('changePlatName').placeholder = "Platform Name Required";
+        tempPlat.plat_name = eVal
 
-            this.setState({platformFormat:platName});
-            return
-        }   
-        else 
-        {
-            const newName = {
-                platformID : this.state.platformFormat._id,
-                newPlatName : inputVal
-            }
+        this.setState({platformFormat:tempPlat,showEmptyPlatAlert:false})
 
-            //call update platname 
-            api.post('/platformFormat/updatePlatName',newName)
-            .then(response => {
-                //onsole.log(response)
-                //updates platform format so page is rendered properly
-                var platName = this.state.platformFormat;
-                platName.plat_name = inputVal;
-                this.setState({platformFormat:platName});
-                // this.updatePlatformFormat();
-            })
-            .catch(error => {
-                console.log(error)
-            });
-        }
+        //var cursorInd = e.target.selectionStart;
+
+        // console.log("RETRIEVED FROM E " + cursorInd)
+
+        // if(inputVal.length < 1)
+        // {
+        //     var platName = this.state.platformFormat;
+        //     platName.plat_name = inputVal;
+
+        //     document.getElementById('changePlatName').placeholder = "Platform Name Required";
+
+        //     this.setState({platformFormat:platName});
+        //     return
+        // }   
+        // else 
+        // {
+        //     const newName = {
+        //         platformID : this.state.platformFormat._id,
+        //         newPlatName : inputVal
+        //     }
+
+        //     //call update platname 
+        //     api.post('/platformFormat/updatePlatName',newName)
+        //     .then(response => {
+        //         //onsole.log(response)
+        //         //updates platform format so page is rendered properly
+        //         var platName = this.state.platformFormat;
+        //         platName.plat_name = inputVal;
+        //         this.setState({platformFormat:platName});
+        //         // this.updatePlatformFormat();
+        //     })
+        //     .catch(error => {
+        //         console.log(error)
+        //     });
+        // }
         // var platName = this.state.platformFormat
         // platName.plat_name = inputVal
         // this.setState({platformFormat:platName})
     }
 
-    changePrivacyPass(){
-        var inputVal = document.getElementById('privacyPassword').value
-        if(inputVal.length < 1)
-        {
-            var platPass = this.state.platformFormat;
-            platPass.privacy_password = inputVal;
-            
-            document.getElementById('privacyPassword').placeholder = "Password Required";
-            
-            this.setState({platformFormat:platPass})
-             
-            return
-        }
-        else
-        {
-            const newPass = {
-                platformID : this.state.platformFormat._id,
-                newPlatPassword : inputVal
-            }
+    changePrivacyPass(e){
+        var tempPlat = this.state.platformFormat
+        var eVal = e.target.value
 
-            //call update platname 
-            api.post('/platformFormat/updatePlatPassword',newPass)
-            .then(response => {
-                console.log(response)
-                //updates platform format so page is rendered properly
-                this.updatePlatformFormat();
-            })
-            .catch(error => {
-                console.log(error)
-            });
-        }
+        tempPlat.privacy_password = eVal
+
+        this.setState({platformFormat : tempPlat})
+        // var inputVal = document.getElementById('privacyPassword').value
+        // if(inputVal.length < 1)
+        // {
+        //     var platPass = this.state.platformFormat;
+        //     platPass.privacy_password = inputVal;
+            
+        //     document.getElementById('privacyPassword').placeholder = "Password Required";
+            
+        //     this.setState({platformFormat:platPass})
+             
+        //     return
+        // }
+        // else
+        // {
+        //     const newPass = {
+        //         platformID : this.state.platformFormat._id,
+        //         newPlatPassword : inputVal
+        //     }
+
+        //     //call update platname 
+        //     api.post('/platformFormat/updatePlatPassword',newPass)
+        //     .then(response => {
+        //         console.log(response)
+        //         //updates platform format so page is rendered properly
+        //         this.updatePlatformFormat();
+        //     })
+        //     .catch(error => {
+        //         console.log(error)
+        //     });
+        // }
     }
 
     editCategory(category_id){
@@ -335,6 +395,43 @@ export default class EditPlatform extends Component {
 
         //need to fix editCategory url and 
         this.props.history.push(`/editCategory/`+ platform_format_id +'/' + category_id);
+    }
+
+    submitChanges(){
+        console.log("Changes are submited")
+        var tempPlat = this.state.platformFormat
+        //check the inputs and gives back alerts if there are issues 
+        if(tempPlat.plat_name === "")
+        {
+            console.log("NAME IS EMPTY")
+            this.setState({showEmptyPlatAlert:true})
+            return
+        }
+
+        if(tempPlat.is_public === false && tempPlat.privacy_password=== "")
+        {
+            console.log("Password Can Not be Empty")
+            this.setState({showEmptyPassAlert:true})
+            return
+        }
+
+        //axios call to update backend with pageformat 
+        const newPlat = {
+            platformID : this.state.platformFormat._id,
+            newPlatName : tempPlat.plat_name,
+            newCoverPhoto : tempPlat.cover_photo,
+            newPublishStatus : tempPlat.is_published,
+            newPrivacyStatus : tempPlat.is_public,
+            newPlatPassword : tempPlat.privacy_password
+        }
+
+        api.post('/platformFormat/updateWholePlat',newPlat)
+        .then(response => {
+            console.log(response)
+            })
+        .catch(error => {
+            console.log(error.response)
+        });
     }
 
     //REMEMBER TO GRAB THE PLATFORM_FORMAT BASED ON THE URL 
@@ -379,7 +476,7 @@ export default class EditPlatform extends Component {
 
                         api.get('/platformFormat/getSpecificPlatformFormat/'+platform_format_id)
                         .then(response => {
-							this.setState({platformFormat:response.data[0]})
+                            this.setState({platformFormat:response.data[0]})
 
                             var categoriesArray = response.data[0].categories
 
@@ -445,7 +542,7 @@ render() {
                 </label> */}
                 </div>
             </div>
-            <input type="text" id="changePlatName" value = {this.state.platformFormat.plat_name} onChange = {this.changePlatName}/> 
+            <input type="text" id="changePlatName" value = {this.state.platformFormat.plat_name} onChange = {(e)=>this.changePlatName(e)} /> 
             <select onChange = {this.setPlatformPrivacy} value = {this.state.platformFormat.is_public === true ? "true" : "false"} id = "privacy">
                 <option value="true">Public</option>
                 <option value="false">Private</option>
@@ -454,7 +551,14 @@ render() {
                 <option value="true">Published</option>
                 <option value="false">Not Published</option>
             </select>
-            <input type="password" id="privacyPassword" disabled={this.state.platformFormat.is_public} value = {this.state.platformFormat.privacy_password} onChange = {this.changePrivacyPass}/>
+            <input type="password" id="privacyPassword" disabled={this.state.platformFormat.is_public} value = {this.state.platformFormat.privacy_password} onChange = {(e) => this.changePrivacyPass(e)}/>
+            <Alert show = {this.state.showEmptyPlatAlert} variant = 'danger'>
+                The plat name can not be empty !
+            </Alert>
+            <Alert show = {this.state.showEmptyPassAlert} variant = 'danger'>
+                The password field for a private platform can not be empty !
+            </Alert>
+            <button onClick = {this.submitChanges}>Submit Changes</button>
             <div>
             {this.state.allCategoriesInfo.map((category) => (
                 <button onClick={() => this.editCategory(category._id)}>{category.category_name}</button>
