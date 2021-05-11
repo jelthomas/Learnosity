@@ -23,6 +23,7 @@ export default class EditPlatform extends Component {
         this.updateAllCategoryInfo = this.updateAllCategoryInfo.bind(this);
         this.editCategory = this.editCategory.bind(this);
         this.submitChanges = this.submitChanges.bind(this);
+        this.removeCategory = this.removeCategory.bind(this);
         
         this.state = {
             user_id: '',
@@ -440,6 +441,32 @@ export default class EditPlatform extends Component {
         });
     }
 
+    removeCategory(id,ind){
+        var tempPlat = this.state.platformFormat
+        
+        var tempArr = this.state.allCategoriesInfo
+
+        tempArr.splice(ind,1)
+        
+        console.log(tempArr)
+
+        this.setState({allCategoriesInfo:tempArr})
+
+        // var cat_id = id
+        const removeCat = {
+            platform_format_id : tempPlat._id,
+            category_format_id : id
+        }
+
+        api.post('/platformFormat/removeCategory',removeCat)
+        .then(response => {
+            console.log(response)
+            })
+        .catch(error => {
+            console.log(error.response)
+        });
+    }
+
     //REMEMBER TO GRAB THE PLATFORM_FORMAT BASED ON THE URL 
     //SAVE VALUES TO A STATE VARIABLE
     componentDidMount(){
@@ -566,8 +593,11 @@ render() {
             </Alert>
             <button onClick = {this.submitChanges}>Submit Changes</button>
             <div>
-            {this.state.allCategoriesInfo.map((category) => (
+            {this.state.allCategoriesInfo.map((category,index) => (
+                <div>
                 <button onClick={() => this.editCategory(category._id)}>{category.category_name}</button>
+                <button onClick ={()=>this.removeCategory(category._id,index)} id={"removeCategory" + index}>X</button>
+                </div>
             ))}
             </div>
         </div>

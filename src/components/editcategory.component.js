@@ -7,6 +7,7 @@ import "../format.css";
 // import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 // import { faStar, faPlay, faAngleRight, faAngleLeft } from "@fortawesome/free-solid-svg-icons";
 import DefaultCoverPhoto from "../images/defaultCoverPhoto.png"
+import Alert from "react-bootstrap/Alert";
 require('dotenv').config();
 
 
@@ -20,12 +21,15 @@ export default class EditCategory extends Component {
         this.addPageToCategory = this.addPageToCategory.bind(this);
         this.editPage = this.editPage.bind(this);
         this.updateAllPageInfo = this.updateAllPageInfo.bind(this);
+        this.submitChanges = this.submitChanges.bind(this);
+        this.removePage = this.removePage.bind(this);
 
         this.state = {
             username: "",
             id: "",
             categoryFormat: "",
-            allPagesInfo:[]
+            allPagesInfo:[],
+            showEmptyCatAlert:false
         }
 
     }
@@ -78,56 +82,65 @@ export default class EditCategory extends Component {
         });
     }
 
-    changeCatName() {
-        var inputVal = document.getElementById('changeCategoryName').value
-        if(inputVal.length < 1)
-        {
-            var catName = this.state.categoryFormat;
-            catName.category_name = inputVal;
+    changeCatName(e) {
+        var tempCat= this.state.categoryFormat
+        var eVal = e.target.value
 
-            document.getElementById('changeCategoryName').placeholder = "Category Name Required";
+        tempCat.category_name = eVal
+        this.setState({categoryFormat:tempCat,showEmptyCatAlert:false})
+        // var inputVal = document.getElementById('changeCategoryName').value
+        // if(inputVal.length < 1)
+        // {
+        //     var catName = this.state.categoryFormat;
+        //     catName.category_name = inputVal;
 
-            this.setState({categoryFormat: catName});
-            return
-        }   
-        else 
-        {
+        //     document.getElementById('changeCategoryName').placeholder = "Category Name Required";
 
-            const newName = {
-                categoryID : this.state.categoryFormat._id,
-                newCatName : inputVal
-            }
+        //     this.setState({categoryFormat: catName});
+        //     return
+        // }   
+        // else 
+        // {
 
-            //call update platname 
-            api.post('/categoryFormat/updateCatName',newName)
-            .then(response => {
-                console.log("Change Cat Name:")
-                console.log(response);
-                //updates platform format so page is rendered properly
-                var catName = this.state.categoryFormat;
-                catName.category_name = inputVal;
-                this.setState({categoryFormat: catName});
-                // this.updateCategoryFormat();
-            })
-            .catch(error => {
-                console.log(error)
-            });
-        }
+        //     const newName = {
+        //         categoryID : this.state.categoryFormat._id,
+        //         newCatName : inputVal
+        //     }
+
+        //     //call update platname 
+        //     api.post('/categoryFormat/updateCatName',newName)
+        //     .then(response => {
+        //         console.log("Change Cat Name:")
+        //         console.log(response);
+        //         //updates platform format so page is rendered properly
+        //         var catName = this.state.categoryFormat;
+        //         catName.category_name = inputVal;
+        //         this.setState({categoryFormat: catName});
+        //         // this.updateCategoryFormat();
+        //     })
+        //     .catch(error => {
+        //         console.log(error)
+        //     });
+        // }
     }
     setCategoryPhoto() {
         const file = document.getElementById('inputGroupFile01').files
         //checks if file is properly defined
         if(file[0] === undefined) {
+            console.log("File is Undefined")
             return
         }
         //checks if file size is greater then 10 MB
         if(file[0].size > 10000000) {
+            console.log("File Size is bigger then 10 MB")
             return
         }
 
         //checks the type of file
-        if(file[0].type !== "image/png" && file[0].type !== "image/jpg")
+        if(file[0].type !== "image/png" && file[0].type !== "image/jpeg")
         {
+            console.log(file[0].type)
+            console.log("Invalid Page Type")
             return
         }
 
@@ -146,30 +159,41 @@ export default class EditCategory extends Component {
             data : data
           };
     
-        var catID = this.state.categoryFormat._id
+        //var catID = this.state.categoryFormat._id
+
+        var tempCat = this.state.categoryFormat
         api(config)
-        .then(function (response) {
+        .then(response =>{
             console.log((response.data.data.link));
-
-            const updateCatPhoto = {
-                categoryID : catID,
-                newCategoryPhoto : response.data.data.link
-            }
-
-            api.post('/categoryFormat/update_category_photo',updateCatPhoto)
-            .then(response => {
-                console.log(response.data)
-                //UPDATING PLATFORM FORMAT IS BROKEN for update cover photo 
-                this.updateCategoryFormat();
-              })
-            .catch(error => {
-                console.log(error.response)
-            });
-
+            tempCat.category_photo = response.data.data.link;
+            this.setState({platformFormat : tempCat})
         })
         .catch(function (error) {
-        console.log(error);
+            console.log(error);
         });
+        // api(config)
+        // .then(function (response) {
+        //     console.log((response.data.data.link));
+
+        //     const updateCatPhoto = {
+        //         categoryID : catID,
+        //         newCategoryPhoto : response.data.data.link
+        //     }
+
+        //     api.post('/categoryFormat/update_category_photo',updateCatPhoto)
+        //     .then(response => {
+        //         console.log(response.data)
+        //         //UPDATING PLATFORM FORMAT IS BROKEN for update cover photo 
+        //         this.updateCategoryFormat();
+        //       })
+        //     .catch(error => {
+        //         console.log(error.response)
+        //     });
+
+        // })
+        // .catch(function (error) {
+        // console.log(error);
+        // });
 
         document.getElementById('inputGroupFile01').value = ""
     }
@@ -228,7 +252,59 @@ export default class EditCategory extends Component {
         //need to fix editCategory url and 
         //console.log(`/editPage/`+ platform_format_id +'/' + category_format_id+'/' + page_id)
         this.props.history.push(`/editPage/`+ platform_format_id +'/' + category_format_id+'/' + page_id);
-        console.log("editpage pressed")
+        //console.log("editpage pressed")
+    }
+
+    submitChanges() {
+
+        var tempCat = this.state.categoryFormat
+        if(tempCat.category_name === "")
+        {
+            console.log("NAME IS EMPTY")
+            this.setState({showEmptyCatAlert:true})
+            return
+        }
+
+        const newCat = {
+            categoryID : this.state.categoryFormat._id,
+            newCategoryName : tempCat.category_name,
+            newCategoryPhoto : tempCat.category_photo,
+        }
+
+        api.post('/categoryFormat/updateWholeCat',newCat)
+        .then(response => {
+            console.log(response)
+            })
+        .catch(error => {
+            console.log(error.response)
+        });
+
+    }
+
+    removePage(id,ind) {
+        const pageInfo = {
+            page_format_id : id
+        }
+
+        var tempArr = this.state.allPagesInfo
+
+        tempArr.splice(ind,1)
+
+        console.log(tempArr)
+        //console.log(tempArr.splice(ind,1))
+
+        // console.log(tempCategory.pages)
+
+        this.setState({allPagesInfo : tempArr})
+
+        api.post('/pageFormat/removePage',pageInfo)
+        .then(response => {
+            console.log(response)
+        })
+        .catch(error => {
+            console.log(console.error.response)
+        })
+
     }
     
     componentDidMount() {
@@ -318,7 +394,7 @@ export default class EditCategory extends Component {
         
         return (
             <div>
-                <input type="text" id="changeCategoryName" value = {this.state.categoryFormat.category_name} onChange = {this.changeCatName}/> 
+                <input type="text" id="changeCategoryName" value = {this.state.categoryFormat.category_name} onChange = {(e)=>this.changeCatName(e)}/> 
                 <button onClick={this.addPageToCategory}>Add Page</button>
                 <img  
                 src={this.state.categoryFormat.category_photo === "" ? DefaultCoverPhoto : this.state.categoryFormat.category_photo} 
@@ -338,10 +414,15 @@ export default class EditCategory extends Component {
                     </label> */}
                     </div>
                 </div>
+                <Alert show = {this.state.showEmptyCatAlert} variant = 'danger'>
+                The Category Name can not be empty
+                </Alert>
+                <button onClick = {this.submitChanges}>Submit Changes</button>
                 <div>
-                {this.state.allPagesInfo.map((page) => (
+                {this.state.allPagesInfo.map((page,index) => (
                     <div>
                     <button onClick={() => this.editPage(page._id)}>{page.page_title}</button>
+                    <button onClick= {() => this.removePage(page._id,index)}>X</button>
                     </div>
                 ))}
                 </div>
