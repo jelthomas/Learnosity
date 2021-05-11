@@ -476,10 +476,21 @@ export default class TempDashboard extends Component {
         var favorite_platforms = this.state.users_favorite_platforms;
             api.post('/platformFormat/getNonUserPlatforms/'+ this.state.username, {index: this.state.paginate_all_index, max: 21, argumentForAllPlatforms: argumentForAllPlatforms, filterBy: filterBy, userSearch: searchBy})
             .then(all_plat_ids => {
-                var platform_formats = all_plat_ids.data
-                
+                var platform_formats
+                if (all_plat_ids.data.length>20){
+                    platform_formats = all_plat_ids.data.splice(0,20)
+                    this.setState({
+                        canPaginateRightAll: true
+                    })
+                }
+                else{
+                    platform_formats = all_plat_ids.data
+                    this.setState({
+                        canPaginateRightAll: false
+                    })
+                }
                 for(var i = 0; i < platform_formats.length; i++){
-                    if (favorite_platforms.includes(platform_formats[i])){
+                    if (this.state.users_favorite_platforms.includes(platform_formats[i]._id)){
                         platform_formats[i].is_favorited = true;
                     }
                     else {

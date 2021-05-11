@@ -232,9 +232,6 @@ export default class MyPlatforms extends Component {
                     canPaginateRightAll: canPaginateRightAll
                 })
             })
-
-            
-            
         }
     }
 
