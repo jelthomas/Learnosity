@@ -440,20 +440,20 @@ export default class TempEditPage extends Component {
     }
 
     submitFIB(){
-
-        var tempPage = this.state.pageFormat
-        var inputArr = this.state.fibArray
-
-        var newPrompt = ""
-        var newAnswers = {}
-        var newKey = ""
+        console.log("MADE IT");
+        var tempPage = this.state.pageFormat;
+        var inputArr = this.state.fibArray;
+        console.log(inputArr);
+        var newPrompt = "";
+        var newAnswers = {};
+        var newKey = "";
 
         for(var i = 0; i < inputArr.length; i++)
         {
             if(inputArr.length === 3 && document.getElementById('fibInput'+0).value === "" && document.getElementById('fibInput'+(inputArr.length-1)).value === "")
             {
-                this.setState({showBothEndsAlert:true})
-                return
+                this.setState({showBothEndsAlert:true});
+                return;
             } 
             console.log('fibInput'+i,document.getElementById('fibInput'+i).value)
 
