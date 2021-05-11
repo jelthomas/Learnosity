@@ -8,11 +8,12 @@ import ForgotPassword from "./components/forgot_password.component";
 //import Dashboard from "./components/dashboard.component";
 import UseCategory from "./components/usecategory.component"
 import EditPlatform from './components/editplatform.component';
-import EditPage from './components/editpage.component';
+//import EditPage from './components/editpage.component';
 import TempDashboard from "./components/tempdashboard.component"
 import Platform from "./components/platform.component"
 import EditCategory from './components/editcategory.component';
 import MyPlatforms from './components/myplatforms.component';
+import TempEditPage from'./components/tempeditpage.component';
 
 function App() {
   return (
@@ -30,7 +31,7 @@ function App() {
         <Route path="/usecategory/:id/:id" component = {UseCategory}/>
         <Route path="/editplatform/:id" component = {EditPlatform}/>
         <Route path="/editcategory/:id/:id" component = {EditCategory}/>
-        <Route path="/editpage/:id/:id/:id" component = {EditPage}/>
+        <Route path="/editpage/:id/:id/:id" component = {TempEditPage}/>
       </div>
     </Router>
   ); 
