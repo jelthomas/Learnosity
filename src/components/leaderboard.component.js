@@ -145,15 +145,15 @@ export default class Leaderboard extends Component {
             <div>
                 <LoggedInNav props={this.props} current={"leaderboard"}/>
                 <div style={{display:"flex", marginLeft: "5%", marginRight: "5%", paddingTop: "15px"}}>
-                    <div style={{textAlign: "center", width: "100%"}} id="dash">Leaderboard</div>
+                    <div style={{textAlign: "center", width: "100%", fontSize: "35px"}} id="dash">Leaderboard</div>
                 </div>
                 <div style={{display: "flex", marginTop: "2%"}}>
                     <div className="dashboard_sort" style={{width: "26%", paddingLeft: "5px", margin: "auto"}}>
-                        <input onChange={() => {}} id="userSearch" type="text" placeholder="Search By Username" style={{borderRadius: "10px", background: "white", borderColor: "transparent", width: "100%", outline: "none", height: '31px', paddingBottom: "6px"}}></input>
+                        <input onChange={() => {}} id="userSearch" type="text" placeholder="Search By Username" style={{borderRadius: "10px", background: "white", borderColor: "transparent", width: "100%", outline: "none", height: '28px', fontSize: "20px"}}></input>
                     </div>
                     <div className="dashboard_sort" style={{margin: "auto"}}>
                         
-                        <div style={{paddingLeft: "5px"}}>
+                        <div style={{paddingLeft: "5px", fontSize: "20px"}}>
                             Sort By:
                             <select onChange = {() => this.onChangeSortBy()} defaultValue = "experience" id = "sort_by" style={{width: "70%", marginLeft: "6px", border: "transparent", borderRadius: "7px", outline:"none"}}>
                                 <option value="experience">Experience</option>
@@ -177,7 +177,7 @@ export default class Leaderboard extends Component {
                         Total Accuracy
                     </div>
                 </div>
-                <div style={{marginLeft: "4%", marginRight: "4%", marginTop: "2%", background: "black", borderRadius: "5px", border: "1px solid #AFAFAF"}}>
+                <div style={{marginLeft: "4%", marginRight: "4%", marginTop: "2%", background: "black", borderRadius: "5px", border: "1px solid #AFAFAF", fontSize: "20px"}}>
                     <div>
                             {this.state.all_users.map((user, index) => (
                                 (index <= 2

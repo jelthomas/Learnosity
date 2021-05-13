@@ -1,13 +1,15 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
-import Logo from "../images/LearnLogo.png"
-import Modal from "react-bootstrap/Modal"
-import Button from "react-bootstrap/Button"
-import Alert from "react-bootstrap/Alert"
+import Logo from "../images/LearnLogo.png";
+import Modal from "react-bootstrap/Modal";
+import Button from "react-bootstrap/Button";
+import Alert from "react-bootstrap/Alert";
 import {api} from "../axios_api.js";
 import Navbar from "./navbar.component";
 import jwt from 'jsonwebtoken';
-import jwt_decode from 'jwt-decode'
+import jwt_decode from 'jwt-decode';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEyeSlash} from "@fortawesome/free-regular-svg-icons";
 require('dotenv').config();
 
 export let myObject = {value: ""};
@@ -21,6 +23,8 @@ export default class ForgotPassword extends Component {
         this.onSubmit = this.onSubmit.bind(this);
         this.handleClose = this.handleClose.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
+        this.toggle_password_vis = this.toggle_password_vis.bind(this);
+
         this.state= {
             identifier: '',
             security_question: '',
@@ -71,24 +75,19 @@ export default class ForgotPassword extends Component {
         }  
         else{
             //Not a Valid Token
-            console.log("Not valid");
             localStorage.removeItem('usertoken');
         }
     }
 
     onChange(e) {
-        this.setState({[e.target.name]: e.target.value, showAlert1: false, showAlert2: false, showAlert3: false, showAlert4: false})
-        console.log(e.target.name + ' ' + e.target.value)
+        this.setState({[e.target.name]: e.target.value, showAlert1: false, showAlert2: false, showAlert3: false, showAlert4: false});
     }
 
     onSubmit(e) {
         e.preventDefault();
-        
-        console.log(this.state.identifier)
 
         api.get('/user/getSecurityQuestion/'+this.state.identifier)
         .then((response) => {
-          console.log(response);
           if (response.data.length > 0){
             this.setState({
                 showModal: true,
@@ -114,7 +113,7 @@ export default class ForgotPassword extends Component {
     }
     
     handleSubmit(e) {
-        if (this.state.new_password.match(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/) === null){
+        if (this.state.new_password.match(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d\w\W]{8,}$/) === null){
             this.setState({
                 showAlert3: true
             })
@@ -134,7 +133,6 @@ export default class ForgotPassword extends Component {
 
         api.post('/user/compareSecurityAnswer/'+this.state.identifier, sq)
         .then((response) => {
-          console.log(response);
             if (response.data.answer === true) {
                 api.post('/user/updatePassword/'+this.state.identifier, {
                     password: this.state.new_password
@@ -154,11 +152,20 @@ export default class ForgotPassword extends Component {
      
         }, (error) => {
             console.log(error);
-        });
-
-
-        
+        }); 
     }
+
+
+    toggle_password_vis(id){
+        var input = document.getElementById(id);
+        if(input.type === 'password'){
+            input.type = 'text';
+        }
+        else{
+            input.type = 'password';
+        }
+    }
+
     render() {
         return (
                 <div>
@@ -166,7 +173,7 @@ export default class ForgotPassword extends Component {
                 <div className ="container" style={{background: "rgb(59, 59, 59)"}}>
                     <div className = "row" style={{border: "0px"}}>
                         <div className = "custom_col-md-6 mt-5 mx-auto" style={{width: "50%", minWidth: "405px"}}>
-                            <div style = {{backgroundColor: "white", padding: "0px 20px 20px 20px", borderStyle: "solid", borderRadius: "28px"}}> 
+                            <div style = {{backgroundColor: "white", padding: "0px 20px 20px 20px", borderStyle: "solid", borderRadius: "28px", fontSize: "25px"}}> 
                                 <div style = {{textAlign: "center", color: 'rgb(0, 219, 0)', width: "max-content", margin: "auto", fontSize: "55px", padding: "3px"}}>
                                     <Link to="/" className="navbar-brand">
                                         <img width = {60} src = {Logo} alt =""/>
@@ -186,7 +193,7 @@ export default class ForgotPassword extends Component {
                                 backdrop="static"
                                 keyboard={false}>
                                 <Modal.Header closeButton>
-                                <Modal.Title>Change Password</Modal.Title>
+                                <Modal.Title style={{width: "100%", textAlign: "center"}}>Change Password</Modal.Title>
                                 </Modal.Header>
                                 <Modal.Body>
                                 <div className = "form-group" style={{marginLeft: "10%"}}>
@@ -198,23 +205,32 @@ export default class ForgotPassword extends Component {
                                 </div>
                                 <div className = "form-group" style={{marginLeft: "10%"}}>
                                     <label style = {{color: "black"}}> Security Answer:</label>
-                                    <input type = "password" style = {{width: "90%", borderColor: "black"}} className = "form-control" name = "security_answer" placeholder = "Enter Security Answer" value = {this.state.security_answer} onChange = {this.onChange} required/>
+                                    <div style={{display: "flex"}}>
+                                        <input id="security_answer" type = "password" style = {{width: "90%", borderColor: "black"}} className = "form-control" name = "security_answer" placeholder = "Enter Security Answer" value = {this.state.security_answer} onChange = {this.onChange} required/>
+                                        <button onClick = {() => this.toggle_password_vis("security_answer")} style={{border: "transparent", background: "transparent", transform: "translate(-35px)"}}><FontAwesomeIcon icon={faEyeSlash} /></button>
+                                    </div>
                                 </div>
                                 <div className = "form-group" style={{marginLeft: "10%"}}>
                                     <label style = {{color: "black"}}> New Password:</label>
-                                    <input type = "password" style = {{width: "90%", borderColor: "black"}} className = "form-control" name = "new_password" placeholder = "New Password" value = {this.state.new_password} onChange = {this.onChange} required/>
+                                    <div style={{display: "flex"}}>
+                                        <input id="new_password" type = "password" style = {{width: "90%", borderColor: "black"}} className = "form-control" name = "new_password" placeholder = "New Password" value = {this.state.new_password} onChange = {this.onChange} required/>
+                                        <button onClick = {() => this.toggle_password_vis("new_password")} style={{border: "transparent", background: "transparent", transform: "translate(-35px)"}}><FontAwesomeIcon icon={faEyeSlash} /></button>
+                                    </div>
                                 </div>
                                 <div className = "form-group" style={{marginLeft: "10%"}}>
                                     <label style = {{color: "black"}}> Confirm Password:</label>
-                                    <input type = "password" style = {{width: "90%", borderColor: "black"}} className = "form-control" name = "confirm_password" placeholder = "Confirm Password" value = {this.state.confirm_password} onChange = {this.onChange} required/>
+                                    <div style={{display: "flex"}}>
+                                        <input id="confirm_password" type = "password" style = {{width: "90%", borderColor: "black"}} className = "form-control" name = "confirm_password" placeholder = "Confirm Password" value = {this.state.confirm_password} onChange = {this.onChange} required/>
+                                        <button onClick = {() => this.toggle_password_vis("confirm_password")} style={{border: "transparent", background: "transparent", transform: "translate(-35px)"}}><FontAwesomeIcon icon={faEyeSlash} /></button>
+                                    </div>
                                 </div>
-                                <Alert show = {this.state.showAlert2} variant = 'danger'>
+                                <Alert style={{textAlign: "center"}} show = {this.state.showAlert2} variant = 'danger'>
                                 The passwords do not match or a field is blank.
                                 </Alert>
-                                <Alert show = {this.state.showAlert3} variant = 'danger'>
-                                The password must contain at least 8 characters, one uppercase, one lowercase, and a number.
+                                <Alert style={{textAlign: "center"}} show = {this.state.showAlert3} variant = 'danger'>
+                                The password must contain at least 8 characters, one uppercase, one lowercase, and one number.
                                 </Alert>
-                                <Alert show = {this.state.showAlert4} variant = 'danger'>
+                                <Alert style={{textAlign: "center"}} show = {this.state.showAlert4} variant = 'danger'>
                                 The security answer is incorrect.
                                 </Alert>
                                 </Modal.Body>

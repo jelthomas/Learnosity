@@ -52,7 +52,7 @@
   border: 2px solid;
   margin-left: 2%;
   margin-right: 2%;
-  height: 200px;
+  height: 300px;
   border-radius: 10px;
   margin-top: 1%;
 }
@@ -62,12 +62,13 @@
   height: fit-content;
   margin-right: 2%;
   margin-top: 1%;
+  font-size: 25px;
 }
 
 .your_answers{
   text-decoration: underline;
   text-align: center;
-  font-size: 30px;
+  font-size: 35px;
 }
 
 #dash {
@@ -184,7 +185,7 @@
   margin: auto;
   align-self: center;
   color: white;
-  font-size: 25px;
+  font-size: 30px;
   max-width: 900px;
   max-height: 45px;
   overflow-y: auto;
@@ -194,8 +195,9 @@
   margin-left: 40%;
   align-self: center;
   color: white;
-  font-size: 25px;
+  font-size: 30px;
   margin-right: 5%;
+  margin: auto;
 }
 
 .report_button:active{
@@ -209,7 +211,7 @@
     background: white;
     border: transparent;
     color: red;
-    font-size: 25px;
+    font-size: 30px;
     font-weight: 500;
     border-radius: 15px;
     padding: 5px;
@@ -228,7 +230,7 @@
   background: red;
   border: transparent;
   color: white;
-  font-size: 25px;
+  font-size: 30px;
   font-weight: 500;
   border-radius: 15px;
   padding: 5px;
@@ -265,7 +267,7 @@
   background: rgb(0, 219, 0);
   border: transparent;
   color: white;
-  font-size: 25px;
+  font-size: 30px;
   font-weight: 500;
   border-radius: 15px;
   padding: 5px;
@@ -409,7 +411,7 @@
     width: 16%;
     padding: 3px;
     border-radius: 50px;
-    height: 33px;
+    height: 35px;
 }
 
 .top_block {
@@ -473,8 +475,8 @@
 
 .play_button {
   position: absolute;
-  top: 43px;
-  left: 107px;
+  top: 72px;
+  left: 130px;
   font-size: 33px;
   color: rgb(2, 0, 0);
   display: none;
@@ -482,7 +484,7 @@
 }
 
 .card_top {
-  width:14.8rem;
+  width:18rem;
   margin-left: 3%;
   box-shadow: 3px 3px 3px #706767;
   margin-top: 2%;
@@ -490,7 +492,7 @@
 
 .tabs{
   justify-content: center;
-  font-size: 20px;
+  font-size: 25px;
   margin-top: 1%;
   border-bottom: 1px solid black !important;
 }
@@ -531,7 +533,7 @@ a{
 }
 
 .card_image {
-  height: 120px;
+  height: 175px;
   filter: brightness(.95);
   cursor: pointer;
 }
