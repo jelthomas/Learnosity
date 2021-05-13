@@ -421,19 +421,19 @@ export default class Platform extends Component {
                 <div style={{fontSize: "50px", textAlign: "center", textDecoration: "underline"}}> {this.state.platformFormat.plat_name}</div>
                 <div>
                     <Tabs defaultActiveKey="newest" transition={false} id="noanim-tab-example" className = "tabs">
-                        <Tab eventKey="newest" title="Newest Quizzes">
+                        <Tab eventKey="newest" title="Newest Quizzes" className = "specific_tab">
                             {this.newestCategories()}
                         </Tab>
-                        <Tab eventKey="popular" title="Most Popular All-Time">
+                        <Tab eventKey="popular" title="Most Popular All-Time" className = "specific_tab">
                             {this.mostPopular()}
                         </Tab>
-                        <Tab eventKey="new_content" title="Updated Content">
+                        <Tab eventKey="new_content" title="Updated Content" className = "specific_tab">
                             {this.updatedContent()}
                         </Tab>
-                        <Tab eventKey="recently" title="Recently Played"> 
+                        <Tab eventKey="recently" title="Recently Played" className = "specific_tab"> 
                             {this.recentlyPlayed()}
                         </Tab>
-                        <Tab eventKey="unplayed" title="Unplayed"> 
+                        <Tab eventKey="unplayed" title="Unplayed" className = "specific_tab"> 
                             {this.unplayed()}
                         </Tab>
                     </Tabs>

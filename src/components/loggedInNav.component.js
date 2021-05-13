@@ -5,7 +5,8 @@ import jwt from 'jsonwebtoken';
 import jwt_decode from 'jwt-decode';
 import Dropdown from "react-bootstrap/Dropdown"
 import { api } from '../axios_api';
-import UserIcon from "../images/userIcon.png"
+import UserIcon from "../images/userIcon.png";
+import "../format.css";
 require('dotenv').config();
 
 
@@ -112,27 +113,32 @@ export default class LoggedInNav extends Component {
 
       <nav class="navbar navbar-light bg-light navbar-expand-lg" style={{height: "65px"}}>
     <div class="navbar-collapse w-100 order-1 order-md-0 dual-collapse2">
-        
             <Link to="/dashboard" className="navbar-brand">
                 <img width = {60} src = {Logo} alt =""/>
             </Link>
-            <p class="font-weight-normal navbarDropdown" style={{padding: '5px',color:'#00db00',fontFamily:"Quando",fontSize:'25px', marginTop: '0px', marginBottom: '0px'}} > Learnosity</p>
-        
+            <Link to="/dashboard" className = "logged_link learnosity" style={{padding: '5px',color:'#00db00',fontFamily:"Quando",fontSize:'25px', marginTop: '0px', marginBottom: '0px'}}> 
+              Learnosity
+            </Link>
     </div>
     <div class="mx-auto order-0">
       {/* <p class="font-weight-normal" style={{padding: '5px',color:'#00db00',fontFamily:"Quando",fontSize:'25px'}} > Learnosity</p> */}
     </div>
     <div class="navbar-collapse  w-100 order-3 dual-collapse2">
         <ul class="navbar-nav ml-auto">
-          <div style={{display:'flex'}}>
+          <div style={{display:'flex', marginTop: "1%"}}>
             <li className="navbar-item">
-              <Link onClick={this.createPlatform} className="nav-link navbarDropdown logged_link" style={{padding: '5px',color:'#00db00',fontFamily:"Quando",fontSize:'25px', paddingRight: "55px"}}>Create Platform</Link>
+              <Link onClick={this.createPlatform} className="navbarDropdown logged_link" style={{padding: '5px',color:'#00db00',fontFamily:"Quando",fontSize:'25px', paddingRight: "55px"}}>Create Platform</Link>
             </li>
             <li className="navbar-item">
-              <Link to ="/dashboard" className="nav-link navbarDropdown logged_link"  style={{padding: '5px',color:'#00db00',fontFamily:"Quando",fontSize:'25px', paddingRight: "55px", color: "rgb(0, 219, 0) !imporant"}}  >Leaderboard</Link>
+              {this.props.current === 'leaderboard'
+              ?
+              <Link to ="/leaderboard" className="navbarDropdown logged_link"  style={{padding: '5px',color:'#00db00',fontFamily:"Quando",fontSize:'25px', paddingRight: "55px", color: "rgb(0, 219, 0) !imporant", textDecoration: "underline", textUnderlinePosition: "under"}}  >Leaderboard</Link>
+              :
+              <Link to ="/leaderboard" className="navbarDropdown logged_link"  style={{padding: '5px',color:'#00db00',fontFamily:"Quando",fontSize:'25px', paddingRight: "55px", color: "rgb(0, 219, 0) !imporant"}}  >Leaderboard</Link>
+              }
             </li>
             <li className="navbar-item">
-              <Link to ="/myplatforms" className="nav-link navbarDropdown logged_link"  style={{padding: '5px',color:'#00db00',fontFamily:"Quando",fontSize:'25px', paddingRight: "55px", color: "rgb(0, 219, 0) !imporant"}}  >My Platforms</Link>
+              <Link to ="/myplatforms" className="navbarDropdown logged_link"  style={{padding: '5px',color:'#00db00',fontFamily:"Quando",fontSize:'25px', paddingRight: "55px", color: "rgb(0, 219, 0) !imporant"}}  >My Platforms</Link>
             </li>
           </div>
             <Dropdown style={{marginTop:'.7%'}}>

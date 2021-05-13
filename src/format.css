@@ -15,6 +15,20 @@
   color: rgb(0, 219, 0) !important; 
 }
 
+.learnosity{
+  -webkit-text-stroke: 0.2px black;
+}
+
+.learnosity:hover{
+  text-decoration: underline; 
+  text-underline-position: under; 
+}
+
+.logged_link:hover{
+  text-decoration: underline; 
+  text-underline-position: under;
+}
+
 .logged_out_nav{
   padding: 5px;
   color: #00db00 !important;
@@ -23,7 +37,7 @@
 }
 
 .navbarDropdown {
-  -webkit-text-stroke: 0.2px black
+  -webkit-text-stroke: 0.2px black;
 }
 
 .time_remaining{
@@ -177,10 +191,11 @@
 }
 
 .correct_phrase {
-  margin: auto;
+  margin-left: 40%;
   align-self: center;
   color: white;
   font-size: 25px;
+  margin-right: 5%;
 }
 
 .report_button:active{
@@ -256,6 +271,42 @@
   padding: 5px;
   box-shadow: 1px 1px 5px black;
 
+}
+
+.row {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 40px;
+  border-bottom: 1px solid #AFAFAF;
+  color: white;
+  margin: auto;
+}
+
+.name {
+  position: relative;
+  display: inline-block;
+  width: 27%;
+  line-height: 45px;
+  margin-left: 5%;
+}
+
+.experience {
+  position: relative;
+  display: inline-block;
+  width: 27%;
+}
+
+.completed_quizzes {
+  position: relative;
+  display: inline-block;
+  width: 30%;
+}
+
+.total_accuracy {
+  position: relative;
+  display: inline-block;
+  width: 10%;
 }
 
 .continue_incorrect {
@@ -444,8 +495,14 @@
   border-bottom: 1px solid black !important;
 }
 
+
 .nav-link:hover{
   border: 1px solid black !important;
+}
+
+.navbar-item:hover{
+  text-decoration: "underline";
+  text-underline-position: "under";
 }
 
 .nav-link.active{
@@ -463,6 +520,7 @@ a{
 .explore_more:hover{
   text-decoration: underline;
 }
+
 
 .paginate_arrows{
   background: transparent;
