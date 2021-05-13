@@ -10,7 +10,16 @@ import {Draggable} from 'react-beautiful-dnd';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFlag, faCheckCircle, faTimesCircle } from "@fortawesome/free-regular-svg-icons";
 import Timer from "./timer.component";
+import UIfx from 'uifx';
+import bellAudio from '../correct.mp3'
 
+const bell = new UIfx(
+    bellAudio,
+    {
+      volume: 0.4, // number between 0.0 ~ 1.0
+      throttleMs: 100
+    }
+  )
 
 require('dotenv').config();
 
@@ -57,7 +66,8 @@ export default class UseCategory extends Component {
             user_timer_answers: [],
             clock_started: false,
             clock_finished: false,
-            status: ''
+            status: '',
+            experience: 0
         }
     }
 
@@ -75,7 +85,7 @@ export default class UseCategory extends Component {
         missed_answers = missed_answers.join(', ');
 
         return(
-            <div style={{fontSize: "25px", marginLeft: "2%", marginRight: "2%", color: "black"}}>
+            <div style={{fontSize: "30px", marginLeft: "2%", marginRight: "2%", color: "black"}}>
                 {missed_answers}
             </div>
         )
@@ -177,7 +187,7 @@ export default class UseCategory extends Component {
                                     //Calculate progress by (length of pages_arr - length of filtered_page_info) / length of pages_arr
                                    
                                     var completedCat = (filtered_page_info.length === 0);
-
+                                    
                                     //select a page to display
                                     var current_page = filtered_page_info[0];
 
@@ -190,17 +200,22 @@ export default class UseCategory extends Component {
                                     }
                                     var segmented = [];
                                     if(filtered_page_info.length !== 0 && current_page.type === "Fill in the Blank"){
-                                        var prompt = current_page.prompt;
+                                        var prompt = current_page.fill_in_the_blank_prompt;
                                         var blank_maps = current_page.fill_in_the_blank_answers;
-                                        var map_keys = Object.keys(blank_maps).sort();
+                                        var map_keys = Object.keys(blank_maps).sort((a, b) => (parseInt(a) > parseInt(b)) ? 1 : -1);
                                         var curr = 0;
                                         for(var i = 0; i < map_keys.length; i++){
                                             let index = parseInt(map_keys[i]);
-                                            segmented.push(prompt.substring(curr, index));
+                                            if(i == 0){
+                                                segmented.push(prompt.substring(curr, index).trim() + " ");
+                                            }
+                                            else{
+                                                segmented.push(" " + prompt.substring(curr, index).trim() + " ");
+                                            }
                                             segmented.push(blank_maps[index]);
-                                            curr = index + 1;
+                                            curr = index;
                                         }
-                                        segmented.push(prompt.substring(curr));
+                                        segmented.push(" " + prompt.substring(curr).trim());
                                         //Have correctly segmented array (even index ==> prompt , odd index ==> blank)
                                     
                                     }
@@ -329,10 +344,11 @@ export default class UseCategory extends Component {
                 .then((res) => {
                     var accuracy = res.data.accuracy;
                     var completed_pages = res.data.completed_pages;
-                    console.log("Accuracy:");
-                    console.log(accuracy);
-                    api.post('/categoryData/divide_accuracy', {user_id: this.state.user_id, cat_id: this.state.cat_id, completed_pages_len: completed_pages.length, accuracy: accuracy})
+                    //Increase user's total accuracy
+                    api.post('/user/increment_total_accuracy_by', {user_id: this.state.user_id, inc: (accuracy/completed_pages.length).toFixed(2)});
+                    api.post('/categoryData/set_accuracy', {user_id: this.state.user_id, cat_id: this.state.cat_id, accuracy: (accuracy/completed_pages.length).toFixed(2)})
                     .then(() => {
+                        api.post('/user/increment_completed_categories_by', {user_id: this.state.user_id});
                         api.post('/categoryData/setCompletedTrue/',val)
                     })
                 .catch(err => console.log(err));
@@ -358,15 +374,20 @@ export default class UseCategory extends Component {
                 if(this.state.filterPages.length !== 0){
                     var prompt = current_page.fill_in_the_blank_prompt;
                     var blank_maps = current_page.fill_in_the_blank_answers;
-                    var map_keys = Object.keys(blank_maps).sort();
+                    var map_keys = Object.keys(blank_maps).sort((a, b) => (parseInt(a) > parseInt(b)) ? 1 : -1);
                     var curr = 0;
                     for(var i = 0; i < map_keys.length; i++){
                         let index = parseInt(map_keys[i]);
-                        segmented.push(prompt.substring(curr, index));
+                        if(i === 0){
+                            segmented.push(prompt.substring(curr, index).trim() + " ");
+                        }
+                        else{
+                            segmented.push(" " + prompt.substring(curr, index).trim() + " ");
+                        }
                         segmented.push(blank_maps[index]);
-                        curr = index + 1;
+                        curr = index;
                     }
-                    segmented.push(prompt.substring(curr));
+                    segmented.push(" " + prompt.substring(curr).trim());
                 }
             }
             else if(current_page.type === "Matching"){
@@ -386,7 +407,7 @@ export default class UseCategory extends Component {
             }
         }
 
-        this.setState({seconds: seconds, minutes: minutes, timer_answers: timer_answers, matching_pairs_answered: matching_pairs_answered, matching_pairs_values: matching_values, shouldShuffle: true, current_mc_array: current_mc_array, progressVal:this.state.progressVal + this.state.progressIncrement, pageIndex: this.state.pageIndex + 1, completedCategory: completed_category, currentPage: current_page,segmented:segmented,submittedAnswer:false,submitted_fib:""});
+        this.setState({experience: 0, seconds: seconds, minutes: minutes, timer_answers: timer_answers, matching_pairs_answered: matching_pairs_answered, matching_pairs_values: matching_values, shouldShuffle: true, current_mc_array: current_mc_array, progressVal:this.state.progressVal + this.state.progressIncrement, pageIndex: this.state.pageIndex + 1, completedCategory: completed_category, currentPage: current_page,segmented:segmented,submittedAnswer:false,submitted_fib:""});
     }
 
     shuffleArray(array) {
@@ -411,28 +432,70 @@ export default class UseCategory extends Component {
         document.getElementById("mc"+index,).classList.remove("mc_button");
         document.getElementById("mc"+index,).classList.add("mc_button_submitted");
 
+        //If page id is not in user's completed pages, add experience
+        if(submitted_answer_bool){
+            var my_completed_pages = [];
+
+            api.post('/categoryData/getCategoryDataCurrentProgressPages', {id: this.state.user_id, catid : this.state.cat_id})
+            .then(res =>{
+                my_completed_pages = res.data.completed_pages;
+                if(!my_completed_pages.includes(this.state.currentPage._id)){
+                    //Increase experience and play sound
+                    api.post('/user/increment_experience_points_by', {user_id: this.state.user_id, inc: 100})
+                    .then()
+                    .catch(err => console.log(err));
+
+                    bell.play();
+                    this.setState({experience: 100});
+                }
+
+                if(!this.state.is_completed && submitted_answer_bool){
+                    //User got this MC question correct
+                    //Increase accuracy by 100
+                    api.post('/categoryData/increment_accuracy_by', {user_id : this.state.user_id, cat_id : this.state.cat_id, inc: 100})
+                    .then()
+                    .catch(err => console.log(err));
+                }
+                
+                const info = {
+                    user_id : this.state.user_id,
+                    cat_id : this.state.cat_id,
+                    page_id : this.state.currentPage._id,   
+                }
         
-        //if platform has not been completed award experience 
-        if(!this.state.is_completed && submitted_answer_bool){
-            //User got this MC question correct
-            //Increase accuracy by 100
-            api.post('/categoryData/increment_accuracy_by', {user_id : this.state.user_id, cat_id : this.state.cat_id, inc: 100})
-            .then()
+        
+                // api.post('/categoryData/updateCompletedPage/',info)
+                // api.post('/categoryData/updateCurrentProgress/',info)
+                api.post('/categoryData/updatePageArrays/',info)
+        
+                this.setState({submittedAnswer:true, shouldShuffle: false, submitted_answer_bool: submitted_answer_bool});
+
+            })
             .catch(err => console.log(err));
         }
-        //else  
-        const info = {
-            user_id : this.state.user_id,
-            cat_id : this.state.cat_id,
-            page_id : this.state.currentPage._id,   
+        else{
+            if(!this.state.is_completed && submitted_answer_bool){
+                //User got this MC question correct
+                //Increase accuracy by 100
+                api.post('/categoryData/increment_accuracy_by', {user_id : this.state.user_id, cat_id : this.state.cat_id, inc: 100})
+                .then()
+                .catch(err => console.log(err));
+            }
+            
+            const info = {
+                user_id : this.state.user_id,
+                cat_id : this.state.cat_id,
+                page_id : this.state.currentPage._id,   
+            }
+    
+    
+            // api.post('/categoryData/updateCompletedPage/',info)
+            // api.post('/categoryData/updateCurrentProgress/',info)
+            api.post('/categoryData/updatePageArrays/',info)
+    
+            this.setState({submittedAnswer:true, shouldShuffle: false, submitted_answer_bool: submitted_answer_bool});
         }
 
-
-        // api.post('/categoryData/updateCompletedPage/',info)
-        // api.post('/categoryData/updateCurrentProgress/',info)
-        api.post('/categoryData/updatePageArrays/',info)
-
-        this.setState({submittedAnswer:true, shouldShuffle: false, submitted_answer_bool: submitted_answer_bool});
     }
 
     removeClass(index){
@@ -504,25 +567,46 @@ export default class UseCategory extends Component {
 
         if(!this.state.is_completed){
             //Calculate increment value
-            var inc = (total_correct / users_correct.length).toFixed(2) * 100;
-            console.log("FIB Inc:");
-            console.log(inc);
+            var inc = ((total_correct / users_correct.length) * 100).toFixed(2);
             api.post('/categoryData/increment_accuracy_by', {user_id : this.state.user_id, cat_id : this.state.cat_id, inc: inc})
             .then()
             .catch(err => console.log(err));
+
         }
 
-        //Update completed_pages
-        const info = {
-            user_id : this.state.user_id,
-            cat_id : this.state.cat_id,
-            page_id : this.state.currentPage._id,
-        }
+        //If page id is not in user's completed pages, add experience
+        var my_completed_pages = [];
+
+        api.post('/categoryData/getCategoryDataCurrentProgressPages', {id: this.state.user_id, catid : this.state.cat_id})
+        .then(res =>{
+            my_completed_pages = res.data.completed_pages;
+            if(!my_completed_pages.includes(this.state.currentPage._id)){
+                //Increase experience and play sound
+                var inc = Math.round(((total_correct / users_correct.length) * 100));
+                if(inc > 0){
+                    api.post('/user/increment_experience_points_by', {user_id: this.state.user_id, inc: inc})
+                    .then()
+                    .catch(err => console.log(err));
+
+                    bell.play();
+                    this.setState({experience: Math.round(inc)});
+                }
+            }
+
+            //Update completed_pages
+            const info = {
+                user_id : this.state.user_id,
+                cat_id : this.state.cat_id,
+                page_id : this.state.currentPage._id,
+            }
 
 
-        api.post('/categoryData/updatePageArrays/',info)
-        
-        this.setState({submittedAnswer: true, submitted_fib: submitted_fib})
+            api.post('/categoryData/updatePageArrays/',info)
+            
+            this.setState({submittedAnswer: true, submitted_fib: submitted_fib})
+            })
+            .catch(err => console.log(err));
+
     }
 
     submitMatching(){
@@ -579,28 +663,49 @@ export default class UseCategory extends Component {
             submitted_fib = 'incorrect';
         }
 
+        
         if(!this.state.is_completed){
             //Calculate increment value
-            var inc = (total_correct / users_correct.length).toFixed(2) * 100;
-            console.log("Incremement by: ");
-            console.log(inc);
+            var inc = ((total_correct / users_correct.length) * 100).toFixed(2);
             api.post('/categoryData/increment_accuracy_by', {user_id : this.state.user_id, cat_id : this.state.cat_id, inc: inc})
             .then()
             .catch(err => console.log(err));
+
         }
 
-        document.getElementById("matching_bottom").style.marginTop = '10%';
+        //If page id is not in user's completed pages, add experience
+        var my_completed_pages = [];
+
+        api.post('/categoryData/getCategoryDataCurrentProgressPages', {id: this.state.user_id, catid : this.state.cat_id})
+        .then(res =>{
+            my_completed_pages = res.data.completed_pages;
+            if(!my_completed_pages.includes(this.state.currentPage._id)){
+                //Increase experience and play sound
+                var inc = Math.round(((total_correct / users_correct.length) * 100));
+                if(inc > 0){
+                    api.post('/user/increment_experience_points_by', {user_id: this.state.user_id, inc: Math.round(inc)})
+                    .then()
+                    .catch(err => console.log(err));
+
+                    bell.play();
+                    this.setState({experience: Math.round(inc)});
+                }
+            }
+            document.getElementById("matching_bottom").style.marginTop = '10%';
 
 
-        const info = {
-            user_id : this.state.user_id,
-            cat_id : this.state.cat_id,
-            page_id : this.state.currentPage._id,
-        }
+            const info = {
+                user_id : this.state.user_id,
+                cat_id : this.state.cat_id,
+                page_id : this.state.currentPage._id,
+            }
 
-        api.post('/categoryData/updatePageArrays/',info)
-        
-        this.setState({submittedAnswer: true, submitted_fib: submitted_fib})
+            api.post('/categoryData/updatePageArrays/',info);
+            
+            this.setState({submittedAnswer: true, submitted_fib: submitted_fib});
+            })
+            .catch(err => console.log(err));
+
     }
 
     handleOnDragEnd(result){
@@ -691,58 +796,44 @@ export default class UseCategory extends Component {
 
         if(!this.state.is_completed){
             //Calculate increment value
-            var inc = (total_correct / correct_answers.length).toFixed(2) * 100;
-            console.log("Timer Increment by: ");
-            console.log(inc);
+            var inc = ((total_correct / correct_answers.length) * 100).toFixed(2);
             api.post('/categoryData/increment_accuracy_by', {user_id : this.state.user_id, cat_id : this.state.cat_id, inc: inc})
             .then()
             .catch(err => console.log(err));
+
         }
 
+        //If page id is not in user's completed pages, add experience
+        var my_completed_pages = [];
 
-        const info = {
-            user_id : this.state.user_id,
-            cat_id : this.state.cat_id,
-            page_id : this.state.currentPage._id,
-        }
+        api.post('/categoryData/getCategoryDataCurrentProgressPages', {id: this.state.user_id, catid : this.state.cat_id})
+        .then(res =>{
+            my_completed_pages = res.data.completed_pages;
+            if(!my_completed_pages.includes(this.state.currentPage._id)){
+                //Increase experience and play sound
+                var inc = Math.round(((total_correct / correct_answers.length) * 100));
+                if(inc > 0){
+                    api.post('/user/increment_experience_points_by', {user_id: this.state.user_id, inc: Math.round(inc)})
+                    .then()
+                    .catch(err => console.log(err));
 
-        api.post('/categoryData/updatePageArrays/',info);
+                    bell.play();
+                    this.setState({experience: Math.round(inc)});
+                }
+            }
+            const info = {
+                user_id : this.state.user_id,
+                cat_id : this.state.cat_id,
+                page_id : this.state.currentPage._id,
+            }
+    
+            api.post('/categoryData/updatePageArrays/',info);
+    
+            this.setState({clock_finished: true, status: status});
+        })
+        .catch(err => console.log(err));
 
-        this.setState({clock_finished: true, status: status});
     }
-
-//    timer_submit(){
-//         var correct_answers = this.state.timer_answers;
-//         var total_correct = this.state.user_timer_answers.length;
-//         var status = ''
-//         if(total_correct === correct_answers.length){
-//             status = 'correct';
-//         }
-//         else if(total_correct / correct_answers.length >= 0.5){
-//             status = 'almost';
-//         }
-//         else{
-//             status = 'incorrect';
-//         }
-
-//         if(!this.state.is_completed){
-//             //Calculate increment value
-//             var inc = (total_correct / correct_answers.length).toFixed(2) * 100;
-//             console.log("Timer Increment by: ");
-//             console.log(inc);
-//             api.post('/categoryData/increment_accuracy_by', {user_id : this.state.user_id, cat_id : this.state.cat_id, inc: inc})
-//             .then()
-//             .catch(err => console.log(err));
-//         }
-
-
-//         const info = {
-//             user_id : this.state.user_id,
-//             cat_id : this.state.cat_id,
-//             page_id : this.state.currentPage._id,
-//         }
-
-//         api.post('/categoryData/updatePageArrays/',info);
 
 
     render() {
@@ -812,6 +903,14 @@ export default class UseCategory extends Component {
                                                     <div className = "correct_phrase">
                                                         CORRECT!
                                                     </div>
+                                                    {this.state.experience > 0
+                                                    ?
+                                                    <div style={{fontSize: "30px", alignSelf: "center", marginRight: "auto", color: "#ffea79"}}>
+                                                        +{this.state.experience} EXP
+                                                    </div>
+                                                    :
+                                                        <p></p>
+                                                    }
                                                     <div>
                                                         <button className="continue_button_correct" onClick={() => this.continueButton()}>Continue</button>
                                                     </div>
@@ -825,8 +924,8 @@ export default class UseCategory extends Component {
                                 ?
                                     <div>
                             
-                                            <p style={{borderWidth: "0px 0px 2px 0px", width: "fit-content", margin: "auto", marginBottom: "30px", borderStyle: "solid"}} className="mc_prompt">Fill In The Blank:</p>
-                                            <div style={{display: "flex", alignItems: "center", justifyContent: "center", fontSize: "25px", fontWeight: "400"}}>
+                                            <p style={{borderWidth: "0px 0px 2px 0px", width: "fit-content", margin: "auto", marginBottom: "35px", borderStyle: "solid"}} className="mc_prompt">Fill In The Blank:</p>
+                                            <div style={{display: "flex", alignItems: "center", justifyContent: "center", fontSize: "30px", fontWeight: "400", flexWrap: "wrap", marginLeft: "2%", marginRight: "2%"}}>
                                                     {(this.state.segmented.map((val, index) =>
                                                         (index % 2 === 0 
                                                             ?
@@ -835,7 +934,7 @@ export default class UseCategory extends Component {
                                                                 <div style={{whiteSpace: "pre"}} id={"fib"+index} >{val}</div>
                                                             </div>
                                                             :
-                                                            <div style={{paddingLeft: "8px"}}>
+                                                            <div>
                                                                 <input id={"fib"+index} onChange={() => this.removeClass(index)} className = "blank" required placeholder={"Fill in the blank"}></input><FontAwesomeIcon id={"check"+index} className="check_mark" icon={faCheckCircle}/><FontAwesomeIcon id={"wrong"+index} className="wrong_mark" icon={faTimesCircle}/><p id={"ast"+index} className="asterisk">*</p>
                                                             </div>
                                                         )
@@ -859,8 +958,16 @@ export default class UseCategory extends Component {
                                                     <div className = "correct">
                                                         Incorrect!
                                                     </div>
+                                                    {this.state.experience > 0
+                                                    ?
+                                                    <div style={{fontSize: "30px", alignSelf: "center", marginRight: "auto", color: "#ffea79"}}>
+                                                        +{this.state.experience} EXP
+                                                    </div>
+                                                    :
+                                                        <p></p>
+                                                    }
                                                     <div className = "correct">
-                                                        Correct Prompt was: {this.state.segmented.join(' ')}
+                                                        Correct Prompt was: "{this.state.segmented.join(' ')}"
                                                     </div>
                                                     <div>
                                                         <button className="continue_button_incorrect" onClick={() => this.continueButton()}>Continue</button>
@@ -877,8 +984,16 @@ export default class UseCategory extends Component {
                                                     <div className = "correct">
                                                         You Almost Had It!
                                                     </div>
+                                                    {this.state.experience > 0
+                                                    ?
+                                                    <div style={{fontSize: "30px", alignSelf: "center", marginRight: "auto", color: "#ffea79"}}>
+                                                        +{this.state.experience} EXP
+                                                    </div>
+                                                    :
+                                                        <p></p>
+                                                    }
                                                     <div className = "correct">
-                                                        Correct Prompt was: {this.state.segmented.join(' ')}
+                                                        Correct Prompt was: "{this.state.segmented.join(' ')}"
                                                     </div>
                                                     <div>
                                                         <button className="continue_button_incorrect" onClick={() => this.continueButton()}>Continue</button>
@@ -894,6 +1009,14 @@ export default class UseCategory extends Component {
                                                     <div className = "correct">
                                                         You Nailed It!
                                                     </div>
+                                                    {this.state.experience > 0
+                                                    ?
+                                                    <div style={{fontSize: "30px", alignSelf: "center", marginRight: "auto", color: "#ffea79"}}>
+                                                        +{this.state.experience} EXP
+                                                    </div>
+                                                    :
+                                                        <p></p>
+                                                    }
                                                     <div>
                                                         <button className="continue_button_correct" onClick={() => this.continueButton()}>Continue</button>
                                                     </div>
@@ -1006,6 +1129,14 @@ export default class UseCategory extends Component {
                                                             <div className = "correct">
                                                                 Incorrect!
                                                             </div>
+                                                            {this.state.experience > 0
+                                                            ?
+                                                            <div style={{fontSize: "30px", alignSelf: "center", marginRight: "auto", color: "#ffea79"}}>
+                                                                +{this.state.experience} EXP
+                                                            </div>
+                                                            :
+                                                                <p></p>
+                                                            }
                                                             <div>
                                                                 <button className="continue_button_incorrect" onClick={() => this.continueButton()}>Continue</button>
                                                             </div>
@@ -1021,6 +1152,14 @@ export default class UseCategory extends Component {
                                                             <div className = "correct">
                                                                 You Almost Had It!
                                                             </div>
+                                                            {this.state.experience > 0
+                                                            ?
+                                                            <div style={{fontSize: "30px", alignSelf: "center", marginRight: "auto", color: "#ffea79"}}>
+                                                                +{this.state.experience} EXP
+                                                            </div>
+                                                            :
+                                                                <p></p>
+                                                            }
                                                             <div>
                                                                 <button className="continue_button_incorrect" onClick={() => this.continueButton()}>Continue</button>
                                                             </div>
@@ -1035,6 +1174,14 @@ export default class UseCategory extends Component {
                                                             <div className = "correct">
                                                                 You Nailed It!
                                                             </div>
+                                                            {this.state.experience > 0
+                                                            ?
+                                                            <div style={{fontSize: "30px", alignSelf: "center", marginRight: "auto", color: "#ffea79"}}>
+                                                                +{this.state.experience} EXP
+                                                            </div>
+                                                            :
+                                                                <p></p>
+                                                            }
                                                             <div>
                                                                 <button className="continue_button_correct" onClick={() => this.continueButton()}>Continue</button>
                                                             </div>
@@ -1073,6 +1220,15 @@ export default class UseCategory extends Component {
                                                                     <div className = "correct">
                                                                         Incorrect!
                                                                     </div>
+                                                                    {this.state.experience > 0
+                                                                    ?
+                                                                    <div style={{fontSize: "30px", alignSelf: "center", marginRight: "auto", color: "#ffea79"}}>
+                                                                        +{this.state.experience} EXP
+                                                                    </div>
+                                                                    :
+                                                                        <p></p>
+                                                                    }
+                                                    
                                                                     <div>
                                                                         <button className="continue_button_incorrect" onClick={() => this.continueButton()}>Continue</button>
                                                                     </div>
@@ -1088,6 +1244,14 @@ export default class UseCategory extends Component {
                                                                     <div className = "correct">
                                                                         You Almost Had It!
                                                                     </div>
+                                                                    {this.state.experience > 0
+                                                                    ?
+                                                                    <div style={{fontSize: "30px", alignSelf: "center", marginRight: "auto", color: "#ffea79"}}>
+                                                                        +{this.state.experience} EXP
+                                                                    </div>
+                                                                    :
+                                                                        <p></p>
+                                                                    }
                                                                     <div>
                                                                         <button className="continue_button_incorrect" onClick={() => this.continueButton()}>Continue</button>
                                                                     </div>
@@ -1102,6 +1266,14 @@ export default class UseCategory extends Component {
                                                                     <div className = "correct">
                                                                         You Nailed It!
                                                                     </div>
+                                                                    {this.state.experience > 0
+                                                                    ?
+                                                                    <div style={{fontSize: "30px", alignSelf: "center", marginRight: "auto", color: "#ffea79"}}>
+                                                                        +{this.state.experience} EXP
+                                                                    </div>
+                                                                    :
+                                                                        <p></p>
+                                                                    }
                                                                     <div>
                                                                         <button className="continue_button_correct" onClick={() => this.continueButton()}>Continue</button>
                                                                     </div>
@@ -1114,7 +1286,7 @@ export default class UseCategory extends Component {
                                                     
                                                 <div>
                                                     <p className="mc_prompt">{this.state.currentPage.prompt}</p>
-                                                    <div style={{textAlign: "center", fontSize: "25px", marginTop: "5%"}}>
+                                                    <div style={{textAlign: "center", fontSize: "30px", marginTop: "5%"}}>
                                                         <div style={{justifyContent: "center"}}>
                                                             <Timer style={{marginLeft: "-1%"}} minutes={this.state.minutes} seconds={this.state.seconds} end_clock={this.timer_finished} stopClock={click => this.stopClock = click}/>
                                                             <button style={{marginLeft: "1%", border: "transparent", background: "transparent"}} className="explore_more" onClick={() => this.stopClock()}>Give Up</button>
@@ -1150,7 +1322,7 @@ export default class UseCategory extends Component {
                                             :
                                             <div>
                                                 <p className="mc_prompt">Start the clock to begin playing!</p>
-                                                <div style={{textAlign: "center", fontSize: "25px", marginTop: "5%"}}>
+                                                <div style={{textAlign: "center", fontSize: "30px", marginTop: "5%"}}>
                                                     <div style={{display: "flex", justifyContent: "center"}}>
                                                         <div style={{marginLeft: "-1%"}}>Time Remaining: {this.state.minutes}:{this.state.seconds < 10 ? `0${this.state.seconds}` : this.state.seconds}</div>
                                                         <button style={{marginTop: "0", marginLeft: "1%"}}className = "continue_button_correct" onClick={() => this.startTimer()}>Start Clock</button>

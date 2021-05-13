@@ -15,6 +15,7 @@ import EditCategory from './components/editcategory.component';
 import MyPlatforms from './components/myplatforms.component';
 import TempEditPage from'./components/tempeditpage.component';
 import PreviewCategory from './components/previewcategory.component';
+import Leaderboard from'./components/leaderboard.component';
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
         <Route path="/login" exact component={Login} />
         <Route path="/forgot" exact component={ForgotPassword} />
         <Route path="/dashboard" exact component={TempDashboard} />
+        <Route path="/leaderboard" exact component={Leaderboard} />
         <Route path ="/myplatforms" exact component={MyPlatforms}></Route>
         <Route path="/platform/:id" component = {Platform} />
         <Route path="/usecategory/:id/:id" component = {UseCategory}/>
