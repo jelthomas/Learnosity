@@ -67,7 +67,13 @@ export default class TempEditPage extends Component {
             fibArray:[],
             timerInput:'',
             editTimer:'',
-            editTimerIndex:0
+            editTimerIndex:0,
+            showEmptyPromptTitleAlert:false,
+            showEmptyTimerAnswerInputAlert:false,
+            showTimerAnswerExistAlert:false,
+            showEmptyTimerAnswersAlert:false,
+            showEmptyMCCAlert:false,
+            showEmptyMCAAlert:false
         }
     }
 
@@ -142,7 +148,7 @@ export default class TempEditPage extends Component {
         var eVal = e.target.value
         tempPage.page_title = eVal
 
-        this.setState({pageFormat:tempPage})
+        this.setState({pageFormat:tempPage,showEmptyPromptTitleAlert:false})
     }
 
     changePrompt(e){
@@ -150,7 +156,7 @@ export default class TempEditPage extends Component {
         var eVal = e.target.value
         tempPage.prompt = eVal
 
-        this.setState({pageFormat:tempPage})
+        this.setState({pageFormat:tempPage,showEmptyPromptTitleAlert:false})
     }
 
     changePageType(e){
@@ -171,7 +177,7 @@ export default class TempEditPage extends Component {
         console.log(eVal,ind)
         tempPage.multiple_choices[ind]=eVal
 
-        this.setState({pageFormat:tempPage})
+        this.setState({pageFormat:tempPage,showEmptyMCCAlert:false})
     }
 
     changeMCA(e) {
@@ -182,7 +188,7 @@ export default class TempEditPage extends Component {
         var eVal = e.target.value
         tempPage.multiple_choice_answer=eVal
 
-        this.setState({pageFormat:tempPage})
+        this.setState({pageFormat:tempPage,showEmptyMCAAlert:false})
 
     }
 
@@ -448,6 +454,12 @@ export default class TempEditPage extends Component {
         var newAnswers = {};
         var newKey = "";
 
+        if(tempPage.page_title=== "")
+        {
+            this.setState({showEmptyPromptTitleAlert:true})
+            return
+        }
+
         for(var i = 0; i < inputArr.length; i++)
         {
             if(inputArr.length === 3 && document.getElementById('fibInput'+0).value === "" && document.getElementById('fibInput'+(inputArr.length-1)).value === "")
@@ -455,7 +467,7 @@ export default class TempEditPage extends Component {
                 this.setState({showBothEndsAlert:true});
                 return;
             } 
-            console.log('fibInput'+i,document.getElementById('fibInput'+i).value)
+            //console.log('fibInput'+i,document.getElementById('fibInput'+i).value)
 
             var input = document.getElementById('fibInput'+i).value
             if(input === "" && i !== 0 && i !== inputArr.length-1)
@@ -480,7 +492,19 @@ export default class TempEditPage extends Component {
 
                 if(i+1 !== inputArr.length)
                 {
+                    // if(i === 0 )
+                    // {
+                    //     newPrompt = newPrompt + " "
+
+                    // }
+                    // else 
+                    // {
+                    //     newPrompt = newPrompt + "  "
+                    // }
+                    // console.log("BLANK ADDED")
                     newPrompt = newPrompt + "  "
+
+                    // console.log(newPrompt)
                 }
             }
             else
@@ -550,12 +574,13 @@ export default class TempEditPage extends Component {
 
         // console.log(tempArr)
         var tempArr = this.state.fibArray
+        var Val
 
         console.log("THIS IS THE INDEX " +ind)
 
         if(ind === 1)
         {
-            var Val = tempArr[0]
+            Val = tempArr[0]
             tempArr[2] = Val + tempArr[2]
 
             console.log(tempArr)
@@ -566,7 +591,7 @@ export default class TempEditPage extends Component {
         }
         else
         {
-            var Val = tempArr[ind+1]
+            Val = tempArr[ind+1]
             tempArr[ind-1] = tempArr[ind-1] + Val 
 
             tempArr.splice(ind,1)
@@ -607,6 +632,33 @@ export default class TempEditPage extends Component {
         var tempPage = this.state.pageFormat
         var page_id = this.props.location.pathname.substring(60)
 
+        //just check page_title and prompt 
+        //check if prompt or page_title are empty 
+        if(tempPage.prompt === "" || tempPage.page_title=== "")
+        {
+            this.setState({showEmptyPromptTitleAlert:true})
+            return
+        }
+
+        //checks if choices are empty 
+        for(var i = 0; i <tempPage.multiple_choices.length;i++)
+        {
+            console.log(tempPage.multiple_choices)
+            if(tempPage.multiple_choices[i] === "")
+            {
+                this.setState({showEmptyMCCAlert:true})
+                return 
+            }
+        }
+
+        if(tempPage.multiple_choice_answer === "")
+        {
+            this.setState({showEmptyMCAAlert:true})
+            {
+                return
+            }
+        }
+
         const newMCInfo = {
             pageID : page_id,
             newType : tempPage.type,
@@ -642,6 +694,11 @@ export default class TempEditPage extends Component {
         var page_id = this.props.location.pathname.substring(60)
 
         //check if prompt or page_title are empty 
+        if(tempPage.prompt === "" || tempPage.page_title=== "")
+        {
+            this.setState({showEmptyPromptTitleAlert:true})
+            return
+        }
 
         //create const
         const newMatching = {
@@ -663,7 +720,7 @@ export default class TempEditPage extends Component {
     }
 
     updateTimerAnswer(e){
-        
+        this.setState({showEmptyTimerAnswerInputAlert:false,showTimerAnswerExistAlert:false})
       
         var eVal = e.target.value
 
@@ -673,15 +730,25 @@ export default class TempEditPage extends Component {
     addTimerAnswer(){
         var val = document.getElementById('timerInput').value
         //checks if input is not empty 
+        if(val === "")
+        {
+            this.setState({showEmptyTimerAnswerInputAlert:true})
+            return 
+        }
 
         //checks if input already exists
+        if(this.state.pageFormat.timer_answers.includes(val))
+        {
+            this.setState({showTimerAnswerExistAlert:true})
+            return
+        }
         //just appends value to array 
         console.log(val)
 
         var tempPage =this.state.pageFormat
         tempPage.timer_answers.push(val)
 
-        this.setState({pageFormat:tempPage,timerInput:''})
+        this.setState({pageFormat:tempPage,timerInput:'',showEmptyTimerAnswersAlert:false})
         
 
     }
@@ -713,7 +780,17 @@ export default class TempEditPage extends Component {
         var page_id = this.props.location.pathname.substring(60)
 
         //check if prompt empty,page_title empty,timer_answers
-        
+        if(tempPage.prompt === "" || tempPage.page_title=== "")
+        {
+            this.setState({showEmptyPromptTitleAlert:true})
+            return
+        }
+
+        if(tempPage.timer_answers.length === 0)
+        {
+            this.setState({showEmptyTimerAnswersAlert:true})
+            return
+        }
 
         //create const
         const newTimer= {
@@ -816,14 +893,24 @@ export default class TempEditPage extends Component {
                                     pos = parseInt(pos, 10)
                                     console.log(num,pos)
                                     var str="";
-                                    if(num === 0)
+                                    if(num === 0 && j === 0)
                                     {
                                         str = fibPrompt.substring(num,pos-1)
                                     }
                                     else
                                     {
-                                        str = fibPrompt.substring(num+1,pos-1)
+                                        if(j === 1 && num === 0)
+                                        {
+                                            str = fibPrompt.substring(num+2,pos-1)
+                                        }
+                                        else
+                                        {
+                                            str = fibPrompt.substring(num+1,pos-1)
+                                        }
                                     }
+                                    console.log(fibPrompt)
+                                    console.log("PROMPT "+ str)
+                                    console.log("BLANK "+ Object.values(response.data.fill_in_the_blank_answers)[j])
                                     tempArr.push(str)
                                     tempArr.push(Object.values(response.data.fill_in_the_blank_answers)[j])
                                     num = pos;
@@ -920,6 +1007,17 @@ render() {
                                 </div>
                             </div>
                             <div>
+                            <Alert show = {this.state.showEmptyPromptTitleAlert} variant = 'danger'>
+                                The question name or prompt can not be empty
+                            </Alert>           
+                            <Alert show = {this.state.showEmptyMCCAlert} variant = 'danger'>
+                                The choices can not be empty 
+                            </Alert>      
+                            <Alert show = {this.state.showEmptyMCAAlert} variant = 'danger'>
+                                The answer can not be empty
+                            </Alert>      
+                            </div>
+                            <div>
                                 <button onClick={this.submitMC}>Submit Changes</button>
                             </div>
                         </div>
@@ -954,7 +1052,7 @@ render() {
                                             Prompt:
                                         </div>
                                         {this.state.fibArray.map((input,index) => (
-                                            (index %2 ==0    
+                                            (index %2 === 0    
                                             ?
                                                 <div style={{maxWidth: "325px", marginRight: "2%", marginTop: "2%"}}>
                                                     <input style={{width: "-webkit-fill-available", fontSize: "15px", borderRadius: "8px", padding: "5px", marginLeft: "3%"}} type="text" id={"fibInput"+index} value = {input} placeholder = "If needed, enter your prompt here:" onChange = {() => this.updateFIBInput(index)} size={50}></input>
@@ -966,13 +1064,22 @@ render() {
                                                 </div>
                                             )
                                         ))}
-                                        <Alert show = {this.state.showEmptyAlert3} variant = 'danger'>
+                                        {/* <Alert show = {this.state.showEmptyAlert3} variant = 'danger'>
                                             The text fields can not be empty
                                         </Alert>
                                         <Alert show = {this.state.showBothEndsAlert} variant = 'danger'>
                                             Front and End Prompt can not be empty when there is only one blank 
-                                        </Alert>
-                                    </div>
+                                        </Alert> */}
+                                    </div> 
+                                    <Alert show = {this.state.showEmptyPromptTitleAlert} variant = 'danger'>
+                                        The Question Name can not be empty
+                                    </Alert>           
+                                    <Alert show = {this.state.showEmptyAlert3} variant = 'danger'>
+                                        The text inputs can not be empty
+                                    </Alert>
+                                    <Alert show = {this.state.showBothEndsAlert} variant = 'danger'>
+                                        Front and End Prompt can not be empty when there is only one blank 
+                                    </Alert>
                                 </div>
                                 <div style={{textAlign: "center", marginTop: "4%"}}>
                                     <button className="continue_button_correct" onClick={this.submitFIB}>Save Changes</button>
@@ -1035,7 +1142,11 @@ render() {
                                         </div>
                                     </div>
                                 </div>
-
+                                <div>
+                                    <Alert show = {this.state.showEmptyPromptTitleAlert} variant = 'danger'>
+                                        The text fields can not be empty
+                                    </Alert>        
+                                </div>           
                                 <div>
                                     <button onClick= {this.submitMatching}>Submit Changes</button>
                                 </div>
@@ -1128,9 +1239,25 @@ render() {
                                         </div>
                                         <div>
                                             <input id = "timerInput" value= {this.state.timerInput} onChange={(e)=>this.updateTimerAnswer(e)}></input>
-                                            <button onClick={this.addTimerAnswer}>Add Answer</button>
+                                            <button onClick={this.addTimerAnswer} disabled = {this.state.pageFormat.timer_answers.length > 49 ? true : false}>Add Answer</button>
+                                        </div>
+                                        <div>
+                                            <Alert show = {this.state.showEmptyTimerAnswerInputAlert} variant = 'danger'>
+                                                The input can not be empty
+                                            </Alert>
+                                            <Alert show = {this.state.showTimerAnswerExistAlert} variant = 'danger'>
+                                                The answer has already been added
+                                            </Alert>
+                                            <Alert show = {this.state.showEmptyTimerAnswersAlert} variant = 'danger'>
+                                                There are no answers entered
+                                            </Alert>
                                         </div>
 
+                                    </div>
+                                    <div>
+                                        <Alert show = {this.state.showEmptyPromptTitleAlert} variant = 'danger'>
+                                                The text fields can not be empty
+                                        </Alert>
                                     </div>
                                     <div>
                                         <button onClick={this.submitTimer}>Submit Changes</button>

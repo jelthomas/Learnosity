@@ -23,6 +23,7 @@ export default class EditCategory extends Component {
         this.updateAllPageInfo = this.updateAllPageInfo.bind(this);
         this.submitChanges = this.submitChanges.bind(this);
         this.removePage = this.removePage.bind(this);
+        this.previewCategory = this.previewCategory.bind(this);
 
         this.state = {
             username: "",
@@ -306,6 +307,16 @@ export default class EditCategory extends Component {
         })
 
     }
+
+    previewCategory(){
+        //will redirect user to preview Category
+
+        console.log("clicked preview category")
+
+        var category_format_id = this.props.location.pathname.substring(39);
+
+        this.props.history.push(`/previewcategory/`+ category_format_id);
+    }
     
     componentDidMount() {
         var token = localStorage.getItem('usertoken');
@@ -418,6 +429,7 @@ export default class EditCategory extends Component {
                 The Category Name can not be empty
                 </Alert>
                 <button onClick = {this.submitChanges}>Submit Changes</button>
+                <button onClick ={this.previewCategory}>Preview Category</button>
                 <div>
                 {this.state.allPagesInfo.map((page,index) => (
                     <div>

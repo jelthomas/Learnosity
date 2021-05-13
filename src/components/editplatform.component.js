@@ -6,6 +6,8 @@ import { Link } from 'react-router-dom';
 import jwt_decode from 'jwt-decode';
 import DefaultCoverPhoto from "../images/defaultCoverPhoto.png"
 import Alert from "react-bootstrap/Alert";
+import Button from "react-bootstrap/Button";
+import Modal from "react-bootstrap/Modal";
 require('dotenv').config();
 
 export default class EditPlatform extends Component {
@@ -24,6 +26,9 @@ export default class EditPlatform extends Component {
         this.editCategory = this.editCategory.bind(this);
         this.submitChanges = this.submitChanges.bind(this);
         this.removeCategory = this.removeCategory.bind(this);
+        this.deletePlatform = this.deletePlatform.bind(this);
+        this.revealDeleteModal = this.revealDeleteModal.bind(this);
+        this.handleClose = this.handleClose.bind(this);
         
         this.state = {
             user_id: '',
@@ -31,7 +36,9 @@ export default class EditPlatform extends Component {
             fileName:'',
             allCategoriesInfo:[],
             showEmptyPlatAlert:false,
-            showEmptyPassAlert:false
+            showEmptyPassAlert:false,
+            showDeleteModal:false,
+            showEmptyCategoryAlert:false
         }
     }
 
@@ -89,6 +96,8 @@ export default class EditPlatform extends Component {
 
     addCategoryToPlatform(){
         console.log("adding category to platform")
+
+        this.setState({showEmptyCategoryAlert:false})
 
         //add page to category
         const newPage= {
@@ -422,6 +431,12 @@ export default class EditPlatform extends Component {
             return
         }
 
+        if(tempPlat.is_published === true && tempPlat.categories.length === 0)
+        {
+            this.setState({showEmptyCategoryAlert:true})
+            return 
+        }
+
         //axios call to update backend with pageformat 
         const newPlat = {
             platformID : this.state.platformFormat._id,
@@ -465,6 +480,34 @@ export default class EditPlatform extends Component {
         .catch(error => {
             console.log(error.response)
         });
+    }
+    deletePlatform(){
+        var tempPlat = this.state.platformFormat
+        console.log(tempPlat.categories)
+        console.log("delete platform")
+
+        const deletePlat = {
+            platform_format_id: tempPlat._id,
+            category_format_ids : tempPlat.categories
+        }
+
+        api.post('/platformFormat/removePlatform',deletePlat)
+        .then(response => {
+            // this.props.history.push(`/myplatforms`);
+            })
+        .catch(error => {
+            console.log(error.response)
+        });
+
+        this.props.history.push(`/myplatforms`);
+    }
+
+    revealDeleteModal(){
+        this.setState({showDeleteModal:true})
+    }
+
+    handleClose(){
+        this.setState({showDeleteModal:false})
     }
 
     //REMEMBER TO GRAB THE PLATFORM_FORMAT BASED ON THE URL 
@@ -591,6 +634,9 @@ render() {
             <Alert show = {this.state.showEmptyPassAlert} variant = 'danger'>
                 The password field for a private platform can not be empty !
             </Alert>
+            <Alert show = {this.state.showEmptyCategoryAlert} variant = 'danger'>
+                There are no categories in the platform 
+            </Alert>
             <button onClick = {this.submitChanges}>Submit Changes</button>
             <div>
             {this.state.allCategoriesInfo.map((category,index) => (
@@ -599,7 +645,28 @@ render() {
                 <button onClick ={()=>this.removeCategory(category._id,index)} id={"removeCategory" + index}>X</button>
                 </div>
             ))}
+            <button onClick = {this.revealDeleteModal} class="btn btn-danger">Delete Platform</button>
             </div>
+            <Modal
+                show={this.state.showDeleteModal}
+                onHide={this.handleClose}
+                backdrop="static"
+                keyboard={false}
+            >
+                <Modal.Header closeButton>
+                    <Modal.Title>Delete Platform</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    Are you sure you want to delete the platform ?
+                </Modal.Body>
+                <Modal.Footer>
+                <Button variant="secondary" onClick={this.handleClose}>
+                    Cancel
+                </Button>
+                <Button variant="primary" onClick = {this.deletePlatform}>Confirm</Button>
+                </Modal.Footer>
+            </Modal>
+
         </div>
     );
 }
