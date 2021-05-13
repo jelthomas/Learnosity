@@ -117,7 +117,7 @@ export default class Login extends Component {
                 <Navbar/>
             <div className ="custom_container" style={{background: "rgb(59, 59, 59)"}}>
                 <div className = "custom_col mt-5 mx-auto">
-                    <form onSubmit={this.handleLogin} style = {{backgroundColor: "white", padding: "0px 20px 20px 20px", borderStyle: "solid", borderRadius: "28px"}}> 
+                    <form onSubmit={this.handleLogin} style = {{backgroundColor: "white", padding: "0px 20px 20px 20px", borderStyle: "solid", borderRadius: "28px", fontSize: "25px"}}> 
                         <Link to="/" className="navbar-brand">
                             <img width = {60} src = {Logo} alt =""/>
                         </Link>
@@ -133,17 +133,19 @@ export default class Login extends Component {
                             <label style = {{color: "black"}}> Password:</label>
                             <div style={{display: "flex"}}>
                                 <input type={this.state.hidden ? 'text' : 'password'} style = {{width: "90%", borderColor: "black"}} className = "form-control" name = "password" placeholder = "Password" value = {this.state.password} onChange = {this.onChange} required/>
-                                <button type="button" onClick = {this.toggle_password_vis} style={{border: "transparent", background: "transparent", transform: "translate(-35px)"}}><FontAwesomeIcon icon={faEyeSlash} /></button>
+                                <button type="button" onClick = {this.toggle_password_vis} style={{border: "transparent", background: "transparent", transform: "translate(-40px)"}}><FontAwesomeIcon icon={faEyeSlash} /></button>
                             </div>
                         </div>
-                        <Link to="/forgot" style={{color: "blue", justifyContent: "center", display: "flex"}}>Forgot Password?</Link>
+                        <div>
+                            <Link to="/forgot" style={{color: "#007bff", justifyContent: "center", display: "flex"}}>Forgot Password?</Link>
+                        </div>
                         <button type= "submit" style = {{margin: "auto", marginTop: "10px", display: "block", backgroundColor: "limegreen", fontSize: "25px", borderStyle: "solid", borderRadius: "20px", borderColor: "grey", borderWidth: "1px", width: "45%", paddingBottom: "1.5%", paddingTop: "0.5%", color: "white"}}>
                             Login
                         </button>
-                        <div style = {{color: "black", textAlign: "center", fontSize: "15px", marginTop: "10px"}} className = "form-group">
+                        <div style = {{color: "black", textAlign: "center", fontSize: "20px", marginTop: "10px"}} className = "form-group">
                             Don't have an account?
                         </div>
-                        <Link to="/signup" className="btn btn-primary" style = {{justifyContent: "center", display: "flex", color: "black", background: "white", width: "45%", borderStyle: "solid", borderRadius: "20px", margin: "auto", fontSize: "18px", borderColor: "grey"}}>Sign Up</Link>
+                        <Link to="/signup" className="btn btn-primary" style = {{justifyContent: "center", display: "flex", color: "black", background: "white", width: "45%", borderStyle: "solid", borderRadius: "20px", margin: "auto", fontSize: "20px", borderColor: "grey"}}>Sign Up</Link>
                     </form>
                 </div>
             </div>

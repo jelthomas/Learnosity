@@ -11,7 +11,7 @@ export default class Navbar extends Component {
     <div class="navbar-collapse w-100 order-1 order-md-0 dual-collapse2">
         <ul class="navbar-nav mr-auto">
             <Link to="/" className="navbar-brand">
-                <img width = {60} src = {Logo} alt =""/>
+                <img width = {70} src = {Logo} alt =""/>
             </Link>
         </ul>
     </div>
@@ -21,10 +21,10 @@ export default class Navbar extends Component {
     <div class="navbar-collapse w-100 order-3 dual-collapse2">
         <ul class="navbar-nav ml-auto">
             <li className="navbar-item">
-              <Link to="/signup" className="nav-link navbarDropdown logged_out_nav">Sign Up</Link>
+              <Link style={{fontSize: "30px"}} to="/signup" className="nav-link navbarDropdown logged_out_nav">Sign Up</Link>
             </li>
             <li className="navbar-item">
-              <Link to ="/login" className="nav-link navbarDropdown logged_out_nav" >Log In</Link>
+              <Link style={{fontSize: "30px"}} to ="/login" className="nav-link navbarDropdown logged_out_nav" >Log In</Link>
             </li>
         </ul>
     </div>

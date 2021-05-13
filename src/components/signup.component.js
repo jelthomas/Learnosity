@@ -91,7 +91,6 @@ export default class SignUp extends Component {
             .then(response => {
                 if(response.data.length === 1)
                 {
-                    // console.log("EXIST")
                     this.setState({userExist:true})
                 }           
             })
@@ -105,32 +104,22 @@ export default class SignUp extends Component {
             .then(response => {
                 if(response.data.length === 1)
                 {
-                    // console.log("EXIST")
                     this.setState({emailExist:true})
                 }           
             })
             .catch(err => console.log(err));
         }
 
-        this.setState({userAlert: false})
-        this.setState({userExistAlert: false})
-        this.setState({emailExistAlert: false})
-        this.setState({emailAlert: false})
-        this.setState({passAlert: false})
-        this.setState({confirmPassAlert: false})
-        this.setState({securityAnswerAlert: false})
-        //console.log("TESTING " + e.target.name + " " + e.target.value)
+        this.setState({userAlert: false, userExistAlert: false, emailExistAlert: false, emailAlert: false, passAlert: false, confirmPassAlert: false, securityAnswerAlert: false})
     }
 
     onDropdown(e)
     {
         this.setState({securityQuestion: e.target.value})
-        //console.log(e.target.value)
     }
 
     handleRegister(e)
     {
-        //console.log("ENTERS APP")
         e.preventDefault();
 
         //Check Username
@@ -148,7 +137,7 @@ export default class SignUp extends Component {
         }
 
         //Check Email
-        if(this.state.email.length ===  0 || this.state.email.match(/[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?/) === null)
+        if(this.state.email.length ===  0 || this.state.email.match(/^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/) === null)
         {
             this.showEmailAlert()
             return
@@ -162,7 +151,7 @@ export default class SignUp extends Component {
         }
 
         //Check Password
-        if(this.state.password.length === 0 || this.state.password.match(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/) === null)
+        if(this.state.password.length === 0 || this.state.password.match(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d\w\W]{8,}$/) === null)
         {
             this.showPassAlert()
             return
@@ -179,7 +168,7 @@ export default class SignUp extends Component {
             this.showSecurityAnswerAlert()
             return 
         }
-        //console.log("GETS PAST RETURN")
+
         const user={
             username: this.state.username,
             email: this.state.email,
@@ -254,10 +243,10 @@ export default class SignUp extends Component {
                 <div style={{background: "rgb(59, 59, 59)"}}>
                 
                 <div className ="container">
-                    <div className = "row">
+                    <div className = "row" style={{border: "0px"}}>
                         <div className = "col-md-6 mt-5 mx-auto">
-                            <div style = {{backgroundColor: "white", padding: "0px 20px 20px 20px", borderStyle: "solid", borderRadius: "28px"}}> 
-                                <div style = {{textAlign: "center", color: 'rgb(0, 219, 0)', width: "max-content", margin: "auto", fontSize: "55px", padding: "3px"}}>
+                            <div style = {{backgroundColor: "white", padding: "0px 20px 20px 20px", borderStyle: "solid", borderRadius: "28px", fontSize: "20px"}}> 
+                                <div style = {{textAlign: "center", color: 'rgb(0, 219, 0)', width: "max-content", marginLeft: "10%", fontSize: "55px", padding: "3px"}}>
                                     <Link to="/" className="navbar-brand">
                                         <img width = {60} src = {Logo} alt =""/>
                                     </Link>
@@ -287,7 +276,7 @@ export default class SignUp extends Component {
                                 </div>
                                 <Form style={{marginLeft: "10%"}}>
                                     <Form.Group controlId="exampleForm.ControlSelect1">
-                                        <Form.Label>Security Question:</Form.Label>
+                                        <Form.Label style={{color: "black"}}>Security Question:</Form.Label>
                                         <Form.Control as="select" style = {{width: "90%", borderColor: "black"}} onChange={this.onDropdown}>
                                         <option>What was your first car?</option>
                                         <option>What was the name of your first pet?</option>
@@ -302,33 +291,35 @@ export default class SignUp extends Component {
                                         <button onClick = {() => this.toggle_password_vis("security_pass")} style={{border: "transparent", background: "transparent", transform: "translate(-35px)"}}><FontAwesomeIcon icon={faEyeSlash} /></button>
                                     </div>
                                 </div>
-                                <Alert show = {this.state.userAlert} variant = 'danger'>
+                                <Alert style={{textAlign: "center"}} show = {this.state.userAlert} variant = 'danger'>
                                     User conditions not met.
-                                    Alphanumeric string that may include _ and – having a length of 3 to 15 characters.
+                                    Alphanumeric text that may include an underscore or hypen and must be between 3 to 15 characters.
                                 </Alert>
-                                <Alert show = {this.state.userExistAlert} variant = 'danger'>
+                                <Alert style={{textAlign: "center"}} show = {this.state.userExistAlert} variant = 'danger'>
                                     User already exists.
                                 </Alert>
-                                <Alert show = {this.state.emailAlert} variant = 'danger' style={{textAlign:"center"}}>
+                                <Alert style={{textAlign: "center"}} show = {this.state.emailAlert} variant = 'danger' style={{textAlign:"center"}}>
                                     Email conditions not met 
                                 </Alert>
-                                <Alert show = {this.state.emailExistAlert} variant = 'danger' style={{textAlign:"center"}}>
+                                <Alert style={{textAlign: "center"}} show = {this.state.emailExistAlert} variant = 'danger' style={{textAlign:"center"}}>
                                     Email already used by another user. 
                                 </Alert>
-                                <Alert show = {this.state.passAlert} variant = 'danger'>
-                                    Password needs a minimum of eight characters.
-                                    It must include at least one lowercase letter, one uppercase letter and one number.
+                                <Alert style={{textAlign: "center"}} show = {this.state.passAlert} variant = 'danger'>
+                                    Password needs a minimum of 8 characters.
+                                    It must include at least one lowercase letter, one uppercase letter, and one number.
                                 </Alert>
-                                <Alert show = {this.state.confirmPassAlert} variant = 'danger'>
-                                    Passwords do not match 
+                                <Alert style={{textAlign: "center"}} show = {this.state.confirmPassAlert} variant = 'danger'>
+                                    Passwords do not match.
                                 </Alert>
-                                <Alert show = {this.state.securityAnswerAlert} variant = 'danger'>
-                                    Security Answer conditions not met 
+                                <Alert style={{textAlign: "center"}} show = {this.state.securityAnswerAlert} variant = 'danger'>
+                                    Security Answer conditions not met.
                                 </Alert>
-                                <Button variant="light" style={{marginLeft:"42.1%"}} onClick={this.handleRegister}>Register</Button>
+                                <div style={{textAlign: "center", marginBottom: "2%"}}>
+                                    <Button style={{color: "white", background: "rgb(0,219,0)", fontSize: "20px"}} variant="light" onClick={this.handleRegister}>Register</Button>
+                                </div>
                                 <div>
-                                    <p style={{textAlign:"center"}}>Have an account already?</p>
-                                    <Link to="/login" style={{color: "limegreen", justifyContent: "center", display: "flex"}}>Login</Link>
+                                    <div style={{textAlign:"center", color: "black", marginBottom: "1%", fontSize: "20px"}}>Have an account already?</div>
+                                    <Link to="/login" style={{color: "limegreen", justifyContent: "center", display: "flex", fontSize: "20px"}}>Login</Link>
                                 </div>
                             </div>
                         </div>

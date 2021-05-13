@@ -278,15 +278,12 @@ export default class Platform extends Component {
             sorted_categories = all_categories.filter((category) => {
                 return category.updatedAt !== null;
             }).sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
-            for(var i = 0; i < sorted_categories.length; i++){
-                console.log(sorted_categories[i].updatedAt);
-            }
         }
         return(
             <div style={{display: "flex", flexWrap: "wrap"}}>
                 {sorted_categories.length === 0
                 ?
-                <div style={{margin: "auto", marginTop: "1%", fontSize: "20px"}}>
+                <div style={{margin: "auto", marginTop: "1%", fontSize: "25px"}}>
                     You have not started any quizzes yet! Click on a quiz to begin learning
                 </div>
                 :
@@ -314,7 +311,6 @@ export default class Platform extends Component {
     }
 
     unplayed(){
-        console.log("HERE");
         //Filter all categories by updatedAt === null
         var all_categories = this.state.categoriesFormats;
         var filter_categories = [];
@@ -329,7 +325,7 @@ export default class Platform extends Component {
                 {filter_categories.length === 0
                 ?
 
-                <div style={{margin: "auto", marginTop: "1%", fontSize: "20px"}}>
+                <div style={{margin: "auto", marginTop: "1%", fontSize: "25px"}}>
                     Congrats! You have played all of the quizzes for {this.state.platformFormat.plat_name}
                 </div>
 
@@ -384,7 +380,7 @@ export default class Platform extends Component {
             <div style={{display: "flex", flexWrap: "wrap"}}>
                 {filtered_categories.length === 0
                 ?
-                <div style={{margin: "auto", marginTop: "1%", fontSize: "20px"}}>
+                <div style={{margin: "auto", marginTop: "1%", fontSize: "25px"}}>
                     None of the quizzes you have played have been recently updated
                 </div>
                 :
@@ -416,24 +412,24 @@ export default class Platform extends Component {
         return (
             <div style={{height: "100vh", background: "#edd2ae", verticalAlign:"middle", overflowY:"auto"}}>
                 <div style={{width: "fit-content"}}>
-                    <button style = {{margin: "auto", display: "flex", background: "transparent", border: "transparent", fontSize: "25px"}} onClick={() => this.props.history.push("/dashboard")}><FontAwesomeIcon icon={faArrowLeft} /></button>
+                    <button style = {{margin: "auto", display: "flex", background: "transparent", border: "transparent", fontSize: "30px"}} onClick={() => this.props.history.push("/dashboard")}><FontAwesomeIcon icon={faArrowLeft} /></button>
                 </div>
-                <div style={{fontSize: "50px", textAlign: "center", textDecoration: "underline"}}> {this.state.platformFormat.plat_name}</div>
+                <div style={{fontSize: "55px", textAlign: "center", textDecoration: "underline"}}> {this.state.platformFormat.plat_name}</div>
                 <div>
                     <Tabs defaultActiveKey="newest" transition={false} id="noanim-tab-example" className = "tabs">
-                        <Tab eventKey="newest" title="Newest Quizzes">
+                        <Tab eventKey="newest" title="Newest Quizzes" className = "specific_tab">
                             {this.newestCategories()}
                         </Tab>
-                        <Tab eventKey="popular" title="Most Popular All-Time">
+                        <Tab eventKey="popular" title="Most Popular All-Time" className = "specific_tab">
                             {this.mostPopular()}
                         </Tab>
-                        <Tab eventKey="new_content" title="Updated Content">
+                        <Tab eventKey="new_content" title="Updated Content" className = "specific_tab">
                             {this.updatedContent()}
                         </Tab>
-                        <Tab eventKey="recently" title="Recently Played"> 
+                        <Tab eventKey="recently" title="Recently Played" className = "specific_tab"> 
                             {this.recentlyPlayed()}
                         </Tab>
-                        <Tab eventKey="unplayed" title="Unplayed"> 
+                        <Tab eventKey="unplayed" title="Unplayed" className = "specific_tab"> 
                             {this.unplayed()}
                         </Tab>
                     </Tabs>
