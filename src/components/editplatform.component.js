@@ -29,6 +29,8 @@ export default class EditPlatform extends Component {
         this.deletePlatform = this.deletePlatform.bind(this);
         this.revealDeleteModal = this.revealDeleteModal.bind(this);
         this.handleClose = this.handleClose.bind(this);
+        this.revealRemoveCategory = this.revealRemoveCategory.bind(this);
+        this.handleRemoveCategoryClose = this.handleRemoveCategoryClose.bind(this);
         
         this.state = {
             user_id: '',
@@ -38,7 +40,11 @@ export default class EditPlatform extends Component {
             showEmptyPlatAlert:false,
             showEmptyPassAlert:false,
             showDeleteModal:false,
-            showEmptyCategoryAlert:false
+            showEmptyCategoryAlert:false,
+            showRemoveCategoryModal:false,
+            removeId:'',
+            removeIndex:'',
+            removeName:''
         }
     }
 
@@ -71,7 +77,7 @@ export default class EditPlatform extends Component {
         api.get('/platformFormat/getSpecificPlatformFormat/'+platform_format_id)
         .then(response => {
             console.log(response.data[0])
-            this.setState({platformFormat:response.data[0]})
+            //this.setState({platformFormat:response.data[0]})
 
             var categoriesArray = response.data[0].categories
 
@@ -456,21 +462,21 @@ export default class EditPlatform extends Component {
         });
     }
 
-    removeCategory(id,ind){
+    removeCategory(){
         var tempPlat = this.state.platformFormat
         
         var tempArr = this.state.allCategoriesInfo
 
-        tempArr.splice(ind,1)
+        tempArr.splice(this.state.removeIndex,1)
         
         console.log(tempArr)
 
-        this.setState({allCategoriesInfo:tempArr})
+        this.setState({allCategoriesInfo:tempArr,showRemoveCategoryModal:false})
 
         // var cat_id = id
         const removeCat = {
             platform_format_id : tempPlat._id,
-            category_format_id : id
+            category_format_id : this.state.removeId
         }
 
         api.post('/platformFormat/removeCategory',removeCat)
@@ -480,6 +486,7 @@ export default class EditPlatform extends Component {
         .catch(error => {
             console.log(error.response)
         });
+        
     }
     deletePlatform(){
         var tempPlat = this.state.platformFormat
@@ -509,6 +516,14 @@ export default class EditPlatform extends Component {
     handleClose(){
         this.setState({showDeleteModal:false})
     }
+
+    revealRemoveCategory(id,name,ind){
+        this.setState({showRemoveCategoryModal:true,removeId:id,removeName:name,removeIndex:ind})
+    }
+    handleRemoveCategoryClose(){
+        this.setState({showRemoveCategoryModal:false})
+    }
+
 
     //REMEMBER TO GRAB THE PLATFORM_FORMAT BASED ON THE URL 
     //SAVE VALUES TO A STATE VARIABLE
@@ -642,11 +657,31 @@ render() {
             {this.state.allCategoriesInfo.map((category,index) => (
                 <div>
                 <button onClick={() => this.editCategory(category._id)}>{category.category_name}</button>
-                <button onClick ={()=>this.removeCategory(category._id,index)} id={"removeCategory" + index}>X</button>
+                <button onClick ={()=>this.revealRemoveCategory(category._id,category.category_name,index)} id={"removeCategory" + index}>X</button>
                 </div>
             ))}
             <button onClick = {this.revealDeleteModal} class="btn btn-danger">Delete Platform</button>
             </div>
+            <Modal
+                show={this.state.showRemoveCategoryModal}
+                onHide={this.handleRemoveCategoryClose}
+                backdrop="static"
+                keyboard={false}
+            >
+                <Modal.Header closeButton>
+                    <Modal.Title>Delete Category</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    Are you sure you want to delete the category {this.state.removeName}?
+                </Modal.Body>
+                <Modal.Footer>
+                <Button variant="secondary" onClick={this.handleRemoveCategoryClose}>
+                    Cancel
+                </Button>
+                <Button variant="primary" onClick = {this.removeCategory}>Confirm</Button>
+                </Modal.Footer>
+            </Modal>
+
             <Modal
                 show={this.state.showDeleteModal}
                 onHide={this.handleClose}
@@ -657,7 +692,7 @@ render() {
                     <Modal.Title>Delete Platform</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    Are you sure you want to delete the platform ?
+                    Are you sure you want to delete this platform ?
                 </Modal.Body>
                 <Modal.Footer>
                 <Button variant="secondary" onClick={this.handleClose}>

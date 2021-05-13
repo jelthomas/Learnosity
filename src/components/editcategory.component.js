@@ -8,6 +8,8 @@ import "../format.css";
 // import { faStar, faPlay, faAngleRight, faAngleLeft } from "@fortawesome/free-solid-svg-icons";
 import DefaultCoverPhoto from "../images/defaultCoverPhoto.png"
 import Alert from "react-bootstrap/Alert";
+import Button from "react-bootstrap/Button";
+import Modal from "react-bootstrap/Modal";
 require('dotenv').config();
 
 
@@ -24,13 +26,20 @@ export default class EditCategory extends Component {
         this.submitChanges = this.submitChanges.bind(this);
         this.removePage = this.removePage.bind(this);
         this.previewCategory = this.previewCategory.bind(this);
+        this.revealRemovePage = this.revealRemovePage.bind(this);
+        this.handleRemovePageClose = this.handleRemovePageClose.bind(this);
+
 
         this.state = {
             username: "",
             id: "",
             categoryFormat: "",
             allPagesInfo:[],
-            showEmptyCatAlert:false
+            showEmptyCatAlert:false,
+            showRemovePageModal:false,
+            removeID:'',
+            removeName:'',
+            removeIndex:''
         }
 
     }
@@ -61,7 +70,7 @@ export default class EditCategory extends Component {
         api.get('/categoryFormat/getSpecificCategoryFormat/'+category_format_id)
         .then(response => {
             console.log(response.data)
-            this.setState({categoryFormat:response.data[0]})
+            //this.setState({categoryFormat:response.data[0]})
 
             var pagesArray = response.data[0].pages
 
@@ -282,21 +291,21 @@ export default class EditCategory extends Component {
 
     }
 
-    removePage(id,ind) {
+    removePage() {
         const pageInfo = {
-            page_format_id : id
+            page_format_id : this.state.removeID
         }
 
         var tempArr = this.state.allPagesInfo
 
-        tempArr.splice(ind,1)
+        tempArr.splice(this.state.removeIndex,1)
 
         console.log(tempArr)
         //console.log(tempArr.splice(ind,1))
 
         // console.log(tempCategory.pages)
 
-        this.setState({allPagesInfo : tempArr})
+        this.setState({allPagesInfo : tempArr,showRemovePageModal:false})
 
         api.post('/pageFormat/removePage',pageInfo)
         .then(response => {
@@ -312,10 +321,18 @@ export default class EditCategory extends Component {
         //will redirect user to preview Category
 
         console.log("clicked preview category")
-
+        var platform_format_id = this.props.location.pathname.substring(14,38);
         var category_format_id = this.props.location.pathname.substring(39);
 
-        this.props.history.push(`/previewcategory/`+ category_format_id);
+        this.props.history.push(`/previewcategory/`+ platform_format_id +'/' + category_format_id);
+    } 
+
+    revealRemovePage(id,name,ind){
+        this.setState({showRemovePageModal:true,removeID:id,removeName:name,removeIndex:ind})
+    }
+
+    handleRemovePageClose() {
+        this.setState({showRemovePageModal:false})
     }
     
     componentDidMount() {
@@ -429,15 +446,34 @@ export default class EditCategory extends Component {
                 The Category Name can not be empty
                 </Alert>
                 <button onClick = {this.submitChanges}>Submit Changes</button>
-                <button onClick ={this.previewCategory}>Preview Category</button>
+                <button onClick ={this.previewCategory} disabled = {this.state.allPagesInfo.length < 1 ? true : false}>Preview Category</button>
                 <div>
                 {this.state.allPagesInfo.map((page,index) => (
                     <div>
                     <button onClick={() => this.editPage(page._id)}>{page.page_title}</button>
-                    <button onClick= {() => this.removePage(page._id,index)}>X</button>
+                    <button onClick= {() => this.revealRemovePage(page._id,page.page_title,index)} disabled = {this.state.allPagesInfo.length < 2 ? true : false}>X</button>
                     </div>
                 ))}
                 </div>
+                <Modal
+                show={this.state.showRemovePageModal}
+                onHide={this.handleRemovePageClose}
+                backdrop="static"
+                keyboard={false}
+                >
+                <Modal.Header closeButton>
+                    <Modal.Title>Delete Page</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    Are you sure you want to delete the page {this.state.removeName}?
+                </Modal.Body>
+                <Modal.Footer>
+                <Button variant="secondary" onClick={this.handleRemovePageClose}>
+                    Cancel
+                </Button>
+                <Button variant="primary" onClick = {this.removePage}>Confirm</Button>
+                </Modal.Footer>
+                </Modal>
             </div>
         )
     }

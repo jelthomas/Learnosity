@@ -14,6 +14,7 @@ import Platform from "./components/platform.component"
 import EditCategory from './components/editcategory.component';
 import MyPlatforms from './components/myplatforms.component';
 import TempEditPage from'./components/tempeditpage.component';
+import PreviewCategory from './components/previewcategory.component';
 import Leaderboard from'./components/leaderboard.component';
 
 function App() {
@@ -34,6 +35,7 @@ function App() {
         <Route path="/editplatform/:id" component = {EditPlatform}/>
         <Route path="/editcategory/:id/:id" component = {EditCategory}/>
         <Route path="/editpage/:id/:id/:id" component = {TempEditPage}/>
+        <Route path="/previewcategory/:id/:id" component = {PreviewCategory}/>
       </div>
     </Router>
   ); 

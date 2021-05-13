@@ -469,7 +469,7 @@ export default class TempEditPage extends Component {
             } 
             //console.log('fibInput'+i,document.getElementById('fibInput'+i).value)
 
-            var input = document.getElementById('fibInput'+i).value
+            var input = (document.getElementById('fibInput'+i).value).trim()
             if(input === "" && i !== 0 && i !== inputArr.length-1)
             {
                 this.setState({showEmptyAlert3:true})   
