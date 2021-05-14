@@ -16,6 +16,7 @@ import MyPlatforms from './components/myplatforms.component';
 import TempEditPage from'./components/tempeditpage.component';
 import PreviewCategory from './components/previewcategory.component';
 import Leaderboard from'./components/leaderboard.component';
+import Settings from './components/settings.component';
 
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
         <Route path="/editcategory/:id/:id" component = {EditCategory}/>
         <Route path="/editpage/:id/:id/:id" component = {TempEditPage}/>
         <Route path="/previewcategory/:id/:id" component = {PreviewCategory}/>
+        <Route path="/settings" component = {Settings}/>
       </div>
     </Router>
   ); 
