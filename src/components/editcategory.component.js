@@ -240,8 +240,14 @@ export default class EditCategory extends Component {
             api.post('/categoryFormat/addToPages',addToCat)
             .then(response => {
                 console.log(response)
-                //updates platform format so page is rendered properly
-                this.updateAllPageInfo();
+                //updates platform format so page is rendered 
+                
+                // Add 1 to platform's page_length
+                api.post('platformFormat/increment_pages_length_by', {plat_id: this.props.location.pathname.substring(14,38), inc: 1})
+                .then(res => {
+                    this.updateAllPageInfo();
+                })
+                .catch(err => console.log(err.response))
               })
             .catch(error => {
                 console.log(error.response)
@@ -307,13 +313,17 @@ export default class EditCategory extends Component {
 
         this.setState({allPagesInfo : tempArr,showRemovePageModal:false})
 
-        api.post('/pageFormat/removePage',pageInfo)
-        .then(response => {
-            console.log(response)
-        })
-        .catch(error => {
-            console.log(console.error.response)
-        })
+        api.post('platformFormat/increment_pages_length_by', {plat_id: this.props.location.pathname.substring(14,38), inc: -1})
+            .then(res => {
+                api.post('/pageFormat/removePage',pageInfo)
+                .then(response => {
+                    
+                })
+                .catch(error => {
+                    console.log(error.response)
+                })
+            })
+            .catch(err => console.log(err.response));
 
     }
 

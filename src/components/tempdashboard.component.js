@@ -522,6 +522,7 @@ export default class TempDashboard extends Component {
             })
             // console.log("AFTER", temp)
         }
+        api.post('platformFormat/increment_times_played', {plat_id: plat_id})
         api.post('/user/updateRecentlyPlayed/', {userID: this.state.id, recent_platforms: this.state.users_recent_platforms})
         .then()
 
@@ -533,8 +534,8 @@ export default class TempDashboard extends Component {
             <div>
                 <LoggedInNav props={this.props}/>
                 <div style={{display:"flex", marginLeft: "5%", marginRight: "5%", paddingTop: "15px"}}>
-                    <div id="dash">Dashboard</div>
-                    <div id="greeting">Welcome {this.state.username}!</div>
+                    <div style={{fontSize: "35px"}} id="dash">Dashboard</div>
+                    <div style={{fontSize: "35px"}} id="greeting">Welcome {this.state.username}!</div>
                 </div>
                 
                 <div style={{marginLeft: "2.5%", marginRight: "2.5%"}} className="block">
@@ -583,7 +584,7 @@ export default class TempDashboard extends Component {
                         </div>
                         {this.state.paginate_all_index === 0
                         ?
-                            <button disabled={true} style={{marginLeft: "64%", color: "grey"}} className = "paginate_arrows" onClick = {() => this.leftAllPlatforms()}><FontAwesomeIcon icon={faAngleLeft} /></button>
+                            <button disabled={true} style={{marginLeft: "65%", color: "grey"}} className = "paginate_arrows" onClick = {() => this.leftAllPlatforms()}><FontAwesomeIcon icon={faAngleLeft} /></button>
                         :
                             <button style={{marginLeft: "64%"}} className = "paginate_arrows" onClick = {() => this.leftAllPlatforms()}><FontAwesomeIcon icon={faAngleLeft} /></button>
                         }   
@@ -601,7 +602,7 @@ export default class TempDashboard extends Component {
                         </div>
                         <div className="dashboard_sort">
                             
-                            <div style={{paddingLeft: "5px"}}>
+                            <div style={{paddingLeft: "8px", paddingTop: "2px"}}>
                                 Sort By:
                                 <select onChange = {this.onChangeSortBy} defaultValue = "none" id = "sort_by" style={{width: "70%", marginLeft: "6px", border: "transparent", borderRadius: "7px", outline:"none"}}>
                                     <option value="none">None</option>
@@ -612,7 +613,7 @@ export default class TempDashboard extends Component {
                             </div>
                          </div>
                         <div className="dashboard_sort" style={{width: "12.5%"}}>
-                            <div>
+                            <div style={{paddingTop: "2px"}}>
                                 <select onChange = {this.onChangeFilterBy} defaultValue = "public" id = "filter_by" style={{width: "93%", marginLeft: "6px", border: "transparent", borderRadius: "7px", outline:"none"}}>
                                     <option value="public">Public Only</option>
                                     <option value="private">Private Only</option>
