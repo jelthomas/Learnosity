@@ -94,7 +94,7 @@
 .matching_outer{
   display: flex;
   background: white;
-  width: 35%;
+  width: 32%;
   padding: 2% 2% 0 2%;
   border-radius: 15px;
   margin-top: 2%;
@@ -109,6 +109,7 @@
   margin: auto;
   overflow-x: auto;
   color: rgb(0, 219, 0);
+  font-size: 20px;
 }
 
 .matching_values_outer{
@@ -131,6 +132,7 @@
   border-style: solid;
   border-width: 2px;
   text-align: center;
+  font-size: 20px;
 }
 
 .matching_all_values{
@@ -151,6 +153,7 @@
   margin-bottom: 9%;
   margin-right: auto;
   margin-left: auto;
+  font-size: 20px;
 }
 
 .matching_each_value_temp{
@@ -418,7 +421,7 @@
     color: rgb(0 255 0);
     border-bottom: solid;
     border-width: thin;
-    margin-top: -55px;
+    margin-top: -90px;
     margin-bottom: 20px;
 }
 

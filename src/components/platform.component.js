@@ -414,7 +414,7 @@ export default class Platform extends Component {
                 <div style={{width: "fit-content"}}>
                     <button style = {{margin: "auto", display: "flex", background: "transparent", border: "transparent", fontSize: "30px"}} onClick={() => this.props.history.push("/dashboard")}><FontAwesomeIcon icon={faArrowLeft} /></button>
                 </div>
-                <div style={{fontSize: "55px", textAlign: "center", textDecoration: "underline"}}> {this.state.platformFormat.plat_name}</div>
+                <div style={{fontSize: "55px", textAlign: "center", textDecoration: "underline", fontFamily: "bold"}}> {this.state.platformFormat.plat_name}</div>
                 <div>
                     <Tabs defaultActiveKey="newest" transition={false} id="noanim-tab-example" className = "tabs">
                         <Tab eventKey="newest" title="Newest Quizzes" className = "specific_tab">

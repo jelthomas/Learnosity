@@ -1,19 +1,22 @@
 import React, { Component } from 'react';
 import {api} from "../axios_api.js";
-import axios from "axios";
 import jwt from 'jsonwebtoken';
-import { Link } from 'react-router-dom';
 import jwt_decode from 'jwt-decode';
 import DefaultCoverPhoto from "../images/defaultCoverPhoto.png"
 import Alert from "react-bootstrap/Alert";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
+import LoggedInNav from "./loggedInNav.component";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { faEyeSlash} from "@fortawesome/free-regular-svg-icons";
 require('dotenv').config();
 
 export default class EditPlatform extends Component {
     constructor(props){
         super(props);
         
+        this.toggle_password_vis = this.toggle_password_vis.bind(this);
         this.updatePlatformFormat = this.updatePlatformFormat.bind(this);
         this.addCategoryToPlatform = this.addCategoryToPlatform.bind(this);
         this.setFileName = this.setFileName.bind(this);
@@ -48,17 +51,23 @@ export default class EditPlatform extends Component {
         }
     }
 
-    
-    updatePlatformFormat(){
+    toggle_password_vis(id){
+        var input = document.getElementById(id);
+        if(input.type === 'password'){
+            input.type = 'text';
+        }
+        else{
+            input.type = 'password';
+        }
+    }
 
-        //console.log("INSIDE updatePlatformFormat")
+    updatePlatformFormat(){
         
         var platform_format_id = this.props.location.pathname.substring(14);
 
 
         api.get('/platformFormat/getSpecificPlatformFormat/'+platform_format_id)
         .then(response => {
-            //console.log(response)
             this.setState({platformFormat:response.data[0]})
         })
         .catch(error => {
@@ -67,8 +76,6 @@ export default class EditPlatform extends Component {
     }
 
     updateAllCategoryInfo(){
-
-        console.log("INSIDE updatePlatformFormat")
         
         var platform_format_id = this.props.location.pathname.substring(14);
         var allCategories
@@ -76,8 +83,6 @@ export default class EditPlatform extends Component {
 
         api.get('/platformFormat/getSpecificPlatformFormat/'+platform_format_id)
         .then(response => {
-            console.log(response.data[0])
-            //this.setState({platformFormat:response.data[0]})
 
             var categoriesArray = response.data[0].categories
 
@@ -85,7 +90,6 @@ export default class EditPlatform extends Component {
             .then(response =>{
                 
                 allCategories = response.data
-                console.log(allCategories)
 
                 this.setState({allCategoriesInfo:allCategories})
             })
@@ -101,9 +105,13 @@ export default class EditPlatform extends Component {
 
 
     addCategoryToPlatform(){
-        console.log("adding category to platform")
+        console.log("Start of addcategory");
 
-        this.setState({showEmptyCategoryAlert:false})
+        // Increment total page length of platform
+        api.post('/platformFormat/increment_pages_length_by', {plat_id: this.state.platformFormat._id, inc: 1})
+        .then(temp =>{
+            console.log("MADE IT!");
+        });
 
         //add page to category
         const newPage= {
@@ -125,37 +133,39 @@ export default class EditPlatform extends Component {
 
         api.post('/pageFormat/add',newPage)
         .then(response => {
-        console.log(response.data._id)
-
-        //create category
-        const newCategory= {
-            cat_name:"Default Category",
-            platform_id : this.props.location.pathname.substring(14),
-            cat_photo:"",
-            pages : [response.data._id]
-        }
-        //create category in database
-        api.post('/categoryFormat/add',newCategory)
-        .then(res => {
-
-            //add category to platform 
-            const addToCat = {
-                platform_format_id:pf_id,
-                category_id : res.data._id
+            console.log("Created page!");
+            //create category
+            const newCategory= {
+                cat_name:"Default Category",
+                platform_id : this.props.location.pathname.substring(14),
+                cat_photo:"",
+                pages : [response.data._id]
             }
-            api.post('/platformFormat/addToCategories',addToCat)
-            .then(res2 => {
-                console.log(res2)
-                //updates platform format so page is rendered properly
-                this.updateAllCategoryInfo();
-              })
+            //create category in database
+            api.post('/categoryFormat/add',newCategory)
+            .then(res => {
+                console.log("Created category format!");
+                //add category to platform 
+                const addToCat = {
+                    platform_format_id:pf_id,
+                    category_id : res.data._id
+                }
+                api.post('/platformFormat/addToCategories',addToCat)
+                .then(res2 => {
+                    //updates platform format so page is rendered properly
+                    console.log("Returned from backend");
+                    console.log("Response:");
+                    console.log(res2);
+                    this.updateAllCategoryInfo();
+                    this.setState({showEmptyCategoryAlert:false})
+                    })
+                .catch(error => {
+                    console.log(error.response)
+                });
+                })
             .catch(error => {
                 console.log(error.response)
             });
-          })
-        .catch(error => {
-            console.log(error.response)
-        });
 
         })
         .catch(error => {
@@ -178,27 +188,21 @@ export default class EditPlatform extends Component {
         const file = document.getElementById('inputGroupFile01').files
         //checks if file is properly defined
         if(file[0] === undefined) {
-            console.log("File is Undefined")
             return
         }
-        //checks if file size is greater then 10 MB
+        //checks if file size is greater than 10 MB
         if(file[0].size > 10000000) {
-            console.log("File Size is bigger then 10 MB")
             return
         }
 
         //checks the type of file
         if(file[0].type !== "image/png" && file[0].type !== "image/jpeg")
         {
-            console.log(file[0].type)
-            console.log("Invalid Page Type")
             return
         }
 
-        console.log("Gets Pasts Checks For Image")
 
         const data = new FormData()
-        console.log(file[0])
         data.append('image', file[0]);
 
         var config = {
@@ -214,37 +218,19 @@ export default class EditPlatform extends Component {
         var tempPlat = this.state.platformFormat
         api(config)
         .then(response =>{
-            console.log((response.data.data.link));
             tempPlat.cover_photo = response.data.data.link;
-            this.setState({platformFormat : tempPlat})
+
+            api.post('/platformFormat/update_cover_photo', {platformID: tempPlat._id, newCoverPhoto: response.data.data.link})
+            .then(temp =>{
+                this.setState({platformFormat : tempPlat});
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
         })
         .catch(function (error) {
             console.log(error);
         });
-        // .then(function (response) {
-        //     console.log((response.data.data.link));
-
-        //     //Instead of calling update PlatformFormat we can update state
-
-        //     tempPlat.cover_photo = response.data.data.link;
-        //     this.setState({platformFormat : tempPlat})
-
-        //     // const updateCover = {
-        //     //     platformID : platID,
-        //     //     newCoverPhoto : response.data.data.link
-        //     // }
-
-        //     // api.post('/platformFormat/update_cover_photo',updateCover)
-        //     // .then(response => {
-        //     //     console.log(response.data)
-        //     //     //UPDATING PLATFORM FORMAT IS BROKEN for update cover photo 
-        //     //     this.updatePlatformFormat();
-        //     //   })
-        //     // .catch(error => {
-        //     //     console.log(error.response)
-        //     // });
-
-        // })
 
 
         document.getElementById('inputGroupFile01').value = ""
@@ -255,7 +241,6 @@ export default class EditPlatform extends Component {
         var tempPlat = this.state.platformFormat
 
         var privacyVal = document.getElementById('privacy').value
-        console.log("In set platform privacy " + privacyVal)
 
         if(privacyVal === "false")
         {
@@ -268,22 +253,6 @@ export default class EditPlatform extends Component {
         
 
         this.setState({platformFormat : tempPlat})
-
-        // const newPrivacy = {
-        //     platformID : this.state.platformFormat._id,
-        //     newPrivacyStatus : privacyVal
-        // }
-
-        // //call update platname 
-        // api.post('/platformFormat/updatePlatPrivacy',newPrivacy)
-        // .then(response => {
-        //     console.log(response)
-        //     //updates platform format so page is rendered properly
-        //     this.updatePlatformFormat();
-        // })
-        // .catch(error => {
-        //     console.log(error)
-        // });
 
     }
 
@@ -304,25 +273,9 @@ export default class EditPlatform extends Component {
 
         this.setState({platformFormat : tempPlat})
 
-        // const newPublish = {
-        //     platformID : this.state.platformFormat._id,
-        //     newPublishStatus : publishVal
-        // }
-
-        // //call update platname 
-        // api.post('/platformFormat/updatePlatPublish',newPublish)
-        // .then(response => {
-        //     console.log(response)
-        //     //updates platform format so page is rendered properly
-        //     this.updatePlatformFormat();
-        // })
-        // .catch(error => {
-        //     console.log(error)
-        // });
     }
 
     changePlatName(e){
-        //var inputVal = document.getElementById('changePlatName').value
 
         var tempPlat = this.state.platformFormat
         var eVal = e.target.value
@@ -331,44 +284,6 @@ export default class EditPlatform extends Component {
 
         this.setState({platformFormat:tempPlat,showEmptyPlatAlert:false})
 
-        //var cursorInd = e.target.selectionStart;
-
-        // console.log("RETRIEVED FROM E " + cursorInd)
-
-        // if(inputVal.length < 1)
-        // {
-        //     var platName = this.state.platformFormat;
-        //     platName.plat_name = inputVal;
-
-        //     document.getElementById('changePlatName').placeholder = "Platform Name Required";
-
-        //     this.setState({platformFormat:platName});
-        //     return
-        // }   
-        // else 
-        // {
-        //     const newName = {
-        //         platformID : this.state.platformFormat._id,
-        //         newPlatName : inputVal
-        //     }
-
-        //     //call update platname 
-        //     api.post('/platformFormat/updatePlatName',newName)
-        //     .then(response => {
-        //         //onsole.log(response)
-        //         //updates platform format so page is rendered properly
-        //         var platName = this.state.platformFormat;
-        //         platName.plat_name = inputVal;
-        //         this.setState({platformFormat:platName});
-        //         // this.updatePlatformFormat();
-        //     })
-        //     .catch(error => {
-        //         console.log(error)
-        //     });
-        // }
-        // var platName = this.state.platformFormat
-        // platName.plat_name = inputVal
-        // this.setState({platformFormat:platName})
     }
 
     changePrivacyPass(e){
@@ -378,40 +293,10 @@ export default class EditPlatform extends Component {
         tempPlat.privacy_password = eVal
 
         this.setState({platformFormat : tempPlat})
-        // var inputVal = document.getElementById('privacyPassword').value
-        // if(inputVal.length < 1)
-        // {
-        //     var platPass = this.state.platformFormat;
-        //     platPass.privacy_password = inputVal;
-            
-        //     document.getElementById('privacyPassword').placeholder = "Password Required";
-            
-        //     this.setState({platformFormat:platPass})
-             
-        //     return
-        // }
-        // else
-        // {
-        //     const newPass = {
-        //         platformID : this.state.platformFormat._id,
-        //         newPlatPassword : inputVal
-        //     }
-
-        //     //call update platname 
-        //     api.post('/platformFormat/updatePlatPassword',newPass)
-        //     .then(response => {
-        //         console.log(response)
-        //         //updates platform format so page is rendered properly
-        //         this.updatePlatformFormat();
-        //     })
-        //     .catch(error => {
-        //         console.log(error)
-        //     });
-        // }
+   
     }
 
     editCategory(category_id){
-        console.log(category_id)
 
         var platform_format_id = this.props.location.pathname.substring(14);
 
@@ -420,19 +305,16 @@ export default class EditPlatform extends Component {
     }
 
     submitChanges(){
-        console.log("Changes are submited")
         var tempPlat = this.state.platformFormat
         //check the inputs and gives back alerts if there are issues 
-        if(tempPlat.plat_name === "")
+        if(tempPlat.plat_name.trim() === "")
         {
-            console.log("NAME IS EMPTY")
             this.setState({showEmptyPlatAlert:true})
             return
         }
 
-        if(tempPlat.is_public === false && tempPlat.privacy_password=== "")
+        if(tempPlat.is_public === false && tempPlat.privacy_password === "")
         {
-            console.log("Password Can Not be Empty")
             this.setState({showEmptyPassAlert:true})
             return
         }
@@ -447,7 +329,6 @@ export default class EditPlatform extends Component {
         const newPlat = {
             platformID : this.state.platformFormat._id,
             newPlatName : tempPlat.plat_name,
-            newCoverPhoto : tempPlat.cover_photo,
             newPublishStatus : tempPlat.is_published,
             newPrivacyStatus : tempPlat.is_public,
             newPlatPassword : tempPlat.privacy_password
@@ -455,7 +336,6 @@ export default class EditPlatform extends Component {
 
         api.post('/platformFormat/updateWholePlat',newPlat)
         .then(response => {
-            console.log(response)
             })
         .catch(error => {
             console.log(error.response)
@@ -467,46 +347,109 @@ export default class EditPlatform extends Component {
         
         var tempArr = this.state.allCategoriesInfo
 
-        tempArr.splice(this.state.removeIndex,1)
-        
-        console.log(tempArr)
 
-        this.setState({allCategoriesInfo:tempArr,showRemoveCategoryModal:false})
+        tempArr.splice(this.state.removeIndex,1)
+
+        this.setState({allCategoriesInfo:tempArr, showRemoveCategoryModal:false})
 
         // var cat_id = id
         const removeCat = {
             platform_format_id : tempPlat._id,
             category_format_id : this.state.removeId
         }
+        
+        api.get('/categoryFormat/getPages/'+ this.state.removeId)
+        .then(pages => {
+            var page_length = pages.data.pages.length;
+            var all_pages = pages.data.pages;
+            console.log("Pages to be removed");
+            console.log(all_pages);
 
-        api.post('/platformFormat/removeCategory',removeCat)
-        .then(response => {
-            console.log(response)
+            //Decrement page_length by page_length
+             api.post('platformFormat/increment_pages_length_by', {plat_id: tempPlat._id, inc: -page_length})
+            .then(temp => {
+                // Delete all pages in the quiz
+                api.post('pageFormat/delete_all_pages', {all_pages: all_pages})
+                .then(another_temp => {
+                    //Remove the category format ID from the platform format array of categories
+                    api.post('/platformFormat/removeCategory',removeCat)
+                    .then(temp2 =>{
+                        console.log("Removed from platform format array");
+                        
+                        //Remove all category datas associated with this category
+                        api.post('/categoryData/removeCategoryDatas', {category_format_id: removeCat.category_format_id})
+                        .then(temp3 =>{
+                            console.log("Removed category data");
+                            
+                            //Remove the category format schema
+                            api.post('/categoryFormat/removeCategoryFormat', {category_format_id: removeCat.category_format_id})
+                            .then(temp4 =>{
+                                console.log("Removed category format");
+                            })
+                            .catch(error => {
+                                console.log(error.response)
+                            });
+
+                        })
+                        .catch(error => {
+                            console.log(error.response)
+                        });
+                    })
+                    .catch(error => {
+                        console.log(error.response)
+                    });
+                })
             })
-        .catch(error => {
-            console.log(error.response)
-        });
+            .catch(err2 => console.log(err2.response))
+        })
+        .catch(err => console.log(err.response))
         
     }
+
     deletePlatform(){
         var tempPlat = this.state.platformFormat
-        console.log(tempPlat.categories)
-        console.log("delete platform")
 
         const deletePlat = {
             platform_format_id: tempPlat._id,
             category_format_ids : tempPlat.categories
         }
 
-        api.post('/platformFormat/removePlatform',deletePlat)
-        .then(response => {
-            // this.props.history.push(`/myplatforms`);
-            })
-        .catch(error => {
-            console.log(error.response)
-        });
+        api.post('/categoryFormat/getAllCategories', {categories_id: deletePlat.category_format_ids})
+        .then(categories => {
+            var all_categories = categories.data;
+            console.log("All categories: ");
+            console.log(all_categories);
 
-        this.props.history.push(`/myplatforms`);
+            var all_pages = [];
+
+            for(var i = 0; i < all_categories.length; i++){
+                var categorys_pages = all_categories[i].pages;
+                all_pages = all_pages.concat(categorys_pages);
+            }
+
+            console.log("All pages: ");
+            console.log(all_pages);
+
+            api.post('/pageFormat/delete_all_pages', {all_pages: all_pages})
+            .then(temp =>{
+                api.post('/platformFormat/removePlatform', deletePlat)
+                .then(response => {
+                        this.props.history.push(`/myplatforms`);
+                    })
+                .catch(error => {
+                    console.log(error.response)
+                });
+            })
+            .catch(error => {
+                console.log(error.response);
+            })
+
+
+        })
+        .catch(error => {
+            console.log(error.response);
+        })
+
     }
 
     revealDeleteModal(){
@@ -557,8 +500,6 @@ export default class EditPlatform extends Component {
                         var user_id = response.data._id;
 
                         var platform_format_id = this.props.location.pathname.substring(14);
-
-                        console.log(response.data.created_platforms.includes(platform_format_id))
                         
                         if (response.data.created_platforms.includes(platform_format_id) === false) {
                             this.props.history.push(`/dashboard`);
@@ -571,14 +512,11 @@ export default class EditPlatform extends Component {
 
                             var categoriesArray = response.data[0].categories
 
-                            console.log(response.data[0].categories)
-
                             //
                             api.post('/categoryFormat/getAllCategories',{categories_id:categoriesArray})
                             .then(response =>{
                                 
                                 allCategories = response.data
-                                console.log(allCategories)
 
                                 this.setState({allCategoriesInfo:allCategories})
                             })
@@ -589,7 +527,6 @@ export default class EditPlatform extends Component {
                         .catch(error => {
                             console.log(error.response)
                         });
-                        console.log(platform_format_id)
                         //Use platform format ID to grab all data
                     }
                     else{
@@ -613,54 +550,108 @@ export default class EditPlatform extends Component {
 render() {
         
     return (
-        <div style={{height: "100vh", background: "#edd2ae", verticalAlign:"middle"}}>
-            <button onClick={this.addCategoryToPlatform}>Add Category</button>
-            <img  
-                src={this.state.platformFormat.cover_photo === "" ? DefaultCoverPhoto : this.state.platformFormat.cover_photo} 
-                width = {200}
-                alt="coverphoto"
-            />
-            <div className="input-group mb-3">
-                <div className="custom-file">
-                <input
-                    type="file"
-                    id="inputGroupFile01"
-                    accept="image/*"
-                    onChange={this.setPlatformCoverPage}
-                />
-                {/* <label className="custom-file-label" htmlFor="inputGroupFile01">
-                    {this.state.fileName === "" ? "Choose an image file" : this.state.fileName}
-                </label> */}
+        <div>
+            <LoggedInNav props={this.props}/>
+            <div style={{textAlign: "center", color: "rgb(0,219,0)", textDecoration: "underline", fontSize: "35px", marginTop: "1%"}}>
+                Edit Your Platform
+            </div>
+            <div style={{background: "black", marginLeft: "20%", marginRight: "20%", marginTop: "3%", height: "auto", borderRadius: "10px", padding: "20px"}}>
+                <div style={{display: "flex", justifyContent: "center", marginBottom: "2%"}}>
+                    <div style={{fontSize: "25px", color: "white", marginRight: "2%"}}>
+                        Enter Platform Name: 
+                    </div>
+                    <input style={{width: "250px", borderRadius: "10px"}} type="text" id="changePlatName" value = {this.state.platformFormat.plat_name} onChange = {(e)=>this.changePlatName(e)} /> 
+                </div>
+                <Alert style={{width: "25%", textAlign: "center", margin: "auto"}} show = {this.state.showEmptyPlatAlert} variant = 'danger'>
+                    The plat name can not be empty !
+                </Alert>
+                <div style={{display: "flex", justifyContent: "center", marginTop: "3%", marginBottom: "3%"}}>
+                    <div style={{fontSize: "25px", color: "white", marginRight: "1%"}}>
+                        Platform Privacy Status:
+                    </div>
+                    <select style={{width: "90px", borderRadius: "10px", marginRight: "3%"}} onChange = {this.setPlatformPrivacy} value = {this.state.platformFormat.is_public === true ? "true" : "false"} id = "privacy">
+                        <option value="true">Public</option>
+                        <option value="false">Private</option>
+                    </select>
+                    <div style={{fontSize: "25px", color: "white", marginRight: "1%"}}>
+                        Enter Your Platform's Password:
+                    </div>
+                    <input style={{width: "200px", borderRadius: "10px"}} type="password" id="privacyPassword" disabled={this.state.platformFormat.is_public} value = {this.state.platformFormat.privacy_password} onChange = {(e) => this.changePrivacyPass(e)}/>
+                    <button onClick = {() => this.toggle_password_vis("privacyPassword")} style={{border: "transparent", background: "transparent", transform: "translate(-35px)"}}><FontAwesomeIcon icon={faEyeSlash} /></button>
+                </div>
+                <Alert style={{width: "40%", textAlign: "center", margin: "auto"}} show = {this.state.showEmptyPassAlert} variant = 'danger'>
+                    The password field for a private platform can not be empty !
+                </Alert>
+                <div style={{display: "flex", justifyContent: "center", marginTop: "3%", marginBottom: "3%"}}>
+                    <div style={{fontSize: "25px", color: "white", marginRight: "1%"}}>
+                        Set your published status:
+                    </div>
+                    <select style={{width: "150px", borderRadius: "10px", marginRight: "3%"}} onChange = {this.setPlatformPublish} value = {this.state.platformFormat.is_published === true ? "true" : "false"} id = "publish">
+                        <option value="true">Published</option>
+                        <option value="false">Not Published</option>
+                    </select>
+                </div>
+                <Alert style={{width: "40%", textAlign: "center", margin: "auto"}} show = {this.state.showEmptyCategoryAlert} variant = 'danger'>
+                     A Platform requires at least one quiz
+                </Alert>
+                <div style={{display: "flex", justifyContent: "center", marginTop: "3%", marginBottom: "3%"}}>
+                    <button style={{color: "white", background: "rgb(0,219,0)", padding: "10px", borderRadius: "10px", border: "transparent", fontSize: "20px"}} onClick = {this.submitChanges}>Submit Changes</button>
                 </div>
             </div>
-            <input type="text" id="changePlatName" value = {this.state.platformFormat.plat_name} onChange = {(e)=>this.changePlatName(e)} /> 
-            <select onChange = {this.setPlatformPrivacy} value = {this.state.platformFormat.is_public === true ? "true" : "false"} id = "privacy">
-                <option value="true">Public</option>
-                <option value="false">Private</option>
-            </select>
-            <select onChange = {this.setPlatformPublish} value = {this.state.platformFormat.is_published === true ? "true" : "false"} id = "publish">
-                <option value="true">Published</option>
-                <option value="false">Not Published</option>
-            </select>
-            <input type="password" id="privacyPassword" disabled={this.state.platformFormat.is_public} value = {this.state.platformFormat.privacy_password} onChange = {(e) => this.changePrivacyPass(e)}/>
-            <Alert show = {this.state.showEmptyPlatAlert} variant = 'danger'>
-                The plat name can not be empty !
-            </Alert>
-            <Alert show = {this.state.showEmptyPassAlert} variant = 'danger'>
-                The password field for a private platform can not be empty !
-            </Alert>
-            <Alert show = {this.state.showEmptyCategoryAlert} variant = 'danger'>
-                There are no categories in the platform 
-            </Alert>
-            <button onClick = {this.submitChanges}>Submit Changes</button>
-            <div>
-            {this.state.allCategoriesInfo.map((category,index) => (
-                <div>
-                <button onClick={() => this.editCategory(category._id)}>{category.category_name}</button>
-                <button onClick ={()=>this.revealRemoveCategory(category._id,category.category_name,index)} id={"removeCategory" + index}>X</button>
+
+            <div style={{display: "flex", marginLeft: "20%", marginRight: "20%", marginTop: "1%"}}>
+                <div style={{background: "black", width: "45%", borderRadius: "10px"}}>
+                    <div style={{color: "white", fontSize: "25px", padding: "20px 20px 5px 20px", borderBottom: "1px solid rgb(0,219,0)", display: "flex"}}>
+                        <div style={{margin: "auto"}}>
+                            Quizzes: 
+                        </div>
+                        <div>
+                            <button style={{color: "white", border: "transparent", borderRadius: "25px", background: "blue"}} onClick={this.addCategoryToPlatform}><FontAwesomeIcon icon={faPlus} /></button>
+                        </div>
+                    </div>
+                    <div style={{padding: "20px"}}>
+                        {this.state.allCategoriesInfo.map((category,index) => (
+                            <div style={{display: "flex"}}>
+                                <div style={{fontSize: "20px", padding: "5px"}}>
+                                    <button style={{borderRadius: "10px", padding: "5px 15px 5px 15px"}} onClick={() => this.editCategory(category._id)}>{category.category_name}</button>
+                                </div>   
+                                <div style={{marginLeft: "auto", fontSize: "20px", marginTop: "auto", marginBottom: "auto"}}>
+                                    <button style={{color: "red", border: "transparent", background: "transparent"}} onClick ={()=>this.revealRemoveCategory(category._id,category.category_name,index)} id={"removeCategory" + index}>X</button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 </div>
-            ))}
-            <button onClick = {this.revealDeleteModal} class="btn btn-danger">Delete Platform</button>
+                            
+                <div style={{background: "black", width: "fit-content", borderRadius: "10px", marginLeft: "auto"}}>
+                    <div style={{color: "white", fontSize: "25px", padding: "20px 20px 5px 20px", borderBottom: "1px solid rgb(0,219,0)", display: "flex"}}>
+                        <div style={{margin: "auto"}}>
+                            Select a Cover Photo: 
+                        </div>
+                    </div>
+                    <div style={{padding: "20px"}}>
+                        <img  
+                            src={this.state.platformFormat.cover_photo === "" ? DefaultCoverPhoto : this.state.platformFormat.cover_photo} 
+                            width = {500}
+                            height = {400}
+                            alt="coverphoto"
+                        />
+                        <div className="input-group mb-3" style={{marginTop: "15%"}}>
+                            <div className="custom-file">
+                                <input style={{color: "white", width: "100%", textAlignLast: "center"}}
+                                    type="file"
+                                    id="inputGroupFile01"
+                                    accept="image/*"
+                                    onChange={this.setPlatformCoverPage}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div style={{textAlign: "center", marginTop: "2%", marginBottom: "2%"}}>
+                <button style={{fontSize: "20px"}} onClick = {this.revealDeleteModal} class="btn btn-danger">Delete Platform</button>
             </div>
             <Modal
                 show={this.state.showRemoveCategoryModal}
@@ -669,10 +660,10 @@ render() {
                 keyboard={false}
             >
                 <Modal.Header closeButton>
-                    <Modal.Title>Delete Category</Modal.Title>
+                    <Modal.Title>Delete Quiz</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    Are you sure you want to delete the category {this.state.removeName}?
+                    Are you sure you wish to delete the quiz {this.state.removeName}?
                 </Modal.Body>
                 <Modal.Footer>
                 <Button variant="secondary" onClick={this.handleRemoveCategoryClose}>

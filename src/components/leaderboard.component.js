@@ -157,7 +157,7 @@ export default class Leaderboard extends Component {
                             Sort By:
                             <select onChange = {() => this.onChangeSortBy()} defaultValue = "experience" id = "sort_by" style={{width: "70%", marginLeft: "6px", border: "transparent", borderRadius: "7px", outline:"none"}}>
                                 <option value="experience">Experience</option>
-                                <option value="quizzes">Quizzes Completed</option>
+                                <option value="quizzes">Completed Quizzes</option>
                                 <option value="total_accuracy">Total Accuracy</option>
                             </select>
                         </div>

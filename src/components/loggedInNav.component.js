@@ -121,7 +121,9 @@ export default class LoggedInNav extends Component {
         <ul class="navbar-nav ml-auto">
           <div style={{display:'flex', marginTop: "1%"}}>
             <li className="navbar-item">
-              <button onClick={this.createPlatform} className="navbarDropdown logged_link" style={{padding: '5px',color:'#00db00',fontFamily:"Quando",fontSize:'30px', paddingRight: "55px", border: "transparent", background: "transparent"}}>Create Platform</button>
+              <div>
+                <button onClick={this.createPlatform} className="navbarDropdown logged_link" style={{padding: '5px',color:'#00db00',fontFamily:"Quando",fontSize:'30px', paddingRight: "55px", border: "transparent", background: "transparent", marginTop: "-5px"}}>Create Platform</button>
+              </div>
             </li>
             <li className="navbar-item">
               {this.props.current === 'leaderboard'
