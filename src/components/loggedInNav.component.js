@@ -16,6 +16,7 @@ export default class LoggedInNav extends Component {
 
     this.logOut = this.logOut.bind(this);
     this.createPlatform = this.createPlatform.bind(this);
+    this.goToSettings = this.goToSettings.bind(this);
 
     this.state = {
         loggedInUser: '',
@@ -70,6 +71,10 @@ export default class LoggedInNav extends Component {
   {
     localStorage.removeItem('usertoken');
     this.props.props.history.push(`/`);
+  }
+
+  goToSettings(){
+    this.props.props.history.push(`/settings`);
   }
 
   componentDidMount(){
@@ -149,7 +154,7 @@ export default class LoggedInNav extends Component {
               </Dropdown.Toggle>
 
               <Dropdown.Menu>
-                <Dropdown.Item >Settings</Dropdown.Item>
+                <Dropdown.Item onClick ={this.goToSettings}>Settings</Dropdown.Item>
                 <Dropdown.Item onClick ={this.logOut}>Log Out</Dropdown.Item>
               </Dropdown.Menu>
             </Dropdown>
