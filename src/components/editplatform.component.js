@@ -85,13 +85,15 @@ export default class EditPlatform extends Component {
         .then(response => {
 
             var categoriesArray = response.data[0].categories
+            var tempPlat = this.state.platformFormat
+            tempPlat.categories = categoriesArray
 
             api.post('/categoryFormat/getAllCategories',{categories_id:categoriesArray})
             .then(response =>{
                 
                 allCategories = response.data
 
-                this.setState({allCategoriesInfo:allCategories})
+                this.setState({allCategoriesInfo:allCategories,platformFormat : tempPlat})
             })
             .catch(error => {
                 console.log(error.response)

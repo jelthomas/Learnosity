@@ -8,6 +8,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faStar, faPlay, faAngleRight, faAngleLeft } from "@fortawesome/free-solid-svg-icons";
 import LoggedInNav from "./loggedInNav.component";
 import DefaultCoverPhoto from "../images/defaultCoverPhoto.png"
+import Button from "react-bootstrap/Button";
+import Modal from "react-bootstrap/Modal";
+import Alert from "react-bootstrap/Alert";
 require('dotenv').config();
 
 
@@ -32,6 +35,9 @@ export default class TempDashboard extends Component {
         this.onChangeFilterBy = this.onChangeFilterBy.bind(this);
         this.searchPlatforms = this.searchPlatforms.bind(this);
         this.clickPlatform = this.clickPlatform.bind(this);
+        this.handleCloseModal = this.handleCloseModal.bind(this);
+        this.accessPrivatePlat = this.accessPrivatePlat.bind(this);
+        this.updatePlatformPass = this.updatePlatformPass.bind(this);
 
         this.state = {
             username: "",
@@ -48,7 +54,12 @@ export default class TempDashboard extends Component {
             filterBy: true,
             searchBy: "",
             canPaginateRightRecent: true,
-            canPaginateRightAll: true
+            canPaginateRightAll: true,
+            showPrivatePlatModal:false,
+            usePlatID:'',
+            showEmptyAlert:false,
+            platformPass:'',
+            showIncorrectPass:false
         }
 
     }
@@ -435,7 +446,7 @@ export default class TempDashboard extends Component {
                 }
             }
             this.setState({
-                argumentForAllPlatforms: argumentForAllPlatforms
+                argumentForAllPlatforms: argumentForAllPlatforms , paginate_all_index: 0
             })
             this.retrieveAllPlatforms(argumentForAllPlatforms, this.state.filterBy, this.state.searchBy)
         }
@@ -457,7 +468,7 @@ export default class TempDashboard extends Component {
                 }
             }
             this.setState({
-                filterBy: filterBy
+                filterBy: filterBy , paginate_all_index: 0
             })
             this.retrieveAllPlatforms(this.state.argumentForAllPlatforms, filterBy, this.state.searchBy)
         }
@@ -466,7 +477,7 @@ export default class TempDashboard extends Component {
     searchPlatforms(e) {
             var userSearch = document.getElementById("userSearch")
             this.setState({
-                searchBy: userSearch.value
+                searchBy: userSearch.value , paginate_all_index: 0
             })
             this.retrieveAllPlatforms(this.state.argumentForAllPlatforms, this.state.filterBy, userSearch.value)
         
@@ -504,7 +515,22 @@ export default class TempDashboard extends Component {
             })
     }
 
-    clickPlatform(plat_id){
+    clickPlatform(plat_id,plat_visible){
+
+        if(!plat_visible)
+        {
+            //when its false
+            console.log(plat_visible)
+            this.setState({showPrivatePlatModal:true, usePlatID:plat_id})
+            return
+        }
+        // else
+        // {
+        //     //when its true
+        //     console.log(plat_visible)
+        //     return
+        // }
+        
         //need to check if platform is private and if we need to enter pass to enter 
         if (!this.state.users_recent_platforms.includes(plat_id)){
             this.setState({
@@ -527,6 +553,83 @@ export default class TempDashboard extends Component {
         .then()
 
         this.props.history.push("/platform/"+plat_id);
+    }
+
+    handleCloseModal(){
+        this.setState({showPrivatePlatModal:false,platformPass:''})
+    }
+
+    accessPrivatePlat(){
+        //check if password entered is proper 
+        var inputPass = this.state.platformPass
+        var plat_id = this.state.usePlatID
+
+        //grabs the platform 
+        //checks if password matches with database
+        api.get('platformFormat/getSpecificPlatformFormat/'+plat_id)
+        .then(res => {
+            console.log(res.data[0])
+            if(inputPass !== res.data[0].privacy_password)
+            {
+                this.setState({showIncorrectPass:true,platformPass:""})
+                
+            }
+            else
+            {
+
+
+            if (!this.state.users_recent_platforms.includes(plat_id)){
+            
+                this.setState({
+                    users_recent_platforms: this.state.users_recent_platforms.unshift(plat_id)
+                })
+
+            }
+            else {
+                // console.log("BEFORE", this.state.users_recent_platforms)
+                var temp = this.state.users_recent_platforms;
+                var index = temp.indexOf(plat_id);
+                temp.splice(index, 1);
+                temp.unshift(plat_id);
+                this.setState({
+                    users_recent_platforms: temp
+                })
+                // console.log("AFTER", temp)
+            }
+
+            // this.setState({showPrivatePlatModal:false})
+
+            api.post('platformFormat/increment_times_played', {plat_id: plat_id})
+            .then(res2 =>{
+                api.post('/user/updateRecentlyPlayed/', {userID: this.state.id, recent_platforms: this.state.users_recent_platforms})
+                .then(res3 => {
+                    this.props.history.push("/platform/"+plat_id);
+                })
+                .catch(err3 =>{
+                    console.log(err3.response)
+                })
+            })
+            .catch(err2=>{
+                console.log(err2.response)
+            })
+
+            }
+
+            // this.props.history.push("/platform/"+plat_id);
+
+            // this.setState({showPrivatePlatModal:false})
+
+        })
+        .catch(err =>{
+            console.log(err.response)
+        })
+    }
+
+    updatePlatformPass(e){
+        var eVal = e.target.value
+
+        this.setState({platformPass:eVal,showEmptyAlert:false})
+        console.log(eVal)
     }
 
     render() {
@@ -561,7 +664,7 @@ export default class TempDashboard extends Component {
                             {this.state.recent_platforms.map((platform, index) => (
                                 <Card className = "card_top itemsContainer">
                                 <FontAwesomeIcon className="play_button" icon={faPlay} />
-                                <Card.Img variant="top" onClick={() => this.clickPlatform(platform._id)} src={platform.cover_photo === "" ? DefaultCoverPhoto : platform.cover_photo} className = "card_image"/>
+                                <Card.Img variant="top" onClick={() => this.clickPlatform(platform._id,platform.is_public)} src={platform.cover_photo === "" ? DefaultCoverPhoto : platform.cover_photo} className = "card_image"/>
                                     <Card.Body className = "card_body">
                                         <Card.Title className = "card_info">{platform.plat_name}</Card.Title>
                                         <Card.Text className = "card_info">
@@ -627,7 +730,7 @@ export default class TempDashboard extends Component {
                             {this.state.all_platforms.map((platform, index) => (
                                 <Card className = "card_top itemsContainer">
                                 <FontAwesomeIcon className="play_button" icon={faPlay} />
-                                <Card.Img variant="top" onClick={() => this.clickPlatform(platform._id)} src={platform.cover_photo === "" ? DefaultCoverPhoto : platform.cover_photo} className = "card_image"/>
+                                <Card.Img variant="top" onClick={() => this.clickPlatform(platform._id,platform.is_public)} src={platform.cover_photo === "" ? DefaultCoverPhoto : platform.cover_photo} className = "card_image"/>
                                     <Card.Body className = "card_body">
                                         <Card.Title className = "card_info">{platform.plat_name}</Card.Title>
                                         <Card.Text className = "card_info">
@@ -642,6 +745,32 @@ export default class TempDashboard extends Component {
                             </div>
                         </div>
                 </div>
+
+                <Modal show={this.state.showPrivatePlatModal} onHide={this.handleCloseModal} backdrop="static" keyboard={true}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Enter Password for Platform</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <div className = "form-group" style={{marginLeft: "10%"}}>
+                        <label style = {{color: "black"}}>Answer:</label>
+                        <input type = "text" style = {{width: "90%", borderColor: "black"}} className = "form-control" value = {this.state.platformPass} id = "platformPassInput" onChange = {(e)=>this.updatePlatformPass(e)} required/>
+                    </div>
+                    <Alert show = {this.state.showEmptyAlert} variant = 'danger'>
+                        The text field can not be empty
+                    </Alert>
+                    <Alert show = {this.state.showIncorrectPass} variant = 'danger'>
+                        The password is incorrect
+                    </Alert>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={this.handleCloseModal}>
+                        Close
+                    </Button>
+                    <Button variant="primary" onClick={this.accessPrivatePlat}>
+                        Submit
+                    </Button>
+                </Modal.Footer>
+                </Modal>
                 
 
             </div>
