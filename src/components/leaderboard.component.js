@@ -193,7 +193,7 @@ export default class Leaderboard extends Component {
                                         {user.completed_quizzes}
                                     </div>
                                     <div className = "total_accuracy" style={{}}>
-                                        {user.total_accuracy}%
+                                        {user.completed_quizzes === 0 ? 0 : (user.total_accuracy / user.completed_quizzes).toFixed(2)}%
                                     </div>
                                 </div>
 
@@ -209,7 +209,7 @@ export default class Leaderboard extends Component {
                                         {user.completed_quizzes}
                                     </div>
                                     <div className = "total_accuracy" style={{}}>
-                                        {user.total_accuracy}%
+                                        {user.completed_quizzes === 0 ? 0 : (user.total_accuracy / user.completed_quizzes).toFixed(2)}%
                                     </div>
                                 </div>
                                 )

@@ -267,25 +267,25 @@ export default class MyPlatforms extends Component {
 
     toggleFavoriteAll(index){
         //Update is_favorited attribute for recent platform at index
-        var all_plats = this.state.all_platforms;
-        all_plats[index].is_favorited = !all_plats[index].is_favorited;
-        var fav_plats = this.state.users_favorite_platforms
-        if (fav_plats.includes(all_plats[index]._id)){
-            fav_plats = fav_plats.filter(item => item !== all_plats[index]._id)
-        }
-        else {
-            fav_plats.push(all_plats[index]._id)
-        }
-        var recent_plats = this.state.recent_platforms
-        for (var i = 0; i < recent_plats.length; i++){
-            if (recent_plats[i]._id === all_plats[index]._id){
-                recent_plats[i].is_favorited = !recent_plats[i].is_favorited
-            }
-        }
+        var fav_plats = this.state.users_favorite_platforms;
+        fav_plats.splice(index,1);
+        // // if (fav_plats.includes(all_plats[index]._id)){
+        // fav_plats = fav_plats.filter(item => item !== fav_plats[index]._id)
+
+        // }
+        // else {
+        //     fav_plats.push(all_plats[index]._id)
+        // }
+        // var recent_plats = this.state.recent_platforms
+        // for (var i = 0; i < recent_plats.length; i++){
+        //     if (recent_plats[i]._id === all_plats[index]._id){
+        //         recent_plats[i].is_favorited = !recent_plats[i].is_favorited
+        //     }
+        // }
 
         api.post('/user/updateFavoritePlatforms', {userID: this.state.id, fav_plats: fav_plats})
         .then();
-        this.setState({all_platforms: all_plats, recent_platforms: recent_plats, users_favorite_platforms: fav_plats});
+        this.setState({users_favorite_platforms: fav_plats});
 
     }
 
@@ -466,12 +466,15 @@ export default class MyPlatforms extends Component {
                             {this.state.favorite_platforms.map((platform, index) => (
                                 <Card className = "card_top itemsContainer">
                                 <FontAwesomeIcon className="play_button" icon={faPlay} />
-                                <Card.Img variant="top" onClick={() => this.editPlatform(platform._id)} src={platform.cover_photo === "" ? DefaultCoverPhoto : platform.cover_photo} className = "card_image"/>
+                                <Card.Img variant="top" onClick={() => this.clickPlatform(platform._id)} src={platform.cover_photo === "" ? DefaultCoverPhoto : platform.cover_photo} className = "card_image"/>
                                     <Card.Body className = "card_body">
                                         <Card.Title className = "card_info">{platform.plat_name}</Card.Title>
                                         <Card.Text className = "card_info">
                                         {platform.owner}
                                         </Card.Text>
+                                        <div style={{width: "fit-content"}} onClick={() => this.toggleFavoriteAll(index)}>
+                                            <FavoriteButton isfavorited={true}/>
+                                        </div>
                                     </Card.Body>
                                 </Card>
                             ))}

@@ -364,7 +364,7 @@ export default class PreviewCategory extends Component {
             else if(current_page.type === "Matching"){
                 if(this.state.allPages.length !== 0){
                     var matching_pairs = current_page.matching_pairs;
-                    matching_values = Object.values(matching_pairs);
+                    matching_values = this.shuffleArray(Object.values(matching_pairs));
                     matching_pairs_answered = new Array(matching_values.length).fill("");
                 }
             }
