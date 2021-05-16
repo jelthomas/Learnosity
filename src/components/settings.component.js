@@ -86,6 +86,7 @@ export default class Settings extends Component {
                 .then(res2=>{
                     api.post('/user/removeUser', removeUser)
                     .then(res3 => {
+                            localStorage.removeItem('usertoken');
                             this.props.history.push(`/`);
                         })
                     .catch(err3 => {
