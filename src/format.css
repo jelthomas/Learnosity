@@ -323,6 +323,10 @@
   padding: 2%;
 }
 
+#reverify .close{
+  display: none
+}
+
 .mc_button:active{
   color: #fff;
   background-color: rgb(9, 197, 9);

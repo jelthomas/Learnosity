@@ -15,6 +15,8 @@ import bellAudio from '../correct.mp3';
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 import Alert from "react-bootstrap/Alert";
+import * as emailjs from 'emailjs-com'
+import {FormFeedback, Form, FormGroup, Label, Input } from 'reactstrap'
 
 const bell = new UIfx(
     bellAudio,
@@ -77,7 +79,8 @@ export default class UseCategory extends Component {
             experience: 0,
             reportMessage:'',
             showReportModal : false,
-            showEmptyReportAlert: false
+            showEmptyReportAlert: false,
+            reportSent: false
         }
     }
 
@@ -85,7 +88,7 @@ export default class UseCategory extends Component {
         this.setState({showReportModal:true})
     }
     handleReportClose() {
-        this.setState({showReportModal:false,reportMessage:''})
+        this.setState({showReportModal:false, reportMessage:''})
     }
     
     updateReportMessage(e){
@@ -96,11 +99,24 @@ export default class UseCategory extends Component {
     handleSubmitReport(){
         console.log(this.state.reportMessage);
         //check the value of reportMessage
+        if(this.state.reportMessage.trim() === ''){
+            this.setState({showEmptyReportAlert: true});
+            return;
+        }
         
-        //change alert boolean and return if it doesnt meet conditions 
-        
-        //sending report to proper email 
-
+        let templateParams = {
+            from_name: this.state.username,
+            to_name: 'Learnosity Admin',
+            subject: "Incoming Report for Page ID: " + this.state.currentPage._id,
+            message_html: this.state.reportMessage,
+           }
+           emailjs.send(
+            'service_cszfzdr',
+            'template_j0sdaww',
+             templateParams,
+            'user_ft9qQFoWrdmOTSPVmadTA'
+           )
+        this.setState({reportSent: true});
         this.handleReportClose();
     }
 
@@ -160,7 +176,62 @@ export default class UseCategory extends Component {
             if(users_answers.length === correct_answers.length){
                 completed = true;
             }
-            this.setState({user_timer_answers: users_answers, clock_finished: completed})
+            
+            if(completed){
+                var total_correct = users_answers.length;
+                var status = ''
+                if(total_correct === correct_answers.length){
+                    status = 'correct';
+                }
+                else if(total_correct / correct_answers.length >= 0.5){
+                    status = 'almost';
+                }
+                else{
+                    status = 'incorrect';
+                }
+
+                if(!this.state.is_completed){
+                    //Calculate increment value
+                    var inc = ((total_correct / correct_answers.length) * 100).toFixed(2);
+                    api.post('/categoryData/increment_accuracy_by', {user_id : this.state.user_id, cat_id : this.state.cat_id, inc: inc})
+                    .then()
+                    .catch(err => console.log(err));
+
+                }
+
+                //If page id is not in user's completed pages, add experience
+                var my_completed_pages = [];
+
+                api.post('/categoryData/getCategoryDataCurrentProgressPages', {id: this.state.user_id, catid : this.state.cat_id})
+                .then(res =>{
+                    my_completed_pages = res.data.completed_pages;
+                    if(!my_completed_pages.includes(this.state.currentPage._id)){
+                        //Increase experience and play sound
+                        var inc = Math.round(((total_correct / correct_answers.length) * 100));
+                        if(inc > 0){
+                            api.post('/user/increment_experience_points_by', {user_id: this.state.user_id, inc: Math.round(inc)})
+                            .then()
+                            .catch(err => console.log(err));
+
+                            bell.play();
+                            this.setState({experience: Math.round(inc)});
+                        }
+                    }
+                    const info = {
+                        user_id : this.state.user_id,
+                        cat_id : this.state.cat_id,
+                        page_id : this.state.currentPage._id,
+                    }
+            
+                    api.post('/categoryData/updatePageArrays/',info);
+            
+                    this.setState({clock_finished: true, status: status, user_timer_answers: users_answers});
+                })
+                .catch(err => console.log(err));
+            }
+            else{
+                this.setState({user_timer_answers: users_answers});
+            }
         }
     }
 
@@ -444,7 +515,7 @@ export default class UseCategory extends Component {
             else if(current_page.type === "Matching"){
                 if(this.state.filterPages.length !== 0){
                     var matching_pairs = current_page.matching_pairs;
-                    matching_values = Object.values(matching_pairs);
+                    matching_values = this.shuffleArray(Object.values(matching_pairs));
                     matching_pairs_answered = new Array(matching_values.length).fill("");
                 }
             }
@@ -458,10 +529,13 @@ export default class UseCategory extends Component {
             }
         }
 
-        this.setState({experience: 0, seconds: seconds, minutes: minutes, timer_answers: timer_answers, matching_pairs_answered: matching_pairs_answered, matching_pairs_values: matching_values, shouldShuffle: true, current_mc_array: current_mc_array, progressVal:this.state.progressVal + this.state.progressIncrement, pageIndex: this.state.pageIndex + 1, completedCategory: completed_category, currentPage: current_page,segmented:segmented,submittedAnswer:false,submitted_fib:""});
+        this.setState({reportSent: false, experience: 0, seconds: seconds, minutes: minutes, timer_answers: timer_answers, matching_pairs_answered: matching_pairs_answered, matching_pairs_values: matching_values, shouldShuffle: true, current_mc_array: current_mc_array, progressVal:this.state.progressVal + this.state.progressIncrement, pageIndex: this.state.pageIndex + 1, completedCategory: completed_category, currentPage: current_page,segmented:segmented,submittedAnswer:false,submitted_fib:""});
     }
 
     shuffleArray(array) {
+        
+        console.log("Before shuffle:")
+        console.log(array);
         var shuffled_arr = array.slice();
         for (var i = shuffled_arr.length - 1; i > 0; i--) {
             var j = Math.floor(Math.random() * (i + 1));
@@ -469,6 +543,7 @@ export default class UseCategory extends Component {
             shuffled_arr[i] = shuffled_arr[j];
             shuffled_arr[j] = temp;
         }
+        console.log("Shuffled");
         return shuffled_arr;
     }
 
@@ -911,8 +986,8 @@ export default class UseCategory extends Component {
                             <label style = {{color: "black"}}>Reason for reporting:</label>
                             <textarea rows="4" cols="50" style = {{width: "90%", borderColor: "black"}} className = "form-control" value = {this.state.reportMessage} id = "reportInput" onChange = {(e)=>this.updateReportMessage(e)} required/>
                         </div>
-                        <Alert show = {this.state.showEmptyReportAlert} variant = 'danger'>
-                            The text field can not be empty
+                        <Alert style={{textAlign: "center"}} show = {this.state.showEmptyReportAlert} variant = 'danger'>
+                            The text field cannot be empty
                         </Alert>
                     </Modal.Body>
                     <Modal.Footer>
@@ -947,6 +1022,15 @@ export default class UseCategory extends Component {
                                 </div>
                                 ))
                                 }
+                                {this.state.reportSent
+                                ?
+                                <div style={{position: "fixed", bottom: "200px", left: "40px", fontSize: "20px"}}>
+                                    Your report was successfully sent to the admin team!
+                                </div>
+                                :
+                                <div>
+                                </div>
+                                }
                                 </div>
                                     {
                                         (this.state.submittedAnswer === false
@@ -957,7 +1041,7 @@ export default class UseCategory extends Component {
                                             ?
                                                 <div className = "continue_incorrect">
                                                     <div>
-                                                        <button onClick={this.revealReportModal} className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
+                                                        <button onClick={this.revealReportModal} disabled={this.state.reportSent} className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
                                                     </div>
                                                     <div className = "correct_phrase">
                                                         Incorrect!
@@ -972,7 +1056,7 @@ export default class UseCategory extends Component {
                                             :
                                                 <div className = "continue_correct">
                                                     <div>
-                                                    <button onClick={this.revealReportModal} className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
+                                                    <button onClick={this.revealReportModal} disabled={this.state.reportSent} className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
                                                     </div>
                                                     <div className = "correct_phrase">
                                                         CORRECT!
@@ -1017,6 +1101,15 @@ export default class UseCategory extends Component {
                                             <div style={{margin: "auto", textAlign: "center", marginTop: "10%"}}>
                                                 <button style={{padding: "10px"}} className="continue_button_correct" onClick={() => this.submitFIB()} >Submit</button>
                                             </div>
+                                            {this.state.reportSent
+                                            ?
+                                            <div style={{position: "fixed", bottom: "200px", left: "40px", fontSize: "20px"}}>
+                                                Your report was successfully sent to the admin team!
+                                            </div>
+                                            :
+                                            <div>
+                                            </div>
+                                            }
                                        
                                         {
                                         (this.state.submittedAnswer === false
@@ -1027,7 +1120,7 @@ export default class UseCategory extends Component {
                                             ?
                                                 <div className = "continue_incorrect">
                                                     <div>
-                                                        <button onClick={this.revealReportModal} className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
+                                                        <button onClick={this.revealReportModal} disabled={this.state.reportSent} className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
                                                     </div>
                                                     <div className = "correct">
                                                         Incorrect!
@@ -1053,7 +1146,7 @@ export default class UseCategory extends Component {
                                             ?
                                                 <div className = "continue_incorrect">
                                                     <div>
-                                                        <button onClick={this.revealReportModal} className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
+                                                        <button onClick={this.revealReportModal} disabled={this.state.reportSent} className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
                                                     </div>
                                                     <div className = "correct">
                                                         You Almost Had It!
@@ -1078,7 +1171,7 @@ export default class UseCategory extends Component {
                                             
                                                 <div className = "continue_correct">
                                                     <div>
-                                                    <button onClick={this.revealReportModal} className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
+                                                    <button onClick={this.revealReportModal} disabled={this.state.reportSent} className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
                                                     </div>
                                                     <div className = "correct">
                                                         You Nailed It!
@@ -1188,7 +1281,15 @@ export default class UseCategory extends Component {
                                             <div id="matching_bottom" style={{margin: "auto", textAlign: "center", marginTop: "2%"}}>
                                                 <button style={{padding: "10px"}} className="continue_button_correct" onClick={() => this.submitMatching()} >Submit</button>
                                             </div>
-
+                                            {this.state.reportSent
+                                                ?
+                                                <div style={{position: "fixed", bottom: "200px", left: "40px", fontSize: "20px"}}>
+                                                    Your report was successfully sent to the admin team!
+                                                </div>
+                                                :
+                                                <div>
+                                                </div>
+                                                }
                                             {
                                                 (this.state.submittedAnswer === false
                                                 ?
@@ -1198,7 +1299,7 @@ export default class UseCategory extends Component {
                                                     ?
                                                         <div className = "continue_incorrect">
                                                             <div>
-                                                                <button onClick={this.revealReportModal} className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
+                                                                <button onClick={this.revealReportModal} disabled={this.state.reportSent} className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
                                                             </div>
                                                             <div className = "correct">
                                                                 Incorrect!
@@ -1221,7 +1322,7 @@ export default class UseCategory extends Component {
                                                     ?
                                                         <div className = "continue_incorrect">
                                                             <div>
-                                                                <button onClick={this.revealReportModal} className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
+                                                                <button onClick={this.revealReportModal} disabled={this.state.reportSent} className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
                                                             </div>
                                                             <div className = "correct">
                                                                 You Almost Had It!
@@ -1243,7 +1344,7 @@ export default class UseCategory extends Component {
                                                     
                                                         <div className = "continue_correct">
                                                             <div>
-                                                            <button onClick={this.revealReportModal} className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
+                                                            <button onClick={this.revealReportModal} disabled={this.state.reportSent} className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
                                                             </div>
                                                             <div className = "correct">
                                                                 You Nailed It!
@@ -1285,11 +1386,20 @@ export default class UseCategory extends Component {
                                                         :
                                                             <br></br>
                                                         }
+                                                        {this.state.reportSent
+                                                        ?
+                                                        <div style={{position: "fixed", bottom: "200px", left: "40px", fontSize: "20px"}}>
+                                                            Your report was successfully sent to the admin team!
+                                                        </div>
+                                                        :
+                                                        <div>
+                                                        </div>
+                                                        }
                                                         {(this.state.status === 'incorrect'
                                                             ?
                                                                 <div className = "continue_incorrect">
                                                                     <div>
-                                                                        <button onClick={this.revealReportModal} className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
+                                                                        <button onClick={this.revealReportModal} disabled={this.state.reportSent} className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
                                                                     </div>
                                                                     <div className = "correct">
                                                                         Incorrect!
@@ -1313,7 +1423,7 @@ export default class UseCategory extends Component {
                                                             ?
                                                                 <div className = "continue_incorrect">
                                                                     <div>
-                                                                        <button onClick={this.revealReportModal} className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
+                                                                        <button onClick={this.revealReportModal} disabled={this.state.reportSent} className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
                                                                     </div>
                                                                     <div className = "correct">
                                                                         You Almost Had It!
@@ -1335,7 +1445,7 @@ export default class UseCategory extends Component {
                                                             
                                                                 <div className = "continue_correct">
                                                                     <div>
-                                                                    <button onClick={this.revealReportModal} className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
+                                                                    <button onClick={this.revealReportModal} disabled={this.state.reportSent} className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
                                                                     </div>
                                                                     <div className = "correct">
                                                                         You Nailed It!

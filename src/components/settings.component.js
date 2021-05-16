@@ -166,6 +166,7 @@ export default class Settings extends Component {
                 .then(res =>{
                     console.log(res)
                     this.setState({userFormat : tempUser})
+                    window.location.reload();
                 })
                 .catch(err => {
                     console.log(err.response)

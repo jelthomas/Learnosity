@@ -560,7 +560,7 @@ export default class TempDashboard extends Component {
     }
 
     handleCloseModal(){
-        this.setState({showPrivatePlatModal:false,platformPass:''})
+        this.setState({showPrivatePlatModal:false, platformPass:'', showIncorrectPass: false})
     }
 
     accessPrivatePlat(){

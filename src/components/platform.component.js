@@ -1,15 +1,18 @@
 import React, { Component } from 'react';
 import {api} from "../axios_api.js";
 import jwt from 'jsonwebtoken';
-import jwt_decode from 'jwt-decode'
+import jwt_decode from 'jwt-decode';
 import "../format.css";
-import Card from "react-bootstrap/Card"
+import Card from "react-bootstrap/Card";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faStar, faPlay, faAngleRight, faAngleLeft, faArrowLeft } from "@fortawesome/free-solid-svg-icons";
-import DefaultCoverPhoto from "../images/defaultCoverPhoto.png"
-import { confirm_access } from "./tempdashboard.component"
-import Tab from 'react-bootstrap/Tab'
-import Tabs from 'react-bootstrap/Tabs'
+import { faStar, faPlay, faAngleRight, faAngleLeft, faArrowLeft, faThList } from "@fortawesome/free-solid-svg-icons";
+import DefaultCoverPhoto from "../images/defaultCoverPhoto.png";
+import { confirm_access } from "./tempdashboard.component";
+import Tab from 'react-bootstrap/Tab';
+import Tabs from 'react-bootstrap/Tabs';
+import Button from "react-bootstrap/Button";
+import Modal from "react-bootstrap/Modal";
+import Alert from "react-bootstrap/Alert";
 require('dotenv').config();
 
 
@@ -23,14 +26,36 @@ export default class Platform extends Component {
         this.recentlyPlayed = this.recentlyPlayed.bind(this);
         this.unplayed = this.unplayed.bind(this);
         this.updatedContent = this.updatedContent.bind(this);
+        this.updatePlatformPass = this.updatePlatformPass.bind(this);
+        this.verify_password = this.verify_password.bind(this);
+        this.handleCloseModal = this.handleCloseModal.bind(this);
 
         this.state = {
             username: "",
             id: "",
             platformFormat: "",
-            categoriesFormats:[]
+            categoriesFormats:[],
+            platformPass:'',
+            correct_password: '',
+            showPrivatePlatModal: false,
+            showIncorrectPass: false
         }
 
+    }
+
+    handleCloseModal(){
+        this.setState({showPrivatePlatModal:false, platformPass:'', showIncorrectPass: false})
+    }
+
+    verify_password(){
+        var inputted_pass = this.state.platformPass;
+        if(inputted_pass !== this.state.correct_password){
+            this.setState({showIncorrectPass: true});
+            setTimeout(() => {this.props.history.push(`/`);}, 3000);
+        }
+        else{
+            this.handleCloseModal();
+        }
     }
 
     clickUseCategory(cat_id) {
@@ -126,11 +151,6 @@ export default class Platform extends Component {
                         var username = response.data.username;
                         var id = decoded._id;
                         // this.setState({username: response.data.username, id: decoded._id });
-                        
-                        if(confirm_access.value !== 'confirm'){
-                            //Redirect back to where they came from
-                            this.props.history.push(`/`);
-                        }
 
                         //grab the id of the platform 
                         var platform_format_id = this.props.location.pathname.substring(10);
@@ -138,6 +158,18 @@ export default class Platform extends Component {
                         
                         api.get('/platformFormat/getSpecificPlatformFormat/'+platform_format_id)
                         .then(response => {
+                            
+                            var correct_password = '';
+                            var showPrivatePlatModal = false;
+
+                            if(response.data[0].is_public){
+                                confirm_access.value = 'confirm';
+                            }
+                            else if(confirm_access.value !== 'confirm'){
+                                //Redirect back to where they came from
+                                correct_password = response.data[0].privacy_password;
+                                showPrivatePlatModal = true;
+                            }
 
                             const catFormatInfo = {
                                 categories_id : response.data[0].categories
@@ -177,7 +209,7 @@ export default class Platform extends Component {
                                         categoriesFormats[correct_index].updatedAt = categoryData[i].updatedAt;
                                         categoriesFormats[correct_index].category_data_id = categoryData[i]._id;
                                     }
-                                    this.setState({username: username, id: id, platformFormat: platformFormat, categoriesFormats: categoriesFormats})
+                                    this.setState({showPrivatePlatModal: showPrivatePlatModal, correct_password: correct_password, username: username, id: id, platformFormat: platformFormat, categoriesFormats: categoriesFormats})
                                 })
                             })
                             .catch(err => {
@@ -413,6 +445,12 @@ export default class Platform extends Component {
         )
     }
 
+    updatePlatformPass(e){
+        var eVal = e.target.value
+
+        this.setState({platformPass:eVal})
+    }
+
     render() {
         
         return (
@@ -440,6 +478,25 @@ export default class Platform extends Component {
                         </Tab>
                     </Tabs>
                 </div>
+                <Modal id="reverify" show={this.state.showPrivatePlatModal} backdrop="static" keyboard={true}>
+                <Modal.Header closeButton>
+                    <Modal.Title style={{textAlign: "center"}}>For security concerns, please re-enter password for this Platform</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <div className = "form-group" style={{marginLeft: "10%"}}>
+                        <label style = {{color: "black"}}>Password:</label>
+                        <input type = "text" style = {{width: "90%", borderColor: "black"}} className = "form-control" value = {this.state.platformPass} id = "platformPassInput" onChange = {(e)=>this.updatePlatformPass(e)} required/>
+                    </div>
+                    <Alert style = {{textAlign: "center"}} show = {this.state.showIncorrectPass} variant = 'danger'>
+                        The password is incorrect. Redirecting to dashboard ...
+                    </Alert>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button style={{margin: "auto"}} variant="primary" onClick={this.verify_password}>
+                        Submit
+                    </Button>
+                </Modal.Footer>
+                </Modal>
             </div>
         )
     }
