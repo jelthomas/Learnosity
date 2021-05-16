@@ -7,6 +7,7 @@ import Card from "react-bootstrap/Card"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faStar, faPlay, faAngleRight, faAngleLeft, faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 import DefaultCoverPhoto from "../images/defaultCoverPhoto.png"
+import { confirm_access } from "./tempdashboard.component"
 import Tab from 'react-bootstrap/Tab'
 import Tabs from 'react-bootstrap/Tabs'
 require('dotenv').config();
@@ -125,6 +126,11 @@ export default class Platform extends Component {
                         var username = response.data.username;
                         var id = decoded._id;
                         // this.setState({username: response.data.username, id: decoded._id });
+                        
+                        if(confirm_access.value !== 'confirm'){
+                            //Redirect back to where they came from
+                            this.props.history.push(`/`);
+                        }
 
                         //grab the id of the platform 
                         var platform_format_id = this.props.location.pathname.substring(10);

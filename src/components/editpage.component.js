@@ -744,8 +744,13 @@ render() {
     return (
         <div>
             <LoggedInNav props={this.props}/>
-            <div style={{margin: "auto", color: "white", fontSize: "30px", borderBottom: "2px solid white", width: "fit-content"}}>
-                Edit Question: 
+            <div style = {{display: "flex"}}>
+                <div style={{marginLeft: "2%"}}>
+                    <button style = {{color: 'white', fontSize: "45px"}} onClick={() =>  this.props.history.push("/editplatform/" + this.props.location.pathname.substring(14,38))} className="x_button"><FontAwesomeIcon icon={faArrowLeft} /></button>
+                </div>
+                <div style={{margin: "auto", color: "white", fontSize: "30px", borderBottom: "2px solid white", width: "fit-content"}}>
+                    Edit Question: 
+                </div>
             </div>
             {this.state.pageFormat.type === "Multiple Choice"
                 ?

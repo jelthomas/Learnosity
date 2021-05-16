@@ -13,6 +13,7 @@ import Modal from "react-bootstrap/Modal";
 import Alert from "react-bootstrap/Alert";
 require('dotenv').config();
 
+export let confirm_access = {value: ""};
 
 function FavoriteButton(props) {
     const isfavorited = props.isfavorited;
@@ -120,9 +121,12 @@ export default class TempDashboard extends Component {
                             var index_dict = {};
                             // console.log("USER FAVORITE PLATFORMS", favorite_platforms, platform_formats)
                             var temp = user_recent_platforms.slice(0,5);
+                            // temp = [id1, id2, id3, id4, id5]
                             for (var i = 0; i < temp.length; i++){
                                 index_dict[temp[i]] = i
                             }
+                            //index_dict = {id1: 0, id2: 1, id3: 2, id4: 3, id5: 4}
+
                             // console.log("INDEX DICT", index_dict)
                             //Start of getting recent platforms
                             var recent_platforms = [];
@@ -142,7 +146,6 @@ export default class TempDashboard extends Component {
                                 }
                                 
                                 var recent_platform_formats = res.data;
-                                // console.log("WHAT IS THIS", recent_platform_formats)
                                 var correct_index;
                                 for (var i = 0; i < recent_platform_formats.length; i++){
                                     if (index_dict[recent_platform_formats[i]._id] !== undefined){
@@ -524,6 +527,7 @@ export default class TempDashboard extends Component {
             this.setState({showPrivatePlatModal:true, usePlatID:plat_id})
             return
         }
+        confirm_access.value="confirm";
         // else
         // {
         //     //when its true
@@ -564,6 +568,7 @@ export default class TempDashboard extends Component {
         var inputPass = this.state.platformPass
         var plat_id = this.state.usePlatID
 
+        confirm_access.value = "confirm";
         //grabs the platform 
         //checks if password matches with database
         api.get('platformFormat/getSpecificPlatformFormat/'+plat_id)
@@ -661,7 +666,9 @@ export default class TempDashboard extends Component {
 
                     </div>
                     <div style={{display: "flex", flexWrap: "wrap"}}>
-                            {this.state.recent_platforms.map((platform, index) => (
+                            {this.state.recent_platforms.length > 0
+                            ?
+                            (this.state.recent_platforms.map((platform, index) => (
                                 <Card className = "card_top itemsContainer">
                                 <FontAwesomeIcon className="play_button" icon={faPlay} />
                                 <Card.Img variant="top" onClick={() => this.clickPlatform(platform._id,platform.is_public)} src={platform.cover_photo === "" ? DefaultCoverPhoto : platform.cover_photo} className = "card_image"/>
@@ -675,7 +682,12 @@ export default class TempDashboard extends Component {
                                         </div>
                                     </Card.Body>
                                 </Card>
-                            ))}
+                            )))
+                            :
+                             <div style={{color: "white", marginLeft: "3%"}}>
+                                You have no recently played platforms! Click on one below to begin learning
+                            </div>
+                            }
                             </div>
 
                 </div>
@@ -752,13 +764,13 @@ export default class TempDashboard extends Component {
                 </Modal.Header>
                 <Modal.Body>
                     <div className = "form-group" style={{marginLeft: "10%"}}>
-                        <label style = {{color: "black"}}>Answer:</label>
+                        <label style = {{color: "black"}}>Password:</label>
                         <input type = "text" style = {{width: "90%", borderColor: "black"}} className = "form-control" value = {this.state.platformPass} id = "platformPassInput" onChange = {(e)=>this.updatePlatformPass(e)} required/>
                     </div>
                     <Alert show = {this.state.showEmptyAlert} variant = 'danger'>
                         The text field can not be empty
                     </Alert>
-                    <Alert show = {this.state.showIncorrectPass} variant = 'danger'>
+                    <Alert style = {{textAlign: "center"}} show = {this.state.showIncorrectPass} variant = 'danger'>
                         The password is incorrect
                     </Alert>
                 </Modal.Body>
