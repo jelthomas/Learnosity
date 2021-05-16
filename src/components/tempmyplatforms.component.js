@@ -102,20 +102,71 @@ export default class MyPlatforms extends Component {
                                 var fav_plats = plat_ids.data
 
 
-                                this.setState({
-                                    created_platforms: platform_formats, 
-                                    users_favorite_platforms: favorite_platforms,
-                                    users_recent_platforms: user_recent_platforms,
-                                    favorite_platforms: fav_plats, 
-                                    username: response.data.username, 
-                                    id: decoded._id,
-                                    canPaginateRightCreated: canPaginateRightCreated,
-                                    canPaginateLeftCreated: false,
-                                    canPaginateLeftFavorite: false,
-                                    canPaginateRightFavorite: canPaginateRightFavorite
-                            })
+                                //Get every platformFormat that user has played before
+                                api.post('/platformFormat/returnFormats', {ids: user_recent_platforms})
+                                .then(played_ids => {
+                                    //For every platform this user has played before
+                                    for(var i = 0; i < played_ids.data.length; i++){
+                                        //For every category in this platform
+                                        console.log("FOR DANNY", i)
+                                        var completed_platforms = []
+                                        var updated_platforms = []
+                                        var isCompleted = true
+                                        for(var j = 0; j < played_ids.data[i].categories.length; j++){
+                                            var allPages
+                                            var completed_pages
+                                            //Get all pages for this category
+                                            api.get('/categoryFormat/getPages/'+played_ids.data[i].categories[j])
+                                            .then(result => {
+                                                allPages = result.data
+                                                //Get all the pages this user completed for this platform
+                                                console.log("NO HERE", played_ids.data.length, i)
+                                                api.post('/categoryData/getCategoryDataCurrentProgressPages', {id: decoded._id, catid: played_ids.data[i].categories[j]})
+                                                .then(completedResult => {
+                                                    console.log("NOW HERE", completedResult.data)
+                                                    completed_pages = completedResult.data
+                                                    if (!completed_pages && !updated_platforms.includes(played_ids.data[i])){
+                                                        updated_platforms.push(played_ids.data[i])
+                                                        isCompleted = false
+                                                    }
+                                                    var temp1 = allPages.sort()
+                                                    var temp2 = completed_pages.sort()
+                                                    console.log("BLAHBLAHBLAH",played_ids.data[i], temp1, temp2)
+                                                    for(var z = 0; z < temp1.length; z++){
+                                                        //If there is at least one question that is not completed
+                                                        if ((temp1[z] !== temp2[z] || z === temp2.length)&& !updated_platforms.includes(played_ids.data[i])){
+                                                            updated_platforms.push(played_ids.data[i])
+                                                            isCompleted = false
+                                                        }
+                                                    }
+                                                })
+                                            })
+                                            console.log("PLAT ID", played_ids.data[i]._id, isCompleted)
+                                        }
+                                        if (isCompleted === true){
+                                            console.log("AM I HERE", played_ids.data[i])
+                                            completed_platforms.push(played_ids.data[i])
+                                        }
+                                    }
+                                    console.log("COMPLETED", completed_platforms)
+                                    console.log("Updated", updated_platforms)
+
+
+                                    this.setState({
+                                        created_platforms: platform_formats, 
+                                        users_favorite_platforms: favorite_platforms,
+                                        users_recent_platforms: user_recent_platforms,
+                                        favorite_platforms: fav_plats, 
+                                        username: response.data.username, 
+                                        id: decoded._id,
+                                        canPaginateRightCreated: canPaginateRightCreated,
+                                        canPaginateLeftCreated: false,
+                                        canPaginateLeftFavorite: false,
+                                        canPaginateRightFavorite: canPaginateRightFavorite
+                                    })
                                 })
                                 
+                            })
                             
                         })
                     }
