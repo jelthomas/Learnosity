@@ -8,8 +8,12 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faStar, faPlay, faAngleRight, faAngleLeft } from "@fortawesome/free-solid-svg-icons";
 import LoggedInNav from "./loggedInNav.component";
 import DefaultCoverPhoto from "../images/defaultCoverPhoto.png"
+import Button from "react-bootstrap/Button";
+import Modal from "react-bootstrap/Modal";
+import Alert from "react-bootstrap/Alert";
 require('dotenv').config();
 
+export let confirm_access = {value: ""};
 
 function FavoriteButton(props) {
     const isfavorited = props.isfavorited;
@@ -32,6 +36,9 @@ export default class TempDashboard extends Component {
         this.onChangeFilterBy = this.onChangeFilterBy.bind(this);
         this.searchPlatforms = this.searchPlatforms.bind(this);
         this.clickPlatform = this.clickPlatform.bind(this);
+        this.handleCloseModal = this.handleCloseModal.bind(this);
+        this.accessPrivatePlat = this.accessPrivatePlat.bind(this);
+        this.updatePlatformPass = this.updatePlatformPass.bind(this);
 
         this.state = {
             username: "",
@@ -48,7 +55,12 @@ export default class TempDashboard extends Component {
             filterBy: true,
             searchBy: "",
             canPaginateRightRecent: true,
-            canPaginateRightAll: true
+            canPaginateRightAll: true,
+            showPrivatePlatModal:false,
+            usePlatID:'',
+            showEmptyAlert:false,
+            platformPass:'',
+            showIncorrectPass:false
         }
 
     }
@@ -109,9 +121,12 @@ export default class TempDashboard extends Component {
                             var index_dict = {};
                             // console.log("USER FAVORITE PLATFORMS", favorite_platforms, platform_formats)
                             var temp = user_recent_platforms.slice(0,5);
+                            // temp = [id1, id2, id3, id4, id5]
                             for (var i = 0; i < temp.length; i++){
                                 index_dict[temp[i]] = i
                             }
+                            //index_dict = {id1: 0, id2: 1, id3: 2, id4: 3, id5: 4}
+
                             // console.log("INDEX DICT", index_dict)
                             //Start of getting recent platforms
                             var recent_platforms = [];
@@ -131,7 +146,6 @@ export default class TempDashboard extends Component {
                                 }
                                 
                                 var recent_platform_formats = res.data;
-                                // console.log("WHAT IS THIS", recent_platform_formats)
                                 var correct_index;
                                 for (var i = 0; i < recent_platform_formats.length; i++){
                                     if (index_dict[recent_platform_formats[i]._id] !== undefined){
@@ -435,7 +449,7 @@ export default class TempDashboard extends Component {
                 }
             }
             this.setState({
-                argumentForAllPlatforms: argumentForAllPlatforms
+                argumentForAllPlatforms: argumentForAllPlatforms , paginate_all_index: 0
             })
             this.retrieveAllPlatforms(argumentForAllPlatforms, this.state.filterBy, this.state.searchBy)
         }
@@ -457,7 +471,7 @@ export default class TempDashboard extends Component {
                 }
             }
             this.setState({
-                filterBy: filterBy
+                filterBy: filterBy , paginate_all_index: 0
             })
             this.retrieveAllPlatforms(this.state.argumentForAllPlatforms, filterBy, this.state.searchBy)
         }
@@ -466,7 +480,7 @@ export default class TempDashboard extends Component {
     searchPlatforms(e) {
             var userSearch = document.getElementById("userSearch")
             this.setState({
-                searchBy: userSearch.value
+                searchBy: userSearch.value , paginate_all_index: 0
             })
             this.retrieveAllPlatforms(this.state.argumentForAllPlatforms, this.state.filterBy, userSearch.value)
         
@@ -504,7 +518,23 @@ export default class TempDashboard extends Component {
             })
     }
 
-    clickPlatform(plat_id){
+    clickPlatform(plat_id,plat_visible){
+
+        if(!plat_visible)
+        {
+            //when its false
+            console.log(plat_visible)
+            this.setState({showPrivatePlatModal:true, usePlatID:plat_id})
+            return
+        }
+        confirm_access.value="confirm";
+        // else
+        // {
+        //     //when its true
+        //     console.log(plat_visible)
+        //     return
+        // }
+        
         //need to check if platform is private and if we need to enter pass to enter 
         if (!this.state.users_recent_platforms.includes(plat_id)){
             this.setState({
@@ -522,10 +552,89 @@ export default class TempDashboard extends Component {
             })
             // console.log("AFTER", temp)
         }
+        api.post('platformFormat/increment_times_played', {plat_id: plat_id})
         api.post('/user/updateRecentlyPlayed/', {userID: this.state.id, recent_platforms: this.state.users_recent_platforms})
         .then()
 
         this.props.history.push("/platform/"+plat_id);
+    }
+
+    handleCloseModal(){
+        this.setState({showPrivatePlatModal:false,platformPass:''})
+    }
+
+    accessPrivatePlat(){
+        //check if password entered is proper 
+        var inputPass = this.state.platformPass
+        var plat_id = this.state.usePlatID
+
+        confirm_access.value = "confirm";
+        //grabs the platform 
+        //checks if password matches with database
+        api.get('platformFormat/getSpecificPlatformFormat/'+plat_id)
+        .then(res => {
+            console.log(res.data[0])
+            if(inputPass !== res.data[0].privacy_password)
+            {
+                this.setState({showIncorrectPass:true,platformPass:""})
+                
+            }
+            else
+            {
+
+
+            if (!this.state.users_recent_platforms.includes(plat_id)){
+            
+                this.setState({
+                    users_recent_platforms: this.state.users_recent_platforms.unshift(plat_id)
+                })
+
+            }
+            else {
+                // console.log("BEFORE", this.state.users_recent_platforms)
+                var temp = this.state.users_recent_platforms;
+                var index = temp.indexOf(plat_id);
+                temp.splice(index, 1);
+                temp.unshift(plat_id);
+                this.setState({
+                    users_recent_platforms: temp
+                })
+                // console.log("AFTER", temp)
+            }
+
+            // this.setState({showPrivatePlatModal:false})
+
+            api.post('platformFormat/increment_times_played', {plat_id: plat_id})
+            .then(res2 =>{
+                api.post('/user/updateRecentlyPlayed/', {userID: this.state.id, recent_platforms: this.state.users_recent_platforms})
+                .then(res3 => {
+                    this.props.history.push("/platform/"+plat_id);
+                })
+                .catch(err3 =>{
+                    console.log(err3.response)
+                })
+            })
+            .catch(err2=>{
+                console.log(err2.response)
+            })
+
+            }
+
+            // this.props.history.push("/platform/"+plat_id);
+
+            // this.setState({showPrivatePlatModal:false})
+
+        })
+        .catch(err =>{
+            console.log(err.response)
+        })
+    }
+
+    updatePlatformPass(e){
+        var eVal = e.target.value
+
+        this.setState({platformPass:eVal,showEmptyAlert:false})
+        console.log(eVal)
     }
 
     render() {
@@ -533,8 +642,8 @@ export default class TempDashboard extends Component {
             <div>
                 <LoggedInNav props={this.props}/>
                 <div style={{display:"flex", marginLeft: "5%", marginRight: "5%", paddingTop: "15px"}}>
-                    <div id="dash">Dashboard</div>
-                    <div id="greeting">Welcome {this.state.username}!</div>
+                    <div style={{fontSize: "35px"}} id="dash">Dashboard</div>
+                    <div style={{fontSize: "35px"}} id="greeting">Welcome {this.state.username}!</div>
                 </div>
                 
                 <div style={{marginLeft: "2.5%", marginRight: "2.5%"}} className="block">
@@ -557,10 +666,12 @@ export default class TempDashboard extends Component {
 
                     </div>
                     <div style={{display: "flex", flexWrap: "wrap"}}>
-                            {this.state.recent_platforms.map((platform, index) => (
+                            {this.state.recent_platforms.length > 0
+                            ?
+                            (this.state.recent_platforms.map((platform, index) => (
                                 <Card className = "card_top itemsContainer">
                                 <FontAwesomeIcon className="play_button" icon={faPlay} />
-                                <Card.Img variant="top" onClick={() => this.clickPlatform(platform._id)} src={platform.cover_photo === "" ? DefaultCoverPhoto : platform.cover_photo} className = "card_image"/>
+                                <Card.Img variant="top" onClick={() => this.clickPlatform(platform._id,platform.is_public)} src={platform.cover_photo === "" ? DefaultCoverPhoto : platform.cover_photo} className = "card_image"/>
                                     <Card.Body className = "card_body">
                                         <Card.Title className = "card_info">{platform.plat_name}</Card.Title>
                                         <Card.Text className = "card_info">
@@ -571,7 +682,12 @@ export default class TempDashboard extends Component {
                                         </div>
                                     </Card.Body>
                                 </Card>
-                            ))}
+                            )))
+                            :
+                             <div style={{color: "white", marginLeft: "3%"}}>
+                                You have no recently played platforms! Click on one below to begin learning
+                            </div>
+                            }
                             </div>
 
                 </div>
@@ -583,7 +699,7 @@ export default class TempDashboard extends Component {
                         </div>
                         {this.state.paginate_all_index === 0
                         ?
-                            <button disabled={true} style={{marginLeft: "64%", color: "grey"}} className = "paginate_arrows" onClick = {() => this.leftAllPlatforms()}><FontAwesomeIcon icon={faAngleLeft} /></button>
+                            <button disabled={true} style={{marginLeft: "65%", color: "grey"}} className = "paginate_arrows" onClick = {() => this.leftAllPlatforms()}><FontAwesomeIcon icon={faAngleLeft} /></button>
                         :
                             <button style={{marginLeft: "64%"}} className = "paginate_arrows" onClick = {() => this.leftAllPlatforms()}><FontAwesomeIcon icon={faAngleLeft} /></button>
                         }   
@@ -601,7 +717,7 @@ export default class TempDashboard extends Component {
                         </div>
                         <div className="dashboard_sort">
                             
-                            <div style={{paddingLeft: "5px"}}>
+                            <div style={{paddingLeft: "8px", paddingTop: "2px"}}>
                                 Sort By:
                                 <select onChange = {this.onChangeSortBy} defaultValue = "none" id = "sort_by" style={{width: "70%", marginLeft: "6px", border: "transparent", borderRadius: "7px", outline:"none"}}>
                                     <option value="none">None</option>
@@ -612,7 +728,7 @@ export default class TempDashboard extends Component {
                             </div>
                          </div>
                         <div className="dashboard_sort" style={{width: "12.5%"}}>
-                            <div>
+                            <div style={{paddingTop: "2px"}}>
                                 <select onChange = {this.onChangeFilterBy} defaultValue = "public" id = "filter_by" style={{width: "93%", marginLeft: "6px", border: "transparent", borderRadius: "7px", outline:"none"}}>
                                     <option value="public">Public Only</option>
                                     <option value="private">Private Only</option>
@@ -626,7 +742,7 @@ export default class TempDashboard extends Component {
                             {this.state.all_platforms.map((platform, index) => (
                                 <Card className = "card_top itemsContainer">
                                 <FontAwesomeIcon className="play_button" icon={faPlay} />
-                                <Card.Img variant="top" onClick={() => this.clickPlatform(platform._id)} src={platform.cover_photo === "" ? DefaultCoverPhoto : platform.cover_photo} className = "card_image"/>
+                                <Card.Img variant="top" onClick={() => this.clickPlatform(platform._id,platform.is_public)} src={platform.cover_photo === "" ? DefaultCoverPhoto : platform.cover_photo} className = "card_image"/>
                                     <Card.Body className = "card_body">
                                         <Card.Title className = "card_info">{platform.plat_name}</Card.Title>
                                         <Card.Text className = "card_info">
@@ -641,6 +757,32 @@ export default class TempDashboard extends Component {
                             </div>
                         </div>
                 </div>
+
+                <Modal show={this.state.showPrivatePlatModal} onHide={this.handleCloseModal} backdrop="static" keyboard={true}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Enter Password for Platform</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <div className = "form-group" style={{marginLeft: "10%"}}>
+                        <label style = {{color: "black"}}>Password:</label>
+                        <input type = "text" style = {{width: "90%", borderColor: "black"}} className = "form-control" value = {this.state.platformPass} id = "platformPassInput" onChange = {(e)=>this.updatePlatformPass(e)} required/>
+                    </div>
+                    <Alert show = {this.state.showEmptyAlert} variant = 'danger'>
+                        The text field can not be empty
+                    </Alert>
+                    <Alert style = {{textAlign: "center"}} show = {this.state.showIncorrectPass} variant = 'danger'>
+                        The password is incorrect
+                    </Alert>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={this.handleCloseModal}>
+                        Close
+                    </Button>
+                    <Button variant="primary" onClick={this.accessPrivatePlat}>
+                        Submit
+                    </Button>
+                </Modal.Footer>
+                </Modal>
                 
 
             </div>
