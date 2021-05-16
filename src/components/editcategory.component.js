@@ -3,9 +3,7 @@ import {api} from "../axios_api.js";
 import jwt from 'jsonwebtoken';
 import jwt_decode from 'jwt-decode'
 import "../format.css";
-// import Card from "react-bootstrap/Card"
-// import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-// import { faStar, faPlay, faAngleRight, faAngleLeft } from "@fortawesome/free-solid-svg-icons";
+import {Prompt} from "react-router-dom";
 import DefaultCoverPhoto from "../images/defaultCoverPhoto.png"
 import Alert from "react-bootstrap/Alert";
 import Button from "react-bootstrap/Button";
@@ -43,21 +41,19 @@ export default class EditCategory extends Component {
             showRemovePageModal:false,
             removeID:'',
             removeName:'',
-            removeIndex:''
+            removeIndex:'',
+            has_changes: false,
+            submit_alert: false
         }
 
     }
 
     updateCategoryFormat (){
         var category_format_id = this.props.location.pathname.substring(39);
-        console.log("In updateCategoryFormat:");
-        
-        //console.log(category_format_id)
 
         //get specific category format
         api.get('/categoryFormat/getSpecificCategoryFormat/'+category_format_id)
         .then(response => {
-            console.log(response.data[0])
             this.setState({categoryFormat: response.data[0]})
 
         })
@@ -73,18 +69,11 @@ export default class EditCategory extends Component {
         //get specific category format
         api.get('/categoryFormat/getSpecificCategoryFormat/'+category_format_id)
         .then(response => {
-            console.log(response.data)
-            //this.setState({categoryFormat:response.data[0]})
-
             var pagesArray = response.data[0].pages
 
             api.post('/pageFormat/getAllPages',{pages_id:pagesArray})
             .then(response =>{
-                
-                console.log(response)
                 allPages = response.data
-                console.log(allPages)
-
                 this.setState({allPagesInfo:allPages})
             })
             .catch(error => {
@@ -101,67 +90,28 @@ export default class EditCategory extends Component {
         var eVal = e.target.value
 
         tempCat.category_name = eVal
-        this.setState({categoryFormat:tempCat,showEmptyCatAlert:false})
-        // var inputVal = document.getElementById('changeCategoryName').value
-        // if(inputVal.length < 1)
-        // {
-        //     var catName = this.state.categoryFormat;
-        //     catName.category_name = inputVal;
-
-        //     document.getElementById('changeCategoryName').placeholder = "Category Name Required";
-
-        //     this.setState({categoryFormat: catName});
-        //     return
-        // }   
-        // else 
-        // {
-
-        //     const newName = {
-        //         categoryID : this.state.categoryFormat._id,
-        //         newCatName : inputVal
-        //     }
-
-        //     //call update platname 
-        //     api.post('/categoryFormat/updateCatName',newName)
-        //     .then(response => {
-        //         console.log("Change Cat Name:")
-        //         console.log(response);
-        //         //updates platform format so page is rendered properly
-        //         var catName = this.state.categoryFormat;
-        //         catName.category_name = inputVal;
-        //         this.setState({categoryFormat: catName});
-        //         // this.updateCategoryFormat();
-        //     })
-        //     .catch(error => {
-        //         console.log(error)
-        //     });
-        // }
+        this.setState({categoryFormat:tempCat,showEmptyCatAlert:false, has_changes: true})
+      
     }
+
     setCategoryPhoto() {
         const file = document.getElementById('inputGroupFile01').files
         //checks if file is properly defined
         if(file[0] === undefined) {
-            console.log("File is Undefined")
             return
         }
         //checks if file size is greater then 10 MB
         if(file[0].size > 10000000) {
-            console.log("File Size is bigger then 10 MB")
             return
         }
 
         //checks the type of file
         if(file[0].type !== "image/png" && file[0].type !== "image/jpeg")
         {
-            console.log(file[0].type)
-            console.log("Invalid Page Type")
             return
         }
 
-        console.log("Gets Pasts Type check")
-
         const data = new FormData()
-        console.log(file[0])
         data.append('image', file[0]);
 
         var config = {
@@ -172,42 +122,16 @@ export default class EditCategory extends Component {
             },
             data : data
           };
-    
-        //var catID = this.state.categoryFormat._id
 
         var tempCat = this.state.categoryFormat
         api(config)
         .then(response =>{
-            console.log((response.data.data.link));
             tempCat.category_photo = response.data.data.link;
             this.setState({platformFormat : tempCat})
         })
         .catch(function (error) {
             console.log(error);
         });
-        // api(config)
-        // .then(function (response) {
-        //     console.log((response.data.data.link));
-
-        //     const updateCatPhoto = {
-        //         categoryID : catID,
-        //         newCategoryPhoto : response.data.data.link
-        //     }
-
-        //     api.post('/categoryFormat/update_category_photo',updateCatPhoto)
-        //     .then(response => {
-        //         console.log(response.data)
-        //         //UPDATING PLATFORM FORMAT IS BROKEN for update cover photo 
-        //         this.updateCategoryFormat();
-        //       })
-        //     .catch(error => {
-        //         console.log(error.response)
-        //     });
-
-        // })
-        // .catch(function (error) {
-        // console.log(error);
-        // });
 
         document.getElementById('inputGroupFile01').value = ""
     }
@@ -234,7 +158,6 @@ export default class EditCategory extends Component {
 
         api.post('/pageFormat/add',newPage)
             .then(response => {
-            console.log(response.data._id)
 
             //add page to platform 
             const addToCat = {
@@ -243,7 +166,6 @@ export default class EditCategory extends Component {
             }
             api.post('/categoryFormat/addToPages',addToCat)
             .then(response => {
-                console.log(response)
                 //updates platform format so page is rendered 
                 
                 // Add 1 to platform's page_length
@@ -270,17 +192,17 @@ export default class EditCategory extends Component {
         var category_format_id = this.props.location.pathname.substring(39);
 
         //need to fix editCategory url and 
-        //console.log(`/editPage/`+ platform_format_id +'/' + category_format_id+'/' + page_id)
         this.props.history.push(`/editPage/`+ platform_format_id +'/' + category_format_id+'/' + page_id);
-        //console.log("editpage pressed")
     }
 
     submitChanges() {
-
+        //Shouldn't be able to save changes if there's no changes to save
+        if(!this.state.has_changes){
+            return;
+        }
         var tempCat = this.state.categoryFormat
         if(tempCat.category_name === "")
         {
-            console.log("NAME IS EMPTY")
             this.setState({showEmptyCatAlert:true})
             return
         }
@@ -293,7 +215,8 @@ export default class EditCategory extends Component {
 
         api.post('/categoryFormat/updateWholeCat',newCat)
         .then(response => {
-            console.log(response)
+            this.setState({has_changes: false, submit_alert: true})
+            setTimeout(() => {this.setState({submit_alert: false})}, 3000)
             })
         .catch(error => {
             console.log(error.response)
@@ -309,11 +232,6 @@ export default class EditCategory extends Component {
         var tempArr = this.state.allPagesInfo
 
         tempArr.splice(this.state.removeIndex,1)
-
-        console.log(tempArr)
-        //console.log(tempArr.splice(ind,1))
-
-        // console.log(tempCategory.pages)
 
         this.setState({allPagesInfo : tempArr,showRemovePageModal:false})
 
@@ -333,8 +251,6 @@ export default class EditCategory extends Component {
 
     previewCategory(){
         //will redirect user to preview Category
-
-        console.log("clicked preview category")
         var platform_format_id = this.props.location.pathname.substring(14,38);
         var category_format_id = this.props.location.pathname.substring(39);
 
@@ -382,12 +298,9 @@ export default class EditCategory extends Component {
                         //grab the id of the platform 
                         var category_format_id = this.props.location.pathname.substring(39);
 
-                        console.log(category_format_id)
-
                         //get specific category format
                         api.get('/categoryFormat/getSpecificCategoryFormat/'+category_format_id)
                         .then(response => {
-                            console.log(response.data)
 							this.setState({categoryFormat:response.data[0]})
 
                             var pagesArray = response.data[0].pages
@@ -395,10 +308,7 @@ export default class EditCategory extends Component {
                             //grab the pages 
                             api.post('/pageFormat/getAllPages',{pages_id:pagesArray})
                             .then(response =>{
-                                
-                                console.log(response)
                                 allPages = response.data
-                                console.log(allPages)
 
                                 this.setState({allPagesInfo:allPages})
                             })
@@ -455,6 +365,15 @@ export default class EditCategory extends Component {
                         <button style={{color: "white", background: "rgb(0,219,0)", padding: "10px", borderRadius: "10px", border: "transparent", fontSize: "20px"}} onClick = {this.submitChanges}>Submit Changes</button>
                     </div>
                 </div>
+                {this.state.submit_alert
+                ?
+                <div style={{color: "rgb(0,219,0", textAlign: "center"}}>
+                    Your changes have successfully been saved!
+                </div>
+                :
+                <p></p>
+                }
+                <Prompt when={this.state.has_changes} message="You have unsaved changes! Are you sure you want to leave this page?" />
                 <Alert style={{width: "25%", textAlign: "center", margin: "auto"}} show = {this.state.showEmptyCatAlert} variant = 'danger'>
                     The Quiz Name can not be empty
                 </Alert>
@@ -465,8 +384,8 @@ export default class EditCategory extends Component {
                 
             </div>
 
-            <div style={{display: "flex", marginLeft: "20%", marginRight: "20%", marginTop: "1%"}}>
-                <div style={{background: "black", width: "45%", borderRadius: "10px"}}>
+            <div style={{display: "flex", marginLeft: "20%", marginRight: "20%", marginTop: "1%", marginBottom: "2%"}}>
+                <div style={{background: "black", width: "45%", borderRadius: "10px", maxHeight: "633px", overflowY: "auto"}}>
                     <div style={{color: "white", fontSize: "25px", padding: "20px 20px 5px 20px", borderBottom: "1px solid rgb(0,219,0)", display: "flex"}}>
                         <div style={{margin: "auto"}}>
                             Pages: 

@@ -567,6 +567,7 @@ export default class TempDashboard extends Component {
         //check if password entered is proper 
         var inputPass = this.state.platformPass
         var plat_id = this.state.usePlatID
+        var temp_recent = this.state.users_recent_platforms;
 
         confirm_access.value = "confirm";
         //grabs the platform 
@@ -581,48 +582,49 @@ export default class TempDashboard extends Component {
             }
             else
             {
+                if (!temp_recent.includes(plat_id)){
+                
+                    temp_recent.unshift(plat_id)
+                    // this.setState({
+                    //     users_recent_platforms: this.state.users_recent_platforms.unshift(plat_id)
+                    // })
 
+                }
+                else {
+                    // console.log("BEFORE", this.state.users_recent_platforms)
+                    // var temp = this.state.users_recent_platforms;
+                    // var index = temp.indexOf(plat_id);
+                    var index = temp_recent.indexOf(plat_id);
+                    temp_recent.splice(index, 1);
+                    temp_recent.unshift(plat_id);
+                    // temp.splice(index, 1);
+                    // temp.unshift(plat_id);
+                    // this.setState({
+                    //     users_recent_platforms: temp
+                    // })
+                    // console.log("AFTER", temp)
+                }
 
-            if (!this.state.users_recent_platforms.includes(plat_id)){
-            
-                this.setState({
-                    users_recent_platforms: this.state.users_recent_platforms.unshift(plat_id)
+                // this.setState({showPrivatePlatModal:false})
+
+                api.post('platformFormat/increment_times_played', {plat_id: plat_id})
+                .then(res2 =>{
+                    api.post('/user/updateRecentlyPlayed/', {userID: this.state.id, recent_platforms: this.state.users_recent_platforms})
+                    .then(res3 => {
+                        this.setState({
+                                users_recent_platforms: temp_recent
+                            })
+                        this.props.history.push("/platform/"+plat_id);
+                    })
+                    .catch(err3 =>{
+                        console.log(err3.response)
+                    })
+                })
+                .catch(err2=>{
+                    console.log(err2.response)
                 })
 
             }
-            else {
-                // console.log("BEFORE", this.state.users_recent_platforms)
-                var temp = this.state.users_recent_platforms;
-                var index = temp.indexOf(plat_id);
-                temp.splice(index, 1);
-                temp.unshift(plat_id);
-                this.setState({
-                    users_recent_platforms: temp
-                })
-                // console.log("AFTER", temp)
-            }
-
-            // this.setState({showPrivatePlatModal:false})
-
-            api.post('platformFormat/increment_times_played', {plat_id: plat_id})
-            .then(res2 =>{
-                api.post('/user/updateRecentlyPlayed/', {userID: this.state.id, recent_platforms: this.state.users_recent_platforms})
-                .then(res3 => {
-                    this.props.history.push("/platform/"+plat_id);
-                })
-                .catch(err3 =>{
-                    console.log(err3.response)
-                })
-            })
-            .catch(err2=>{
-                console.log(err2.response)
-            })
-
-            }
-
-            // this.props.history.push("/platform/"+plat_id);
-
-            // this.setState({showPrivatePlatModal:false})
 
         })
         .catch(err =>{

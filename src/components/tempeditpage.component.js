@@ -7,6 +7,9 @@ import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 import Alert from "react-bootstrap/Alert";
 import LoggedInNav from "./loggedInNav.component";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
+import {Prompt} from "react-router-dom";
 require('dotenv').config();
 
 export default class TempEditPage extends Component {
@@ -69,11 +72,15 @@ export default class TempEditPage extends Component {
             editTimer:'',
             editTimerIndex:0,
             showEmptyPromptTitleAlert:false,
+            showEmptyQuestion: false,
             showEmptyTimerAnswerInputAlert:false,
             showTimerAnswerExistAlert:false,
             showEmptyTimerAnswersAlert:false,
             showEmptyMCCAlert:false,
-            showEmptyMCAAlert:false
+            showEmptyMCAAlert:false,
+            showLessThanTwoAlert: false,
+            has_changes: false,
+            submit_alert: false
         }
     }
 
@@ -148,7 +155,7 @@ export default class TempEditPage extends Component {
         var eVal = e.target.value
         tempPage.page_title = eVal
 
-        this.setState({pageFormat:tempPage,showEmptyPromptTitleAlert:false})
+        this.setState({pageFormat:tempPage, showEmptyQuestion:false, has_changes: true})
     }
 
     changePrompt(e){
@@ -156,16 +163,15 @@ export default class TempEditPage extends Component {
         var eVal = e.target.value
         tempPage.prompt = eVal
 
-        this.setState({pageFormat:tempPage,showEmptyPromptTitleAlert:false})
+        this.setState({pageFormat:tempPage,showEmptyPromptTitleAlert:false, has_changes: true})
     }
 
     changePageType(e){
         var tempPage = this.state.pageFormat
         var eVal = e.target.value
-        console.log(eVal)
         tempPage.type=eVal
 
-        this.setState({pageFormat:tempPage})
+        this.setState({pageFormat:tempPage, has_changes: true})
     }
 
     changeMCC(e,ind) {
@@ -177,7 +183,7 @@ export default class TempEditPage extends Component {
         console.log(eVal,ind)
         tempPage.multiple_choices[ind]=eVal
 
-        this.setState({pageFormat:tempPage,showEmptyMCCAlert:false})
+        this.setState({pageFormat:tempPage,showEmptyMCCAlert:false, has_changes: true})
     }
 
     changeMCA(e) {
@@ -188,7 +194,7 @@ export default class TempEditPage extends Component {
         var eVal = e.target.value
         tempPage.multiple_choice_answer=eVal
 
-        this.setState({pageFormat:tempPage,showEmptyMCAAlert:false})
+        this.setState({pageFormat:tempPage,showEmptyMCAAlert:false, has_changes: true})
 
     }
 
@@ -202,7 +208,7 @@ export default class TempEditPage extends Component {
 
         tempPage.multiple_choices.push("New Choice" +Questions)
 
-        this.setState({pageFormat : tempPage})
+        this.setState({pageFormat : tempPage, has_changes: true})
 
         // const newMCC = {
         //     page_format_id : page_id,
@@ -225,33 +231,13 @@ export default class TempEditPage extends Component {
         var tempPage = this.state.pageFormat
         tempPage.multiple_choices.splice(ind,1)
 
-        this.setState({pageFormat : tempPage})
-        // var mcArray = this.state.pageFormat.multiple_choices;
-        // mcArray.splice(ind,1)
-
-        // console.log(mcArray)
-
-        // const newMCC = {
-        //     pageID : this.state.pageFormat._id,
-        //     newChoices : mcArray
-        // }
-
-        // //call update page name
-        // api.post('/pageFormat/updateMultipleChoiceChoice',newMCC)
-        // .then(response => {
-        //     console.log(response)
-        //     //updates platform format so page is rendered properly
-        //     this.updatePageFormat();
-        // })
-        // .catch(error => {
-        //     console.log(error)
-        // });
+        this.setState({pageFormat : tempPage, has_changes: true})
 
     }
 
     revealModal(ind){
         this.setState({
-            showModal:true
+            showModal:true, showLessThanTwoAlert: false
         })
     }
 
@@ -279,39 +265,12 @@ export default class TempEditPage extends Component {
 
         var tempPage = this.state.pageFormat
         tempPage.matching_pairs[inputP1] = inputP2
-        this.setState({pageFormat:tempPage})
-
-        // var page_id = this.props.location.pathname.substring(60);
-        // inputP1 = "matching_pairs." + inputP1
-
-        // //creating obj to insert into database
-        // var testObj= {};
-
-        // testObj[inputP1] = inputP2
-
-
-        // console.log(inputP1)
-        // const newMP= {
-        //     page_format_id : page_id,
-        //     newPair: testObj
-        // }
-
-        // api.post('/pageFormat/addToMP',newMP)
-        // .then(response => {
-        //     console.log(response)
-        //     //updates page format so page is rendered properly
-        //     this.updatePageFormat();
-        // })
-        // .catch(error => {
-        //     console.log(error)
-        // });
+        this.setState({pageFormat:tempPage, has_changes: true});
 
         this.handleClose()
     }
 
     removeMP(ind) {
-        console.log("inside removeMP")
-        console.log(this.state.pageFormat.matching_pairs)
 
         var tempArr = this.state.pageFormat
 
@@ -324,24 +283,8 @@ export default class TempEditPage extends Component {
 
         console.log(tempArr)
 
-        this.setState({pageFormat:tempArr})
+        this.setState({pageFormat:tempArr, has_changes: true})
 
-        // var page_id = this.props.location.pathname.substring(60);
-
-        // const newMP= {
-        //     pageID : page_id,
-        //     newMatching: tempArr
-        // }
-
-        // api.post('/pageFormat/updateMatchingPair',newMP)
-        // .then(response => {
-        //     console.log(response)
-        //     //updates page format so page is rendered properly
-        //     this.updatePageFormat();
-        // })
-        // .catch(error => {
-        //     console.log(error)
-        // });
 
     }
 
@@ -378,15 +321,15 @@ export default class TempEditPage extends Component {
         //checks if either value is in either keys or value 
         var tempPage = this.state.pageFormat
         var tempArr;
-        if(this.state.editKey === "" || this.state.editVal === "")
+        if(this.state.editKey.trim() === "" || this.state.editVal.trim() === "")
         {
             this.setState({showEmptyAlert2:true})
             return
         }
-        else if (this.state.editKey === this.state.originalKey)
+        else if (this.state.editKey.trim() === this.state.originalKey)
         {
             tempArr = this.state.pageFormat.matching_pairs
-            tempArr[this.state.editKey] = this.state.editVal
+            tempArr[this.state.editKey.trim()] = this.state.editVal.trim()
         }   
         else 
         {
@@ -396,7 +339,7 @@ export default class TempEditPage extends Component {
 
             var convertArr = Object.entries(this.state.pageFormat.matching_pairs)
 
-            convertArr.splice(this.state.editIndex,0,[this.state.editKey,this.state.editVal])
+            convertArr.splice(this.state.editIndex,0,[this.state.editKey.trim(),this.state.editVal.trim()])
 
             var changedArr = Object.fromEntries(convertArr)
 
@@ -627,6 +570,9 @@ export default class TempEditPage extends Component {
     
     submitMC()
     {
+        if(!this.state.has_changes){
+            return;
+        }
         //NEED TO ADD CHECKS FOR ALL THESE FIELDS 
         console.log("SUBMIT MC")
         var tempPage = this.state.pageFormat
@@ -634,16 +580,20 @@ export default class TempEditPage extends Component {
 
         //just check page_title and prompt 
         //check if prompt or page_title are empty 
-        if(tempPage.prompt === "" || tempPage.page_title=== "")
+        if(tempPage.prompt.trim() === "")
         {
-            this.setState({showEmptyPromptTitleAlert:true})
+            this.setState({showEmptyPromptTitleAlert:true});
             return
+        }
+
+        if(tempPage.page_title.trim() == ""){
+            this.setState({showEmptyQuestion: true});
+            return;
         }
 
         //checks if choices are empty 
         for(var i = 0; i <tempPage.multiple_choices.length;i++)
         {
-            console.log(tempPage.multiple_choices)
             if(tempPage.multiple_choices[i] === "")
             {
                 this.setState({showEmptyMCCAlert:true})
@@ -670,7 +620,8 @@ export default class TempEditPage extends Component {
 
         api.post('/pageFormat/updateWholeMCPage',newMCInfo)
         .then(response => {
-            console.log(response)
+            this.setState({has_changes: false, submit_alert: true});
+            setTimeout(() => {this.setState({submit_alert: false})}, 3000);
         })
         .catch(error => {
             console.log(error)
@@ -689,14 +640,27 @@ export default class TempEditPage extends Component {
     }
 
     submitMatching(){
-        console.log("Submit Matching")
+        if(!this.state.has_changes){
+            return;
+        }
+
         var tempPage = this.state.pageFormat
         var page_id = this.props.location.pathname.substring(60)
 
         //check if prompt or page_title are empty 
-        if(tempPage.prompt === "" || tempPage.page_title=== "")
+        if(tempPage.prompt.trim() === "")
         {
             this.setState({showEmptyPromptTitleAlert:true})
+            return
+        }
+
+        if(tempPage.page_title.trim() === ""){
+            this.setState({showEmptyQuestion: true})
+            return
+        }
+
+        if(Object.keys(tempPage.matching_pairs).length < 2){
+            this.setState({showLessThanTwoAlert:true})
             return
         }
 
@@ -704,14 +668,15 @@ export default class TempEditPage extends Component {
         const newMatching = {
             pageID : page_id,
             newType : tempPage.type,
-            newPageTitle : tempPage.page_title,
-            newPrompt : tempPage.prompt,
+            newPageTitle : tempPage.page_title.trim(),
+            newPrompt : tempPage.prompt.trim(),
             newMatchingPairs: tempPage.matching_pairs
         }
 
         api.post('/pageFormat/updateWholeMatchingPage',newMatching)
         .then(response => {
-            console.log(response)
+            this.setState({has_changes: false, submit_alert: true})
+            setTimeout(() => {this.setState({submit_alert: false})}, 3000)
         })
         .catch(error => {
             console.log(error)
@@ -954,8 +919,13 @@ render() {
     return (
         <div>
             <LoggedInNav props={this.props}/>
-            <div style={{margin: "auto", color: "white", fontSize: "30px", borderBottom: "2px solid white", width: "fit-content"}}>
-                Edit Question: 
+            <div style = {{display: "flex"}}>
+                <div style={{marginLeft: "2%"}}>
+                    <button style = {{color: 'white', fontSize: "45px"}} onClick={() =>  this.props.history.push("/editCategory/" + this.props.location.pathname.substring(10,59))} className="x_button"><FontAwesomeIcon icon={faArrowLeft} /></button>
+                </div>
+                <div style={{marginLeft: "40%", color: "rgb(0,219,0)", fontSize: "35px", marginTop: "1%", textDecoration: "underline", textUnderlinePosition: "under", width: "fit-content"}}>
+                    Edit Question: 
+                </div>
             </div>
             {this.state.pageFormat.type === "Multiple Choice"
                 ?
@@ -978,48 +948,61 @@ render() {
                                     <option value="Timer">Timer</option>
                                 </select>
                             </div>
-                            <button style={{margin: "auto", fontSize: "20px", borderRadius: "8px", padding: "5px", background: "white"}} onClick={this.addMCC} disabled = {this.state.pageFormat.multiple_choices.length > 4 ? true : false}>Add Choice</button>
+                            <button style={{margin: "auto", fontSize: "20px", borderRadius: "8px", padding: "5px", background: "white"}} onClick={this.addMCC} disabled = {this.state.pageFormat.multiple_choices.length > 4 ? true : false}>Add New Option</button>
                         </div>
+                        <Prompt when={this.state.has_changes} message="You have unsaved changes! Are you sure you want to leave this page?" />
+                        <Alert style={{textAlign: "center", margin: "auto", width:"fit-content", marginLeft: "16%", fontSize: "20px", marginBottom: "1%"}} show = {this.state.showEmptyQuestion} variant = 'danger'>
+                            The question name cannot be empty
+                        </Alert> 
                         <div style={{background: "#edd2ae", textAlign: "center", marginLeft: "5%", marginRight: "5%", borderRadius: "8px", padding: "5%"}}>
                             <div>
-                                <div style={{display: "flex", justifyContent: "center", marginBottom: "2%", marginRight: "3%"}}>
+                                <Alert style={{textAlign: "center", margin: "auto", width:"fit-content", marginBottom: "1%", fontSize: "20px"}} show = {this.state.showEmptyPromptTitleAlert} variant = 'danger'>
+                                    The question prompt cannot be empty
+                                </Alert> 
+                                <div style={{display: "flex", justifyContent: "center", marginBottom: "2%", marginRight: "1%"}}>
                                     <div style={{marginLeft: "-1%", fontSize: "25px"}}>
                                         Prompt:
                                     </div>
-                                    <input style={{marginLeft: "1%", width: "41%", fontSize: "20px", borderRadius: "8px", padding: "5px"}} type="text" id="changePrompt" value = {this.state.pageFormat.prompt} placeholder= "Enter your multiple choice question: " onChange = {(e)=>this.changePrompt(e)}/>
+                                    <input style={{marginLeft: "1%", width: "40.5%", fontSize: "20px", borderRadius: "8px", padding: "5px"}} type="text" id="changePrompt" value = {this.state.pageFormat.prompt} placeholder= "Enter your multiple choice question: " onChange = {(e)=>this.changePrompt(e)}/>
                                 </div>
                                 <div>
                                     {this.state.pageFormat.multiple_choices.map((choice,index) => (
                                         <div style={{display:"flex", justifyContent: "center", marginTop: "0.5%"}}>
-                                            <div style={{marginLeft: "-1%", fontSize: "20px"}}>
+                                            <div style={{marginLeft: "-1%", fontSize: "25px"}}>
                                                 Incorrect: 
                                             </div>
-                                            <input style={{marginLeft: "1%", width: "40%", fontSize: "15px", borderRadius: "8px", padding: "5px"}} type="text" id={"changeMCC"+ index} value = {choice} onChange = {(e)=>this.changeMCC(e,index)}/>
+                                            <input style={{marginLeft: "1%", width: "40%", fontSize: "20px", borderRadius: "8px", padding: "5px"}} type="text" id={"changeMCC"+ index} value = {choice} onChange = {(e)=>this.changeMCC(e,index)}/>
                                             <button style = {{background: "red", border: "transparent", borderRadius: "8px", marginLeft: "1%"}} onClick={()=>this.removeMCC(index)} disabled = {this.state.pageFormat.multiple_choices.length < 2 ? true : false}>X</button>
                                         </div>
                                     ))}
                                 </div>
+                                <Alert style={{textAlign: "center", width: "fit-content", margin: "auto", marginTop: "1%", fontSize: "20px"}} show = {this.state.showEmptyMCCAlert} variant = 'danger'>
+                                    The incorrect options cannot be empty 
+                                </Alert>  
                                 <div style={{display: "flex", justifyContent: "center", marginTop: "2%", marginRight: "7%"}}>
-                                    <div style={{marginLeft: "-1%", fontSize: "20px"}}>
+                                    <div style={{marginLeft: "-1%", fontSize: "25px"}}>
                                         Correct Answer: 
                                     </div>
-                                    <input style={{marginLeft: "1%", width: "43%", fontSize: "15px", borderRadius: "8px", padding: "5px"}} type="text" id="changeMCA" value = {this.state.pageFormat.multiple_choice_answer} onChange = {(e)=> this.changeMCA(e)}/>
+                                    <input style={{marginLeft: "1%", width: "43%", fontSize: "20px", borderRadius: "8px", padding: "5px"}} type="text" id="changeMCA" value = {this.state.pageFormat.multiple_choice_answer} onChange = {(e)=> this.changeMCA(e)}/>
                                 </div>
                             </div>
-                            <div>
-                            <Alert show = {this.state.showEmptyPromptTitleAlert} variant = 'danger'>
-                                The question name or prompt can not be empty
-                            </Alert>           
-                            <Alert show = {this.state.showEmptyMCCAlert} variant = 'danger'>
-                                The choices can not be empty 
-                            </Alert>      
-                            <Alert show = {this.state.showEmptyMCAAlert} variant = 'danger'>
-                                The answer can not be empty
+                            <div>         
+                            <Alert style={{textAlign: "center", width: "fit-content", margin: "auto", marginTop: "1%", fontSize: "20px"}} show = {this.state.showEmptyMCAAlert} variant = 'danger'>
+                                The correct answer cannot be empty
                             </Alert>      
                             </div>
-                            <div>
-                                <button onClick={this.submitMC}>Submit Changes</button>
-                            </div>
+                            
+                        </div>
+                        {this.state.submit_alert
+                            ?
+                                <div style={{color: "rgb(0,219,0", textAlign: "center", marginTop: "1%"}}>
+                                    Your changes have successfully been saved!
+                                </div>
+                            :
+                                <p></p>
+                            }
+                        <div style={{marginTop: "2%", marginBottom: "2%", textAlignLast: "center"}}>
+                            <button style={{color: "white", background: "rgb(0,219,0)", padding: "10px", borderRadius: "10px", border: "transparent", fontSize: "20px"}} onClick={this.submitMC}>Submit Changes</button>
                         </div>
                     </div>
                 :
@@ -1048,28 +1031,22 @@ render() {
                                 </div>
                                 <div style={{background: "#edd2ae", marginLeft: "5%", marginRight: "5%", borderRadius: "8px", padding: "2% 5% 5% 5%"}}>
                                     <div style={{display: "flex", flexWrap: "wrap"}}>
-                                        <div style={{marginLeft: "auto", fontSize: "25px", marginTop: "2%"}}>
+                                        <div style={{fontSize: "25px", marginTop: "2%"}}>
                                             Prompt:
                                         </div>
                                         {this.state.fibArray.map((input,index) => (
                                             (index %2 === 0    
                                             ?
                                                 <div style={{maxWidth: "325px", marginRight: "2%", marginTop: "2%"}}>
-                                                    <input style={{width: "-webkit-fill-available", fontSize: "15px", borderRadius: "8px", padding: "5px", marginLeft: "3%"}} type="text" id={"fibInput"+index} value = {input} placeholder = "If needed, enter your prompt here:" onChange = {() => this.updateFIBInput(index)} size={50}></input>
+                                                    <input style={{width: "-webkit-fill-available", fontSize: "20px", borderRadius: "8px", padding: "5px", marginLeft: "3%"}} type="text" id={"fibInput"+index} value = {input} placeholder = "If needed, enter your prompt here:" onChange = {() => this.updateFIBInput(index)} size={50}></input>
                                                 </div>
                                             :
                                                 <div style={{display: "flex", maxWidth: "195px", marginRight: "2%", marginTop: "2%"}}>
-                                                    <input type="text" id={"fibInput"+index} style={{borderColor: "red", width: "-webkit-fill-available", fontSize: "15px", borderRadius: "8px", padding: "5px"}} placeholder = "Answer is required: " value = {input} onChange = {() => this.updateFIBInput(index)} size={50}></input>
+                                                    <input type="text" id={"fibInput"+index} style={{borderColor: "red", width: "-webkit-fill-available", fontSize: "20px", borderRadius: "8px", padding: "5px"}} placeholder = "Answer is required: " value = {input} onChange = {() => this.updateFIBInput(index)} size={50}></input>
                                                     <button style = {{background: "red", border: "transparent", borderRadius: "8px", marginLeft: "1%"}} onClick={()=>this.removeFIB(index)} disabled = {this.state.fibArray.length < 4 ? true : false}>X</button>
                                                 </div>
                                             )
                                         ))}
-                                        {/* <Alert show = {this.state.showEmptyAlert3} variant = 'danger'>
-                                            The text fields can not be empty
-                                        </Alert>
-                                        <Alert show = {this.state.showBothEndsAlert} variant = 'danger'>
-                                            Front and End Prompt can not be empty when there is only one blank 
-                                        </Alert> */}
                                     </div> 
                                     <Alert show = {this.state.showEmptyPromptTitleAlert} variant = 'danger'>
                                         The Question Name can not be empty
@@ -1081,8 +1058,9 @@ render() {
                                         Front and End Prompt can not be empty when there is only one blank 
                                     </Alert>
                                 </div>
-                                <div style={{textAlign: "center", marginTop: "4%"}}>
-                                    <button className="continue_button_correct" onClick={this.submitFIB}>Save Changes</button>
+                                <Prompt when={this.state.has_changes} message="You have unsaved changes! Are you sure you want to leave this page?" />
+                                <div style={{textAlign: "center", marginTop: "2%"}}>
+                                    <button style={{color: "white", background: "rgb(0,219,0)", padding: "10px", borderRadius: "10px", border: "transparent", fontSize: "20px"}} onClick={this.submitFIB}>Submit Changes</button>
                                 </div>
 
                         </div>
@@ -1110,10 +1088,17 @@ render() {
                                             <option value="Timer">Timer</option>
                                         </select>
                                     </div>
-                                    <button style={{margin: "auto", fontSize: "20px", borderRadius: "8px", padding: "5px", background: "white"}} onClick={this.revealModal} disabled = {Object.keys(this.state.pageFormat.matching_pairs).length > 10 ? true : false}>Add Pair</button>
+                                    <button style={{margin: "auto", fontSize: "20px", borderRadius: "8px", padding: "5px", background: "white"}} onClick={this.revealModal} disabled = {Object.keys(this.state.pageFormat.matching_pairs).length > 10 ? true : false}>Add New Pair</button>
                                 </div>
-                                <div style={{background: "#edd2ae", textAlign: "center", marginLeft: "5%", marginRight: "5%", marginBottom: "5%", borderRadius: "8px", padding: "5%"}}>
+                                <Prompt when={this.state.has_changes} message="You have unsaved changes! Are you sure you want to leave this page?" />
+                                <Alert style={{textAlign: "center", marginLeft: "16%", fontSize: "20px", width: "fit-content"}} show = {this.state.showEmptyQuestion} variant = 'danger'>
+                                    The question name cannot be empty
+                                </Alert>
+                                <div style={{background: "#edd2ae", textAlign: "center", marginLeft: "5%", marginRight: "5%", marginBottom: "2%", borderRadius: "8px", padding: "5%"}}>
                                     <div>
+                                        <Alert style={{textAlign: "center", margin: "auto", marginBottom: "1%", fontSize: "20px", width: "fit-content"}} show = {this.state.showEmptyPromptTitleAlert} variant = 'danger'>
+                                            The question prompt cannot be empty
+                                        </Alert>
                                         <div style={{display: "flex", justifyContent: "center", marginBottom: "5%", marginRight: "3%"}}>
                                             <div style={{marginLeft: "-1%", fontSize: "25px"}}>
                                                 Prompt:
@@ -1123,7 +1108,7 @@ render() {
                                         <div style={{background: "white", width: "50%", margin: "auto", padding: "3%", borderRadius: "8px", border: "2px solid"}}>
                                             <div style={{width: "max-content", margin: "auto"}}>
                                                 {Object.keys(this.state.pageFormat.matching_pairs).map((key,index) => (
-                                                    <div style={{display: "flex"}}>
+                                                    <div style={{display: "flex", fontSize: "20px"}}>
                                                         <div style={{display: "flex"}}>
                                                             <p style={{background: "white", padding: "5px", borderRadius: "8px", marginLeft: "-5%", border: "1px solid"}}>
                                                                 {key}
@@ -1140,15 +1125,21 @@ render() {
                                                 ))}
                                             </div>
                                         </div>
+                                        <Alert style={{textAlign: "center", width: "fit-content", margin: "auto", marginTop: "1%", fontSize: "20px"}} show = {this.state.showLessThanTwoAlert} variant = 'danger'>
+                                            A minimum of two unique pairs is required
+                                        </Alert> 
                                     </div>
                                 </div>
-                                <div>
-                                    <Alert show = {this.state.showEmptyPromptTitleAlert} variant = 'danger'>
-                                        The text fields can not be empty
-                                    </Alert>        
-                                </div>           
-                                <div>
-                                    <button onClick= {this.submitMatching}>Submit Changes</button>
+                                {this.state.submit_alert
+                                ?
+                                <div style={{color: "rgb(0,219,0", textAlign: "center", marginBottom: "1%"}}>
+                                    Your changes have successfully been saved!
+                                </div>
+                                :
+                                <p></p>
+                                }
+                                <div style={{textAlignLast: "center", marginBottom: "1%"}}>
+                                    <button style={{color: "white", background: "rgb(0,219,0)", padding: "10px", borderRadius: "10px", border: "transparent", fontSize: "20px"}} onClick= {this.submitMatching}>Submit Changes</button>
                                 </div>
                                    
                                 
@@ -1165,7 +1156,7 @@ render() {
                                         <label style = {{color: "black"}}>Pair Value 2:</label>
                                         <input type = "text" style = {{width: "90%", borderColor: "black"}} className = "form-control" id = "inputpair2" placeholder = "Enter Pair 2" required/>
                                     </div>
-                                    <Alert show = {this.state.showEmptyAlert} variant = 'danger'>
+                                    <Alert style={{textAlign: "center"}} show = {this.state.showEmptyAlert} variant = 'danger'>
                                         The text fields can not be empty
                                     </Alert>
                                 </Modal.Body>
@@ -1192,7 +1183,7 @@ render() {
                                             <label style = {{color: "black"}}>Edit Value 2:</label>
                                             <input type = "text" style = {{width: "90%", borderColor: "black"}} id = "inputedit2" value={this.state.editVal} onChange = {e => this.changeEditVal(e.target.value)} required/>
                                         </div>
-                                        <Alert show = {this.state.showEmptyAlert2} variant = 'danger'>
+                                        <Alert style={{textAlign: "center"}} show = {this.state.showEmptyAlert2} variant = 'danger'>
                                             The text fields can not be empty
                                         </Alert>
                                     </Modal.Body>
@@ -1298,7 +1289,7 @@ render() {
                             </div>
                             :
                                 <div >
-                                    <p>IMPOSSIBLE</p>
+                                    <p></p>
                                 </div>
                             )
                         )
