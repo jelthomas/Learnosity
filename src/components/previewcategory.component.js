@@ -27,9 +27,9 @@ export default class PreviewCategory extends Component {
         this.submitMatching = this.submitMatching.bind(this);
         this.startTimer = this.startTimer.bind(this);
         this.timer_finished = this.timer_finished.bind(this);
-        // this.timer_submit = this.timer_submit.bind(this);
         this.timer_answer = this.timer_answer.bind(this);
         this.missed_answers = this.missed_answers.bind(this);
+        this.escFunction = this.escFunction.bind(this);
 
         this.state = {
             user_id: '',
@@ -61,6 +61,10 @@ export default class PreviewCategory extends Component {
             clock_finished: false,
             status: ''
         }
+    }
+
+    componentWillUnmount(){
+        document.removeEventListener("keydown", this.escFunction, false);
     }
 
 
@@ -113,7 +117,15 @@ export default class PreviewCategory extends Component {
         }
     }
 
+    escFunction(event){
+        if(event.keyCode === 27) {
+            this.props.history.push("/editCategory/" + this.state.plat_id+ "/"+this.state.cat_id)
+        }
+      }
+
     componentDidMount(){
+        document.addEventListener("keydown", this.escFunction, false);
+
         var token = localStorage.getItem('usertoken');
         var validToken = false;
         if(token){
@@ -141,9 +153,9 @@ export default class PreviewCategory extends Component {
                         //Valid user
                         var user_id = response.data._id;
 
-                        var platform_format_id = this.props.location.pathname.substring(17,41);
+                        var platform_format_id = this.props.location.pathname.substring(13,37);
 
-                        var category_format_id = this.props.location.pathname.substring(42);
+                        var category_format_id = this.props.location.pathname.substring(38);
 
                         console.log(platform_format_id)
                         console.log(category_format_id)

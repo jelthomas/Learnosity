@@ -8,7 +8,7 @@ import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import LoggedInNav from "./loggedInNav.component";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { faPlus, faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 import { faEyeSlash} from "@fortawesome/free-regular-svg-icons";
 require('dotenv').config();
 
@@ -107,12 +107,10 @@ export default class EditPlatform extends Component {
 
 
     addCategoryToPlatform(){
-        console.log("Start of addcategory");
 
         // Increment total page length of platform
         api.post('/platformFormat/increment_pages_length_by', {plat_id: this.state.platformFormat._id, inc: 1})
         .then(temp =>{
-            console.log("MADE IT!");
         });
 
         //add page to category
@@ -135,10 +133,9 @@ export default class EditPlatform extends Component {
 
         api.post('/pageFormat/add',newPage)
         .then(response => {
-            console.log("Created page!");
             //create category
             const newCategory= {
-                cat_name:"Default Category",
+                cat_name:"Default Quiz",
                 platform_id : this.props.location.pathname.substring(14),
                 cat_photo:"",
                 pages : [response.data._id]
@@ -146,7 +143,6 @@ export default class EditPlatform extends Component {
             //create category in database
             api.post('/categoryFormat/add',newCategory)
             .then(res => {
-                console.log("Created category format!");
                 //add category to platform 
                 const addToCat = {
                     platform_format_id:pf_id,
@@ -155,9 +151,6 @@ export default class EditPlatform extends Component {
                 api.post('/platformFormat/addToCategories',addToCat)
                 .then(res2 => {
                     //updates platform format so page is rendered properly
-                    console.log("Returned from backend");
-                    console.log("Response:");
-                    console.log(res2);
                     this.updateAllCategoryInfo();
                     this.setState({showEmptyCategoryAlert:false})
                     })
@@ -265,7 +258,13 @@ export default class EditPlatform extends Component {
         var publishVal = document.getElementById('publish').value
        
         if(publishVal === "false")
-        {
+        {   
+            //Remove from users recent array
+            api.post('/user/remove_from_recently_played', {platform_format_id: tempPlat._id})
+            .then(res => {
+            })
+            .catch(err => console.log(err));
+
             tempPlat.is_published = false
         }
         else
@@ -364,9 +363,6 @@ export default class EditPlatform extends Component {
         .then(pages => {
             var page_length = pages.data.pages.length;
             var all_pages = pages.data.pages;
-            console.log("Pages to be removed");
-            console.log(all_pages);
-
             //Decrement page_length by page_length
              api.post('platformFormat/increment_pages_length_by', {plat_id: tempPlat._id, inc: -page_length})
             .then(temp => {
@@ -376,17 +372,15 @@ export default class EditPlatform extends Component {
                     //Remove the category format ID from the platform format array of categories
                     api.post('/platformFormat/removeCategory',removeCat)
                     .then(temp2 =>{
-                        console.log("Removed from platform format array");
                         
                         //Remove all category datas associated with this category
                         api.post('/categoryData/removeCategoryDatas', {category_format_id: removeCat.category_format_id})
                         .then(temp3 =>{
-                            console.log("Removed category data");
                             
                             //Remove the category format schema
                             api.post('/categoryFormat/removeCategoryFormat', {category_format_id: removeCat.category_format_id})
                             .then(temp4 =>{
-                                console.log("Removed category format");
+                             
                             })
                             .catch(error => {
                                 console.log(error.response)
@@ -419,8 +413,6 @@ export default class EditPlatform extends Component {
         api.post('/categoryFormat/getAllCategories', {categories_id: deletePlat.category_format_ids})
         .then(categories => {
             var all_categories = categories.data;
-            console.log("All categories: ");
-            console.log(all_categories);
 
             var all_pages = [];
 
@@ -428,9 +420,6 @@ export default class EditPlatform extends Component {
                 var categorys_pages = all_categories[i].pages;
                 all_pages = all_pages.concat(categorys_pages);
             }
-
-            console.log("All pages: ");
-            console.log(all_pages);
 
             api.post('/pageFormat/delete_all_pages', {all_pages: all_pages})
             .then(temp =>{
@@ -554,8 +543,13 @@ render() {
     return (
         <div>
             <LoggedInNav props={this.props}/>
-            <div style={{textAlign: "center", color: "rgb(0,219,0)", textDecoration: "underline", fontSize: "35px", marginTop: "1%"}}>
-                Edit Your Platform
+            <div style = {{display: "flex"}}>
+                <div style={{marginLeft: "2%"}}>
+                    <button style = {{color: 'white', fontSize: "45px"}} onClick={() =>  this.props.history.push("/myplatforms/")} className="x_button"><FontAwesomeIcon icon={faArrowLeft} /></button>
+                </div>
+                <div style={{marginLeft: "38%", color: "rgb(0,219,0)", textDecoration: "underline", fontSize: "35px", marginTop: "1%"}}>
+                    Edit Your Platform
+                </div>
             </div>
             <div style={{background: "black", marginLeft: "20%", marginRight: "20%", marginTop: "3%", height: "auto", borderRadius: "10px", padding: "20px"}}>
                 <div style={{display: "flex", justifyContent: "center", marginBottom: "2%"}}>
@@ -564,8 +558,8 @@ render() {
                     </div>
                     <input style={{width: "250px", borderRadius: "10px"}} type="text" id="changePlatName" value = {this.state.platformFormat.plat_name} onChange = {(e)=>this.changePlatName(e)} /> 
                 </div>
-                <Alert style={{width: "25%", textAlign: "center", margin: "auto"}} show = {this.state.showEmptyPlatAlert} variant = 'danger'>
-                    The plat name can not be empty !
+                <Alert style={{width: "28%", textAlign: "center", margin: "auto"}} show = {this.state.showEmptyPlatAlert} variant = 'danger'>
+                    The Platform name can not be empty !
                 </Alert>
                 <div style={{display: "flex", justifyContent: "center", marginTop: "3%", marginBottom: "3%"}}>
                     <div style={{fontSize: "25px", color: "white", marginRight: "1%"}}>
@@ -608,7 +602,7 @@ render() {
                             Quizzes: 
                         </div>
                         <div>
-                            <button style={{color: "white", border: "transparent", borderRadius: "25px", background: "blue"}} onClick={this.addCategoryToPlatform}><FontAwesomeIcon icon={faPlus} /></button>
+                            <button style={{color: "white", border: "transparent", borderRadius: "25px", background: "blue", fontSize: "20px"}} onClick={this.addCategoryToPlatform}><FontAwesomeIcon icon={faPlus} /></button>
                         </div>
                     </div>
                     <div style={{padding: "20px"}}>

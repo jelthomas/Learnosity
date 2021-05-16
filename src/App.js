@@ -36,7 +36,7 @@ function App() {
         <Route path="/editplatform/:id" component = {EditPlatform}/>
         <Route path="/editcategory/:id/:id" component = {EditCategory}/>
         <Route path="/editpage/:id/:id/:id" component = {TempEditPage}/>
-        <Route path="/previewcategory/:id/:id" component = {PreviewCategory}/>
+        <Route path="/previewquiz/:id/:id" component = {PreviewCategory}/>
         <Route path="/settings" component = {Settings}/>
       </div>
     </Router>

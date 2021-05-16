@@ -10,6 +10,10 @@ import DefaultCoverPhoto from "../images/defaultCoverPhoto.png"
 import Alert from "react-bootstrap/Alert";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
+import LoggedInNav from "./loggedInNav.component";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPlus, faArrowLeft } from "@fortawesome/free-solid-svg-icons";
+import { faEyeSlash} from "@fortawesome/free-regular-svg-icons";
 require('dotenv').config();
 
 
@@ -334,7 +338,7 @@ export default class EditCategory extends Component {
         var platform_format_id = this.props.location.pathname.substring(14,38);
         var category_format_id = this.props.location.pathname.substring(39);
 
-        this.props.history.push(`/previewcategory/`+ platform_format_id +'/' + category_format_id);
+        this.props.history.push(`/previewquiz/`+ platform_format_id +'/' + category_format_id);
     } 
 
     revealRemovePage(id,name,ind){
@@ -432,59 +436,111 @@ export default class EditCategory extends Component {
         
         return (
             <div>
-                <input type="text" id="changeCategoryName" value = {this.state.categoryFormat.category_name} onChange = {(e)=>this.changeCatName(e)}/> 
-                <button onClick={this.addPageToCategory}>Add Page</button>
-                <img  
-                src={this.state.categoryFormat.category_photo === "" ? DefaultCoverPhoto : this.state.categoryFormat.category_photo} 
-                width = {200}
-                alt="coverphoto"
-                />
-                <div className="input-group mb-3">
-                    <div className="custom-file">
-                    <input
-                        type="file"
-                        id="inputGroupFile01"
-                        accept="image/*"
-                        onChange={this.setCategoryPhoto}
-                    />
-                    {/* <label className="custom-file-label" htmlFor="inputGroupFile01">
-                        {this.state.fileName === "" ? "Choose an image file" : this.state.fileName}
-                    </label> */}
+            <LoggedInNav props={this.props}/>
+            <div style = {{display: "flex"}}>
+                <div style={{marginLeft: "2%"}}>
+                    <button style = {{color: 'white', fontSize: "45px"}} onClick={() =>  this.props.history.push("/editplatform/" + this.props.location.pathname.substring(14,38))} className="x_button"><FontAwesomeIcon icon={faArrowLeft} /></button>
+                </div>
+                <div style={{marginLeft: "41%", color: "rgb(0,219,0)", textDecoration: "underline", fontSize: "35px", marginTop: "1%", textUnderlinePosition: "under"}}>
+                    Edit Quiz
+                </div>
+            </div>
+            <div style={{background: "black", marginLeft: "20%", marginRight: "20%", marginTop: "3%", height: "auto", borderRadius: "10px", padding: "20px"}}>
+                <div style={{display: "flex", justifyContent: "center", marginBottom: "2%"}}>
+                    <div style={{fontSize: "25px", color: "white", marginRight: "2%"}}>
+                        Enter Quiz Name: 
+                    </div>
+                    <input type="text" id="changeCategoryName" style={{width: "250px", borderRadius: "10px"}} value = {this.state.categoryFormat.category_name} onChange = {(e)=>this.changeCatName(e)}/> 
+                    <div style={{marginLeft: "2%"}}>
+                        <button style={{color: "white", background: "rgb(0,219,0)", padding: "10px", borderRadius: "10px", border: "transparent", fontSize: "20px"}} onClick = {this.submitChanges}>Submit Changes</button>
                     </div>
                 </div>
-                <Alert show = {this.state.showEmptyCatAlert} variant = 'danger'>
-                The Category Name can not be empty
+                <Alert style={{width: "25%", textAlign: "center", margin: "auto"}} show = {this.state.showEmptyCatAlert} variant = 'danger'>
+                    The Quiz Name can not be empty
                 </Alert>
-                <button onClick = {this.submitChanges}>Submit Changes</button>
-                <button onClick ={this.previewCategory} disabled = {this.state.allPagesInfo.length < 1 ? true : false}>Preview Category</button>
-                <div>
-                {this.state.allPagesInfo.map((page,index) => (
-                    <div>
-                    <button onClick={() => this.editPage(page._id)}>{page.page_title}</button>
-                    <button onClick= {() => this.revealRemovePage(page._id,page.page_title,index)} disabled = {this.state.allPagesInfo.length < 2 ? true : false}>X</button>
-                    </div>
-                ))}
+                <div style={{display: "flex", justifyContent: "center", marginTop: "3%", marginBottom: "3%"}}>
+                    <button style={{color: "black", padding: "10px", borderRadius: "10px", border: "transparent", fontSize: "20px"}} onClick = {this.previewCategory}>Preview this Quiz</button>
                 </div>
-                <Modal
+                
+                
+            </div>
+
+            <div style={{display: "flex", marginLeft: "20%", marginRight: "20%", marginTop: "1%"}}>
+                <div style={{background: "black", width: "45%", borderRadius: "10px"}}>
+                    <div style={{color: "white", fontSize: "25px", padding: "20px 20px 5px 20px", borderBottom: "1px solid rgb(0,219,0)", display: "flex"}}>
+                        <div style={{margin: "auto"}}>
+                            Pages: 
+                        </div>
+                        <div>
+                            <button style={{color: "white", border: "transparent", borderRadius: "25px", background: "blue", fontSize: "20px"}} onClick={this.addPageToCategory}><FontAwesomeIcon icon={faPlus} /></button>
+                        </div>
+                    </div>
+
+                    <div style={{padding: "20px"}}>
+                        {this.state.allPagesInfo.map((page,index) => (
+                            <div style={{display: "flex"}}>
+                                <div style={{fontSize: "20px", padding: "5px"}}>
+                                    <button style={{borderRadius: "10px", padding: "5px 15px 5px 15px"}} onClick={() => this.editPage(page._id)}>{page.page_title}</button>
+                                </div>
+                                <div style={{marginLeft: "auto", fontSize: "20px", marginTop: "auto", marginBottom: "auto"}}>
+                                    <button style={{color: "red", border: "transparent", background: "transparent"}} onClick= {() => this.revealRemovePage(page._id,page.page_title,index)} disabled = {this.state.allPagesInfo.length < 2 ? true : false}>X</button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+                            
+                <div style={{background: "black", width: "fit-content", borderRadius: "10px", marginLeft: "auto"}}>
+                    <div style={{color: "white", fontSize: "25px", padding: "20px 20px 5px 20px", borderBottom: "1px solid rgb(0,219,0)", display: "flex"}}>
+                        <div style={{margin: "auto"}}>
+                            Select a Cover Photo: 
+                        </div>
+                    </div>
+                    <div style={{padding: "20px"}}>
+                    <img  
+                        src={this.state.categoryFormat.category_photo === "" ? DefaultCoverPhoto : this.state.categoryFormat.category_photo} 
+                        width = {500} height = {400}
+                        alt="coverphoto"
+                        />
+                        <div className="input-group mb-3" style={{marginTop: "15%"}}>
+                            <div className="custom-file">
+                            <input style={{color: "white", width: "100%", textAlignLast: "center"}}
+                                type="file"
+                                id="inputGroupFile01"
+                                accept="image/*"
+                                onChange={this.setCategoryPhoto}
+                            />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            
+            
+            <Modal
                 show={this.state.showRemovePageModal}
                 onHide={this.handleRemovePageClose}
                 backdrop="static"
                 keyboard={false}
-                >
+            >
+           
                 <Modal.Header closeButton>
                     <Modal.Title>Delete Page</Modal.Title>
                 </Modal.Header>
+
                 <Modal.Body>
-                    Are you sure you want to delete the page {this.state.removeName}?
+                    Are you sure you wish to delete the page {this.state.removeName}?
                 </Modal.Body>
+
                 <Modal.Footer>
-                <Button variant="secondary" onClick={this.handleRemovePageClose}>
-                    Cancel
-                </Button>
-                <Button variant="primary" onClick = {this.removePage}>Confirm</Button>
+                    <Button variant="secondary" onClick={this.handleRemovePageClose}>
+                        Cancel
+                    </Button>
+                    <Button variant="primary" onClick = {this.removePage}>Confirm</Button>
                 </Modal.Footer>
-                </Modal>
-            </div>
+            </Modal>
+        </div>
         )
     }
 }
