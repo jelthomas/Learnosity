@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import {Prompt} from "react-router-dom";
 import {api} from "../axios_api.js";
 import jwt from 'jsonwebtoken';
 import jwt_decode from 'jwt-decode';
@@ -47,7 +48,9 @@ export default class EditPlatform extends Component {
             showRemoveCategoryModal:false,
             removeId:'',
             removeIndex:'',
-            removeName:''
+            removeName:'',
+            has_changes: false,
+            submit_alert: false
         }
     }
 
@@ -247,7 +250,7 @@ export default class EditPlatform extends Component {
         }
         
 
-        this.setState({platformFormat : tempPlat})
+        this.setState({platformFormat : tempPlat, has_changes: true})
 
     }
 
@@ -272,7 +275,7 @@ export default class EditPlatform extends Component {
             tempPlat.is_published = true
         }
 
-        this.setState({platformFormat : tempPlat})
+        this.setState({platformFormat : tempPlat, has_changes: true})
 
     }
 
@@ -283,7 +286,7 @@ export default class EditPlatform extends Component {
 
         tempPlat.plat_name = eVal
 
-        this.setState({platformFormat:tempPlat,showEmptyPlatAlert:false})
+        this.setState({platformFormat:tempPlat,showEmptyPlatAlert:false, has_changes: true})
 
     }
 
@@ -293,7 +296,7 @@ export default class EditPlatform extends Component {
 
         tempPlat.privacy_password = eVal
 
-        this.setState({platformFormat : tempPlat})
+        this.setState({platformFormat : tempPlat, has_changes: true})
    
     }
 
@@ -306,6 +309,9 @@ export default class EditPlatform extends Component {
     }
 
     submitChanges(){
+        if(!this.state.has_changes){
+            return;
+        }
         var tempPlat = this.state.platformFormat
         //check the inputs and gives back alerts if there are issues 
         if(tempPlat.plat_name.trim() === "")
@@ -337,6 +343,8 @@ export default class EditPlatform extends Component {
 
         api.post('/platformFormat/updateWholePlat',newPlat)
         .then(response => {
+            this.setState({has_changes: false, submit_alert: true})
+            setTimeout(() => {this.setState({submit_alert: false})}, 3000)
             })
         .catch(error => {
             console.log(error.response)
@@ -590,13 +598,22 @@ render() {
                 <Alert style={{width: "40%", textAlign: "center", margin: "auto"}} show = {this.state.showEmptyCategoryAlert} variant = 'danger'>
                      A Platform requires at least one quiz
                 </Alert>
+                <Prompt when={this.state.has_changes} message="You have unsaved changes! Are you sure you want to leave this page?" />
                 <div style={{display: "flex", justifyContent: "center", marginTop: "3%", marginBottom: "3%"}}>
                     <button style={{color: "white", background: "rgb(0,219,0)", padding: "10px", borderRadius: "10px", border: "transparent", fontSize: "20px"}} onClick = {this.submitChanges}>Submit Changes</button>
                 </div>
+                {this.state.submit_alert
+                ?
+                <div style={{color: "rgb(0,219,0", textAlign: "center"}}>
+                    Your changes have successfully been saved!
+                </div>
+                :
+                <p></p>
+                }
             </div>
 
             <div style={{display: "flex", marginLeft: "20%", marginRight: "20%", marginTop: "1%"}}>
-                <div style={{background: "black", width: "45%", borderRadius: "10px"}}>
+                <div style={{background: "black", width: "45%", borderRadius: "10px", maxHeight: "633px", overflowY: "auto"}}>
                     <div style={{color: "white", fontSize: "25px", padding: "20px 20px 5px 20px", borderBottom: "1px solid rgb(0,219,0)", display: "flex"}}>
                         <div style={{margin: "auto"}}>
                             Quizzes: 

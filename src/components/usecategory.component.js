@@ -11,7 +11,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFlag, faCheckCircle, faTimesCircle } from "@fortawesome/free-regular-svg-icons";
 import Timer from "./timer.component";
 import UIfx from 'uifx';
-import bellAudio from '../correct.mp3'
+import bellAudio from '../correct.mp3';
+import Modal from "react-bootstrap/Modal";
+import Button from "react-bootstrap/Button";
+import Alert from "react-bootstrap/Alert";
 
 const bell = new UIfx(
     bellAudio,
@@ -39,6 +42,10 @@ export default class UseCategory extends Component {
         this.timer_answer = this.timer_answer.bind(this);
         this.missed_answers = this.missed_answers.bind(this);
         this.escFunction = this.escFunction.bind(this);
+        this.revealReportModal = this.revealReportModal.bind(this);
+        this.handleReportClose = this.handleReportClose.bind(this);
+        this.updateReportMessage = this.updateReportMessage.bind(this);
+        this.handleSubmitReport = this.handleSubmitReport.bind(this);
 
         this.state = {
             user_id: '',
@@ -67,8 +74,34 @@ export default class UseCategory extends Component {
             clock_started: false,
             clock_finished: false,
             status: '',
-            experience: 0
+            experience: 0,
+            reportMessage:'',
+            showReportModal : false,
+            showEmptyReportAlert: false
         }
+    }
+
+    revealReportModal() {
+        this.setState({showReportModal:true})
+    }
+    handleReportClose() {
+        this.setState({showReportModal:false,reportMessage:''})
+    }
+    
+    updateReportMessage(e){
+        var eVal = e.target.value
+        this.setState({reportMessage:eVal})
+    }
+    
+    handleSubmitReport(){
+        console.log(this.state.reportMessage);
+        //check the value of reportMessage
+        
+        //change alert boolean and return if it doesnt meet conditions 
+        
+        //sending report to proper email 
+
+        this.handleReportClose();
     }
 
     escFunction(event){
@@ -122,7 +155,12 @@ export default class UseCategory extends Component {
         if(answered_correctly){
             //Set state and clear input value
             input.value = '';
-            this.setState({user_timer_answers: users_answers.concat(add_to_user_timer_answers)})
+            users_answers = users_answers.concat(add_to_user_timer_answers)
+            var completed = false;
+            if(users_answers.length === correct_answers.length){
+                completed = true;
+            }
+            this.setState({user_timer_answers: users_answers, clock_finished: completed})
         }
     }
 
@@ -864,6 +902,29 @@ export default class UseCategory extends Component {
                 <div>
                     <button onClick={() => this.props.history.push("/platform/" + plat_id)} className="x_button">X</button>
                 </div>
+                <Modal show={this.state.showReportModal} onHide={this.handleReportClose} backdrop="static" keyboard={true}>
+                    <Modal.Header closeButton>
+                        <Modal.Title>Report this question</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <div className = "form-group" style={{marginLeft: "10%"}}>
+                            <label style = {{color: "black"}}>Reason for reporting:</label>
+                            <textarea rows="4" cols="50" style = {{width: "90%", borderColor: "black"}} className = "form-control" value = {this.state.reportMessage} id = "reportInput" onChange = {(e)=>this.updateReportMessage(e)} required/>
+                        </div>
+                        <Alert show = {this.state.showEmptyReportAlert} variant = 'danger'>
+                            The text field can not be empty
+                        </Alert>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button variant="secondary" onClick={this.handleReportClose}>
+                            Close
+                        </Button>
+                        <Button variant="primary" onClick={this.handleSubmitReport}>
+                            Submit
+                        </Button>
+                    </Modal.Footer>
+                </Modal>
+
                 {this.state.completedCategory === true
                     ?
                         <div style={{textAlign: "center", margin: "auto", fontSize: "40px", padding: "155px"}}>
@@ -896,7 +957,7 @@ export default class UseCategory extends Component {
                                             ?
                                                 <div className = "continue_incorrect">
                                                     <div>
-                                                        <button className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
+                                                        <button onClick={this.revealReportModal} className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
                                                     </div>
                                                     <div className = "correct_phrase">
                                                         Incorrect!
@@ -911,7 +972,7 @@ export default class UseCategory extends Component {
                                             :
                                                 <div className = "continue_correct">
                                                     <div>
-                                                    <button className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
+                                                    <button onClick={this.revealReportModal} className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
                                                     </div>
                                                     <div className = "correct_phrase">
                                                         CORRECT!
@@ -966,7 +1027,7 @@ export default class UseCategory extends Component {
                                             ?
                                                 <div className = "continue_incorrect">
                                                     <div>
-                                                        <button className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
+                                                        <button onClick={this.revealReportModal} className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
                                                     </div>
                                                     <div className = "correct">
                                                         Incorrect!
@@ -992,7 +1053,7 @@ export default class UseCategory extends Component {
                                             ?
                                                 <div className = "continue_incorrect">
                                                     <div>
-                                                        <button className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
+                                                        <button onClick={this.revealReportModal} className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
                                                     </div>
                                                     <div className = "correct">
                                                         You Almost Had It!
@@ -1017,7 +1078,7 @@ export default class UseCategory extends Component {
                                             
                                                 <div className = "continue_correct">
                                                     <div>
-                                                    <button className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
+                                                    <button onClick={this.revealReportModal} className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
                                                     </div>
                                                     <div className = "correct">
                                                         You Nailed It!
@@ -1137,7 +1198,7 @@ export default class UseCategory extends Component {
                                                     ?
                                                         <div className = "continue_incorrect">
                                                             <div>
-                                                                <button className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
+                                                                <button onClick={this.revealReportModal} className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
                                                             </div>
                                                             <div className = "correct">
                                                                 Incorrect!
@@ -1160,7 +1221,7 @@ export default class UseCategory extends Component {
                                                     ?
                                                         <div className = "continue_incorrect">
                                                             <div>
-                                                                <button className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
+                                                                <button onClick={this.revealReportModal} className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
                                                             </div>
                                                             <div className = "correct">
                                                                 You Almost Had It!
@@ -1182,7 +1243,7 @@ export default class UseCategory extends Component {
                                                     
                                                         <div className = "continue_correct">
                                                             <div>
-                                                            <button className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
+                                                            <button onClick={this.revealReportModal} className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
                                                             </div>
                                                             <div className = "correct">
                                                                 You Nailed It!
@@ -1228,7 +1289,7 @@ export default class UseCategory extends Component {
                                                             ?
                                                                 <div className = "continue_incorrect">
                                                                     <div>
-                                                                        <button className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
+                                                                        <button onClick={this.revealReportModal} className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
                                                                     </div>
                                                                     <div className = "correct">
                                                                         Incorrect!
@@ -1252,7 +1313,7 @@ export default class UseCategory extends Component {
                                                             ?
                                                                 <div className = "continue_incorrect">
                                                                     <div>
-                                                                        <button className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
+                                                                        <button onClick={this.revealReportModal} className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
                                                                     </div>
                                                                     <div className = "correct">
                                                                         You Almost Had It!
@@ -1274,7 +1335,7 @@ export default class UseCategory extends Component {
                                                             
                                                                 <div className = "continue_correct">
                                                                     <div>
-                                                                    <button className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
+                                                                    <button onClick={this.revealReportModal} className = "report_button">Report <FontAwesomeIcon icon={faFlag} /></button>
                                                                     </div>
                                                                     <div className = "correct">
                                                                         You Nailed It!

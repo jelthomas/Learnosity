@@ -113,7 +113,12 @@ export default class PreviewCategory extends Component {
         if(answered_correctly){
             //Set state and clear input value
             input.value = '';
-            this.setState({user_timer_answers: users_answers.concat(add_to_user_timer_answers)})
+            users_answers = users_answers.concat(add_to_user_timer_answers)
+            var completed = false;
+            if(users_answers.length === correct_answers.length){
+                completed = true;
+            }
+            this.setState({user_timer_answers: users_answers, clock_finished: completed})
         }
     }
 
@@ -185,15 +190,20 @@ export default class PreviewCategory extends Component {
                                 if(current_page.type === "Fill in the Blank"){
                                     var prompt = current_page.fill_in_the_blank_prompt;
                                     var blank_maps = current_page.fill_in_the_blank_answers;
-                                    var map_keys = Object.keys(blank_maps).sort();
+                                    var map_keys = Object.keys(blank_maps).sort((a, b) => (parseInt(a) > parseInt(b)) ? 1 : -1);
                                     var curr = 0;
                                     for(var i = 0; i < map_keys.length; i++){
                                         let index = parseInt(map_keys[i]);
-                                        segmented.push(prompt.substring(curr, index));
+                                        if(i == 0){
+                                            segmented.push(prompt.substring(curr, index).trim() + " ");
+                                        }
+                                        else{
+                                            segmented.push(" " + prompt.substring(curr, index).trim() + " ");
+                                        }
                                         segmented.push(blank_maps[index]);
-                                        curr = index + 1;
+                                        curr = index;
                                     }
-                                    segmented.push(prompt.substring(curr));
+                                    segmented.push(" " + prompt.substring(curr).trim());
                                     //Have correctly segmented array (even index ==> prompt , odd index ==> blank)
                                 
                                 }
@@ -335,15 +345,20 @@ export default class PreviewCategory extends Component {
                 if(this.state.allPages.length !== 0){
                     var prompt = current_page.fill_in_the_blank_prompt;
                     var blank_maps = current_page.fill_in_the_blank_answers;
-                    var map_keys = Object.keys(blank_maps).sort();
+                    var map_keys = Object.keys(blank_maps).sort((a, b) => (parseInt(a) > parseInt(b)) ? 1 : -1);
                     var curr = 0;
                     for(var i = 0; i < map_keys.length; i++){
                         let index = parseInt(map_keys[i]);
-                        segmented.push(prompt.substring(curr, index));
+                        if(i === 0){
+                            segmented.push(prompt.substring(curr, index).trim() + " ");
+                        }
+                        else{
+                            segmented.push(" " + prompt.substring(curr, index).trim() + " ");
+                        }
                         segmented.push(blank_maps[index]);
-                        curr = index + 1;
+                        curr = index;
                     }
-                    segmented.push(prompt.substring(curr));
+                    segmented.push(" " + prompt.substring(curr).trim());
                 }
             }
             else if(current_page.type === "Matching"){
