@@ -78,22 +78,22 @@ export default class MyPlatforms extends Component {
                         //Begin getting platforms for display
                         var favorite_platforms = response.data.favorited_platforms;
                         var user_recent_platforms = response.data.recent_platforms;
-                        api.post('/platformFormat/getCreatedPlatforms/'+ response.data.username, {index: 0, max: 7})
+                        api.post('/platformFormat/getCreatedPlatforms/'+ response.data.username, {index: 0, max: 11})
                         .then(all_plat_ids => {
                             var canPaginateRightCreated
                             var platform_formats
-                            if (all_plat_ids.data.length > 6){
+                            if (all_plat_ids.data.length > 10){
                                 canPaginateRightCreated = true
-                                platform_formats = all_plat_ids.data.slice(0, 6)
+                                platform_formats = all_plat_ids.data.slice(0, 10)
                             }
                             else {
                                 canPaginateRightCreated = false
                                 platform_formats = all_plat_ids.data
                             }
-                            api.post('/platformFormat/returnFormats', {ids: favorite_platforms.slice(0,6)})
+                            api.post('/platformFormat/returnFormats', {ids: favorite_platforms.slice(0,10)})
                             .then(plat_ids => {
                                 var canPaginateRightFavorite
-                                if (favorite_platforms.length > 6){
+                                if (favorite_platforms.length > 10){
                                     canPaginateRightFavorite = true
                                 }
                                 else {
@@ -142,7 +142,7 @@ export default class MyPlatforms extends Component {
 
     leftFavoritePlatforms(){
         var canPaginateLeftFavorite
-        api.post('/platformFormat/returnFormats', {ids: this.state.users_favorite_platforms.slice((this.state.paginate_fav_index-1)*6, this.state.paginate_fav_index * 6)})
+        api.post('/platformFormat/returnFormats', {ids: this.state.users_favorite_platforms.slice((this.state.paginate_fav_index-1)*10, this.state.paginate_fav_index * 10)})
         .then(plats => {
             if (this.state.paginate_fav_index - 1 === 0){
                 canPaginateLeftFavorite = false
@@ -163,7 +163,7 @@ export default class MyPlatforms extends Component {
     rightFavoritePlatforms(){
 
         var canPaginateRightFavorite
-        api.post('/platformFormat/returnFormats', {ids: this.state.users_favorite_platforms.slice((this.state.paginate_fav_index+1) * 6, (this.state.paginate_fav_index+2)*6)})
+        api.post('/platformFormat/returnFormats', {ids: this.state.users_favorite_platforms.slice((this.state.paginate_fav_index+1) * 10, (this.state.paginate_fav_index+2)*10)})
         .then(plats => {
             if (((this.state.paginate_fav_index+1)*6)+6 >= this.state.users_favorite_platforms.length){
                 canPaginateRightFavorite = false
@@ -194,7 +194,7 @@ export default class MyPlatforms extends Component {
                     canPaginateLeftCreated: true
                 })
             }
-            api.post('/platformFormat/getCreatedPlatforms/'+ this.state.username, {index: this.state.paginate_created_index-1, max: 6})
+            api.post('/platformFormat/getCreatedPlatforms/'+ this.state.username, {index: this.state.paginate_created_index-1, max: 10})
             .then(all_plat_ids => {
                 var platform_formats = all_plat_ids.data
                 this.setState({
@@ -219,14 +219,14 @@ export default class MyPlatforms extends Component {
                     canPaginateLeftCreated: true
                 })
             }
-            api.post('/platformFormat/getCreatedPlatforms/'+ this.state.username, {index: this.state.paginate_created_index+1, max: 7})
+            api.post('/platformFormat/getCreatedPlatforms/'+ this.state.username, {index: this.state.paginate_created_index+1, max: 11})
             .then(all_plat_ids => {
                 var platform_formats
                 var canPaginateRightCreated
                 
-                if (all_plat_ids.data.length > 6){
+                if (all_plat_ids.data.length > 10){
                     canPaginateRightCreated = true
-                    platform_formats = all_plat_ids.data.splice(0,6)
+                    platform_formats = all_plat_ids.data.splice(0,10)
                 }
                 else {
                     canPaginateRightCreated = false

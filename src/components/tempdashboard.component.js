@@ -449,9 +449,10 @@ export default class TempDashboard extends Component {
                 }
             }
             this.setState({
-                argumentForAllPlatforms: argumentForAllPlatforms , paginate_all_index: 0
+                argumentForAllPlatforms: argumentForAllPlatforms, 
+                paginate_all_index: 0
             })
-            this.retrieveAllPlatforms(argumentForAllPlatforms, this.state.filterBy, this.state.searchBy)
+            this.retrieveAllPlatforms(argumentForAllPlatforms, this.state.filterBy, this.state.searchBy, 0)
         }
     }
 
@@ -473,7 +474,7 @@ export default class TempDashboard extends Component {
             this.setState({
                 filterBy: filterBy , paginate_all_index: 0
             })
-            this.retrieveAllPlatforms(this.state.argumentForAllPlatforms, filterBy, this.state.searchBy)
+            this.retrieveAllPlatforms(this.state.argumentForAllPlatforms, filterBy, this.state.searchBy, 0)
         }
     }
     
@@ -482,13 +483,13 @@ export default class TempDashboard extends Component {
             this.setState({
                 searchBy: userSearch.value , paginate_all_index: 0
             })
-            this.retrieveAllPlatforms(this.state.argumentForAllPlatforms, this.state.filterBy, userSearch.value)
+            this.retrieveAllPlatforms(this.state.argumentForAllPlatforms, this.state.filterBy, userSearch.value, 0)
         
     }
 
-    retrieveAllPlatforms(argumentForAllPlatforms, filterBy, searchBy) {
+    retrieveAllPlatforms(argumentForAllPlatforms, filterBy, searchBy, paginationIndex) {
         var favorite_platforms = this.state.users_favorite_platforms;
-            api.post('/platformFormat/getNonUserPlatforms/'+ this.state.username, {index: this.state.paginate_all_index, max: 21, argumentForAllPlatforms: argumentForAllPlatforms, filterBy: filterBy, userSearch: searchBy})
+            api.post('/platformFormat/getNonUserPlatforms/'+ this.state.username, {index: paginationIndex, max: 21, argumentForAllPlatforms: argumentForAllPlatforms, filterBy: filterBy, userSearch: searchBy})
             .then(all_plat_ids => {
                 var platform_formats
                 if (all_plat_ids.data.length>20){
