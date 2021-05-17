@@ -429,10 +429,22 @@ export default class TempEditPage extends Component {
 
             var input = (document.getElementById('fibInput'+i).value).trim()
             //showEmptyAlert4 is for prompts that are in between two blanks being empty
+            
             if(input === "" && i !== 0 && i !== inputArr.length-1)
             {
-                this.setState({showEmptyAlert3:true})   
-                return
+                if(i%2 === 0)
+                {
+                    //issue is when there are empty prompts and blanks
+                    //even is for prompts
+                    this.setState({showEmptyAlert4:true}); 
+                    return;
+                }
+                else
+                {
+                    //odd is for blanks
+                    this.setState({showEmptyAlert3:true});   
+                    return;
+                }
             }
 
             if(i % 2 === 0)
@@ -607,7 +619,7 @@ export default class TempEditPage extends Component {
 
         tempArr[ind]=val;
 
-        this.setState({fibArray:tempArr,showEmptyAlert3:false,showBothEndsAlert:false, has_changes: true})
+        this.setState({fibArray:tempArr,showEmptyAlert4:false,showEmptyAlert3:false,showBothEndsAlert:false, has_changes: true})
     }
 
     submitMatching(){
