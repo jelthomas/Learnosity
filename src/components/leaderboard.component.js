@@ -4,21 +4,92 @@ import jwt from 'jsonwebtoken';
 import jwt_decode from 'jwt-decode'
 import "../format.css";
 import LoggedInNav from "./loggedInNav.component";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faAngleRight, faAngleLeft } from "@fortawesome/free-solid-svg-icons";
 require('dotenv').config();
 
 export default class Leaderboard extends Component {
     constructor(props){
         super(props);
 
+        this.paginateRight = this.paginateRight.bind(this);
+        this.paginateLeft = this.paginateLeft.bind(this);
+
         this.state = {
             username: "",
             id: "",
-            all_users: []
+            all_users: [],
+            paginated_users: [],
+            canPaginateRight: false,
+            paginate_index: 0
         }
 
     }
     
-    
+    paginateLeft(){
+        var e = document.getElementById("sort_by");
+        var all_users = this.state.all_users;
+        if (e !== null) {
+            if (e.value === "experience"){
+                all_users = all_users.sort((a, b) => (a.experience_points < b.experience_points) ? 1 : -1)
+            }
+            else if (e.value === "quizzes"){
+                all_users = all_users.sort((a, b) => (a.completed_quizzes < b.completed_quizzes) ? 1 : -1)
+            } 
+            else if (e.value === "total_accuracy"){
+                all_users = all_users.sort((a, b) => (a.total_accuracy < b.total_accuracy) ? 1 : -1)
+            }
+
+            for(var i = 0; i < all_users.length; i++){
+                all_users[i].position = i+1;
+            }
+            var paginated_users = all_users;
+            var canPaginateRight = false;
+            var userSearch = document.getElementById("userSearch").value;
+            if(userSearch !== ''){
+                paginated_users = paginated_users.filter((a) => {return a.username.toLowerCase().startsWith(userSearch)})
+            }
+            var temp_paginated_users = paginated_users.slice();
+            var paginate_index = this.state.paginate_index - 1;
+            paginated_users = paginated_users.slice(paginate_index * 15, (paginate_index + 1)*15);
+            
+            this.setState({paginate_index: paginate_index, paginated_users: paginated_users, canPaginateRight: temp_paginated_users.length > (paginate_index + 1)*15})
+        }
+    }
+
+    paginateRight(){
+        var e = document.getElementById("sort_by");
+        var all_users = this.state.all_users;
+        if (e !== null) {
+            if (e.value === "experience"){
+                all_users = all_users.sort((a, b) => (a.experience_points < b.experience_points) ? 1 : -1)
+            }
+            else if (e.value === "quizzes"){
+                all_users = all_users.sort((a, b) => (a.completed_quizzes < b.completed_quizzes) ? 1 : -1)
+            } 
+            else if (e.value === "total_accuracy"){
+                all_users = all_users.sort((a, b) => (a.total_accuracy < b.total_accuracy) ? 1 : -1)
+            }
+
+            for(var i = 0; i < all_users.length; i++){
+                all_users[i].position = i+1;
+            }
+            var paginated_users = all_users;
+            var canPaginateRight = false;
+            var userSearch = document.getElementById("userSearch").value;
+            if(userSearch !== ''){
+                paginated_users = paginated_users.filter((a) => {return a.username.toLowerCase().startsWith(userSearch)})
+            }
+            
+            var temp_paginated_users = paginated_users.slice();
+            var paginate_index = this.state.paginate_index + 1;
+            paginated_users = paginated_users.slice(paginate_index * 15, (paginate_index + 1)*15);
+           
+            this.setState({paginate_index: paginate_index, paginated_users: paginated_users, canPaginateRight: temp_paginated_users.length > (paginate_index + 1)*15})
+        }
+    }
+
+
     componentDidMount() {
         var token = localStorage.getItem('usertoken');
         var validToken = false;
@@ -56,13 +127,23 @@ export default class Leaderboard extends Component {
                                 all_users.push({username: array_of_users[i].username,
                                                 experience_points: array_of_users[i].experience_points, 
                                                 completed_quizzes: array_of_users[i].completed_categories,
-                                                total_accuracy: array_of_users[i].total_accuracy.$numberDecimal})
+                                                total_accuracy: array_of_users[i].total_accuracy.$numberDecimal,
+                                                position: i+1})
                             }
                             all_users = all_users.sort((a, b) => (a.experience_points < b.experience_points) ? 1 : -1)
+                            for(let i = 0; i < all_users.length; i++){
+                                all_users[i].position = i+1;
+                            }
+                            var paginated_users = all_users;
+                            if(all_users.length > 15){
+                                paginated_users = all_users.slice(0,15);
+                            }
                             this.setState({
                                 username: response.data.username, 
                                 id: decoded._id,
-                                all_users: all_users
+                                all_users: all_users,
+                                paginated_users: paginated_users,
+                                canPaginateRight: all_users.length > 15
                             })
                         })
                     }
@@ -102,7 +183,25 @@ export default class Leaderboard extends Component {
             else if (e.value === "total_accuracy"){
                 all_users = all_users.sort((a, b) => (a.total_accuracy < b.total_accuracy) ? 1 : -1)
             }
+
+            for(var i = 0; i < all_users.length; i++){
+                all_users[i].position = i+1;
+            }
+            var paginated_users = all_users;
+            var canPaginateRight = false;
+            var userSearch = document.getElementById("userSearch").value;
+            if(userSearch !== ''){
+                paginated_users = paginated_users.filter((a) => {return a.username.toLowerCase().startsWith(userSearch)})
+            }
+            if(paginated_users.length > 15){
+                paginated_users = paginated_users.slice(0, 15);
+                canPaginateRight = true;
+            }
+
             this.setState({
+                paginated_users: paginated_users,
+                paginate_index: 0,
+                canPaginateRight: canPaginateRight,
                 all_users: all_users
             })
         }
@@ -110,34 +209,41 @@ export default class Leaderboard extends Component {
 
     
     searchPlatforms(e) {
-            var userSearch = document.getElementById("userSearch")
-            this.setState({
-                searchBy: userSearch.value
-            })
-            this.retrieveAllPlatforms(this.state.argumentForAllPlatforms, this.state.filterBy, userSearch.value)
+            // var sorted_by = document.getElementById("sort_by").value;
+            var userSearch = document.getElementById("userSearch").value;
+            if(userSearch.trim() === ''){
+                document.getElementById("userSearch").value = '';
+                this.setState({paginated_users: this.state.all_users.slice(0, 15), canPaginateRight: this.state.all_users.length > 15})
+                return;
+            }
+            var all_users = this.state.all_users;
+            var paginated_users = [];
+            paginated_users = all_users.filter((a) => {return a.username.toLowerCase().startsWith(userSearch)})
+
+            this.setState({paginated_users: paginated_users, paginate_index: 0, canPaginateRight: paginated_users.length > 15})
         
     }
 
-    retrieveAllPlatforms(argumentForAllPlatforms, filterBy, searchBy) {
-        var favorite_platforms = this.state.users_favorite_platforms;
-            api.post('/platformFormat/getNonUserPlatforms/'+ this.state.username, {index: this.state.paginate_all_index, max: 21, argumentForAllPlatforms: argumentForAllPlatforms, filterBy: filterBy, userSearch: searchBy})
-            .then(all_plat_ids => {
-                var platform_formats = all_plat_ids.data
+    // retrieveAllPlatforms(argumentForAllPlatforms, filterBy, searchBy) {
+    //     var favorite_platforms = this.state.users_favorite_platforms;
+    //         api.post('/platformFormat/getNonUserPlatforms/'+ this.state.username, {index: this.state.paginate_all_index, max: 21, argumentForAllPlatforms: argumentForAllPlatforms, filterBy: filterBy, userSearch: searchBy})
+    //         .then(all_plat_ids => {
+    //             var platform_formats = all_plat_ids.data
                 
-                for(var i = 0; i < platform_formats.length; i++){
-                    if (favorite_platforms.includes(platform_formats[i])){
-                        platform_formats[i].is_favorited = true;
-                    }
-                    else {
-                        platform_formats[i].is_favorited = false;
-                    }
-                }
-                var platforms = platform_formats.slice();
-                this.setState({
-                    all_platforms: platforms
-                })
-            })
-    }
+    //             for(var i = 0; i < platform_formats.length; i++){
+    //                 if (favorite_platforms.includes(platform_formats[i])){
+    //                     platform_formats[i].is_favorited = true;
+    //                 }
+    //                 else {
+    //                     platform_formats[i].is_favorited = false;
+    //                 }
+    //             }
+    //             var platforms = platform_formats.slice();
+    //             this.setState({
+    //                 all_platforms: platforms
+    //             })
+    //         })
+    // }
 
 
     render() {
@@ -149,7 +255,7 @@ export default class Leaderboard extends Component {
                 </div>
                 <div style={{display: "flex", marginTop: "2%"}}>
                     <div className="dashboard_sort" style={{width: "26%", paddingLeft: "5px", margin: "auto"}}>
-                        <input onChange={() => {}} id="userSearch" type="text" placeholder="Search By Username" style={{borderRadius: "10px", background: "white", borderColor: "transparent", width: "100%", outline: "none", height: '28px', fontSize: "20px"}}></input>
+                        <input onChange={() => {this.searchPlatforms()}} id="userSearch" type="text" placeholder="Search By Username" style={{borderRadius: "10px", background: "white", borderColor: "transparent", width: "100%", outline: "none", height: '28px', fontSize: "20px"}}></input>
                     </div>
                     <div className="dashboard_sort" style={{margin: "auto"}}>
                         
@@ -161,6 +267,20 @@ export default class Leaderboard extends Component {
                                 <option value="total_accuracy">Total Accuracy</option>
                             </select>
                         </div>
+                    </div>
+                    <div style={{margin: "auto", display: "flex"}}>
+                    {this.state.paginate_index === 0
+                        ?
+                            <button disabled={true} style={{marginRight: "50%", color:"grey"}} className = "paginate_arrows" onClick = {() => this.paginateLeft()}><FontAwesomeIcon icon={faAngleLeft} /></button>
+                        :
+                            <button style={{marginRight: "50%"}} className = "paginate_arrows" onClick = {() => this.paginateLeft()}><FontAwesomeIcon icon={faAngleLeft} /></button>
+                        }
+                        {this.state.canPaginateRight
+                        ?
+                            <button  className = "paginate_arrows" onClick = {() => this.paginateRight()}><FontAwesomeIcon icon={faAngleRight} /></button>
+                        :
+                            <button disabled={true} style={{color: "grey"}} className = "paginate_arrows" onClick = {() => this.paginateRight()}><FontAwesomeIcon icon={faAngleRight} /></button>
+                        }
                     </div>
                 </div>
                 <div style={{display: "flex", marginTop: "2%", color: "white"}}>
@@ -177,14 +297,14 @@ export default class Leaderboard extends Component {
                         Total Accuracy
                     </div>
                 </div>
-                <div style={{marginLeft: "4%", marginRight: "4%", marginTop: "2%", background: "black", borderRadius: "5px", border: "1px solid #AFAFAF", fontSize: "20px"}}>
+                <div style={{marginLeft: "4%", marginRight: "4%", marginTop: "2%", marginBottom: "4%", background: "black", borderRadius: "5px", border: "1px solid #AFAFAF", fontSize: "20px"}}>
                     <div>
-                            {this.state.all_users.map((user, index) => (
-                                (index <= 2
+                            {this.state.paginated_users.map((user, index) => (
+                                (user.position < 4
                                 ?
                                 <div className = "row" style={{color: "gold", fontWeight: "700"}}>
                                     <div className = "name">
-                                        {index + 1}. {user.username}
+                                        {user.position}. {user.username}
                                     </div>
                                     <div className = "experience" style={{}}>
                                         {user.experience_points}
@@ -200,7 +320,7 @@ export default class Leaderboard extends Component {
                                 :
                                 <div className = "row">
                                     <div className = "name">
-                                        {index + 1}. {user.username}
+                                        {user.position}. {user.username}
                                     </div>
                                     <div className = "experience" style={{}}>
                                         {user.experience_points}

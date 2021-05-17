@@ -8,6 +8,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faStar, faPlay, faAngleRight, faAngleLeft, faArrowLeft, faThList } from "@fortawesome/free-solid-svg-icons";
 import DefaultCoverPhoto from "../images/defaultCoverPhoto.png";
 import { confirm_access } from "./tempdashboard.component";
+import { from_use_category } from "./usecategory.component";
 import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
 import Button from "react-bootstrap/Button";
@@ -165,7 +166,7 @@ export default class Platform extends Component {
                             if(response.data[0].is_public){
                                 confirm_access.value = 'confirm';
                             }
-                            else if(confirm_access.value !== 'confirm'){
+                            else if(confirm_access.value !== 'confirm' && from_use_category.value !== 'confirm'){
                                 //Redirect back to where they came from
                                 correct_password = response.data[0].privacy_password;
                                 showPrivatePlatModal = true;

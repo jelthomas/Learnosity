@@ -9,7 +9,7 @@ import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import LoggedInNav from "./loggedInNav.component";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus, faArrowLeft } from "@fortawesome/free-solid-svg-icons";
+import { faPlus, faArrowLeft, faPencilAlt } from "@fortawesome/free-solid-svg-icons";
 import { faEyeSlash} from "@fortawesome/free-regular-svg-icons";
 require('dotenv').config();
 
@@ -50,7 +50,10 @@ export default class EditPlatform extends Component {
             removeIndex:'',
             removeName:'',
             has_changes: false,
-            submit_alert: false
+            submit_alert: false,
+            showPlatNameAlert: false,
+            showBigFileAlert: false,
+            showWrongFileTypeAlert: false
         }
     }
 
@@ -183,22 +186,25 @@ export default class EditPlatform extends Component {
     }
 
     setPlatformCoverPage() {
+        this.setState({showUndefinedImageAlert:false,showBigFileAlert:false,showWrongFileTypeAlert:false})
         const file = document.getElementById('inputGroupFile01').files
         //checks if file is properly defined
         if(file[0] === undefined) {
-            return
+            this.setState({showUndefinedImageAlert:true});
+            return;
         }
-        //checks if file size is greater than 10 MB
+        //checks if file size is greater then 10 MB
         if(file[0].size > 10000000) {
-            return
+            this.setState({showBigFileAlert:true});
+            return;
         }
 
         //checks the type of file
         if(file[0].type !== "image/png" && file[0].type !== "image/jpeg")
         {
+            this.setState({showWrongFileTypeAlert:true})
             return
         }
-
 
         const data = new FormData()
         data.append('image', file[0]);
@@ -281,12 +287,12 @@ export default class EditPlatform extends Component {
 
     changePlatName(e){
 
-        var tempPlat = this.state.platformFormat
-        var eVal = e.target.value
+        var tempPlat = this.state.platformFormat;
+        var eVal = e.target.value;
 
         tempPlat.plat_name = eVal
 
-        this.setState({platformFormat:tempPlat,showEmptyPlatAlert:false, has_changes: true})
+        this.setState({platformFormat:tempPlat,showEmptyPlatAlert:false, showPlatNameAlert: false, has_changes: true})
 
     }
 
@@ -320,6 +326,11 @@ export default class EditPlatform extends Component {
             return
         }
 
+        if(tempPlat.plat_name.trim().length > 25){
+            this.setState({showPlatNameAlert:true})
+            return
+        }
+
         if(tempPlat.is_public === false && tempPlat.privacy_password === "")
         {
             this.setState({showEmptyPassAlert:true})
@@ -335,7 +346,7 @@ export default class EditPlatform extends Component {
         //axios call to update backend with pageformat 
         const newPlat = {
             platformID : this.state.platformFormat._id,
-            newPlatName : tempPlat.plat_name,
+            newPlatName : tempPlat.plat_name.trim(),
             newPublishStatus : tempPlat.is_published,
             newPrivacyStatus : tempPlat.is_public,
             newPlatPassword : tempPlat.privacy_password
@@ -567,7 +578,10 @@ render() {
                     <input style={{width: "250px", borderRadius: "10px"}} type="text" id="changePlatName" value = {this.state.platformFormat.plat_name} onChange = {(e)=>this.changePlatName(e)} /> 
                 </div>
                 <Alert style={{width: "28%", textAlign: "center", margin: "auto"}} show = {this.state.showEmptyPlatAlert} variant = 'danger'>
-                    The Platform name can not be empty !
+                    The Platform name cannnot be empty !
+                </Alert>
+                <Alert style={{width: "42%", textAlign: "center", margin: "auto"}} show = {this.state.showPlatNameAlert} variant = 'danger'>
+                     The Platform name cannot be greater than 25 characters long
                 </Alert>
                 <div style={{display: "flex", justifyContent: "center", marginTop: "3%", marginBottom: "3%"}}>
                     <div style={{fontSize: "25px", color: "white", marginRight: "1%"}}>
@@ -584,7 +598,7 @@ render() {
                     <button onClick = {() => this.toggle_password_vis("privacyPassword")} style={{border: "transparent", background: "transparent", transform: "translate(-35px)"}}><FontAwesomeIcon icon={faEyeSlash} /></button>
                 </div>
                 <Alert style={{width: "40%", textAlign: "center", margin: "auto"}} show = {this.state.showEmptyPassAlert} variant = 'danger'>
-                    The password field for a private platform can not be empty !
+                    The password field for a private platform cannot be empty !
                 </Alert>
                 <div style={{display: "flex", justifyContent: "center", marginTop: "3%", marginBottom: "3%"}}>
                     <div style={{fontSize: "25px", color: "white", marginRight: "1%"}}>
@@ -626,7 +640,7 @@ render() {
                         {this.state.allCategoriesInfo.map((category,index) => (
                             <div style={{display: "flex"}}>
                                 <div style={{fontSize: "20px", padding: "5px"}}>
-                                    <button style={{borderRadius: "10px", padding: "5px 15px 5px 15px"}} onClick={() => this.editCategory(category._id)}>{category.category_name}</button>
+                                    <button style={{borderRadius: "10px", padding: "5px 15px 5px 15px"}} onClick={() => this.editCategory(category._id)}>{category.category_name}  <FontAwesomeIcon icon={faPencilAlt} /></button>
                                 </div>   
                                 <div style={{marginLeft: "auto", fontSize: "20px", marginTop: "auto", marginBottom: "auto"}}>
                                     <button style={{color: "red", border: "transparent", background: "transparent"}} onClick ={()=>this.revealRemoveCategory(category._id,category.category_name,index)} id={"removeCategory" + index}>X</button>
@@ -659,6 +673,12 @@ render() {
                                 />
                             </div>
                         </div>
+                        <Alert style={{textAlign: "center", margin: "auto", width: "70%"}} show = {this.state.showBigFileAlert} variant = 'danger'>
+                            The file selected is greater than 10 MB. 
+                        </Alert>
+                        <Alert style={{textAlign: "center", margin: "auto", width: "70%"}} show = {this.state.showWrongFileTypeAlert} variant = 'danger'>
+                            The file selected is not of type jpeg or png.
+                        </Alert>
                     </div>
                 </div>
 
@@ -676,7 +696,7 @@ render() {
                     <Modal.Title>Delete Quiz</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    Are you sure you wish to delete the quiz {this.state.removeName}?
+                    Are you sure you wish to permanently delete the quiz {this.state.removeName}?
                 </Modal.Body>
                 <Modal.Footer>
                 <Button variant="secondary" onClick={this.handleRemoveCategoryClose}>
@@ -696,7 +716,7 @@ render() {
                     <Modal.Title>Delete Platform</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    Are you sure you want to delete this platform ?
+                    Are you sure you want to permanently delete this platform ?
                 </Modal.Body>
                 <Modal.Footer>
                 <Button variant="secondary" onClick={this.handleClose}>

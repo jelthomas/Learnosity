@@ -25,7 +25,10 @@ export default class Settings extends Component {
 
         this.state = {
             userFormat: "",
-            showRemoveUserModal:false
+            showRemoveUserModal:false,
+            showBigFileAlert: false,
+            showWrongFileTypeAlert: false,
+            showUndefinedImageAlert: false
         }
 
     }
@@ -112,25 +115,25 @@ export default class Settings extends Component {
     }
 
     setUserProfilePicture() {
-            const file = document.getElementById('inputGroupFile01').files
-            //checks if file is properly defined
-            if(file[0] === undefined) {
-                console.log("File is Undefined")
-                return
-            }
-            //checks if file size is greater then 10 MB
-            if(file[0].size > 10000000) {
-                console.log("File Size is bigger then 10 MB")
-                return
-            }
-    
-            //checks the type of file
-            if(file[0].type !== "image/png" && file[0].type !== "image/jpeg")
-            {
-                console.log(file[0].type)
-                console.log("Invalid Page Type")
-                return
-            }
+        this.setState({showUndefinedImageAlert:false,showBigFileAlert:false,showWrongFileTypeAlert:false})
+        const file = document.getElementById('inputGroupFile01').files
+        //checks if file is properly defined
+        if(file[0] === undefined) {
+            this.setState({showUndefinedImageAlert:true});
+            return;
+        }
+        //checks if file size is greater then 10 MB
+        if(file[0].size > 10000000) {
+            this.setState({showBigFileAlert:true});
+            return;
+        }
+
+        //checks the type of file
+        if(file[0].type !== "image/png" && file[0].type !== "image/jpeg")
+        {
+            this.setState({showWrongFileTypeAlert:true})
+            return
+        }
     
             console.log("Gets Pasts Checks For Image")
     
@@ -258,6 +261,12 @@ export default class Settings extends Component {
                     </label> */}
                     </div>
                 </div>
+                <Alert style={{textAlign: "center", margin: "auto", width: "70%"}} show = {this.state.showBigFileAlert} variant = 'danger'>
+                    The file selected is greater than 10 MB. 
+                </Alert>
+                <Alert style={{textAlign: "center", margin: "auto", width: "70%"}} show = {this.state.showWrongFileTypeAlert} variant = 'danger'>
+                    The file selected is not of type jpeg or png.
+                </Alert>
                 <button onClick={this.revealRemoveUserModal} class="btn btn-danger">Delete Account</button>
 
                 <Modal

@@ -10,8 +10,7 @@ import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import LoggedInNav from "./loggedInNav.component";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus, faArrowLeft } from "@fortawesome/free-solid-svg-icons";
-import { faEyeSlash} from "@fortawesome/free-regular-svg-icons";
+import { faPlus, faArrowLeft, faPencilAlt } from "@fortawesome/free-solid-svg-icons";
 import {DragDropContext} from 'react-beautiful-dnd';
 import {Droppable} from 'react-beautiful-dnd';
 import {Draggable} from 'react-beautiful-dnd';
@@ -43,11 +42,15 @@ export default class EditCategory extends Component {
             allPagesInfo:[],
             showEmptyCatAlert:false,
             showRemovePageModal:false,
+            showCatNameAlert: false,
             removeID:'',
             removeName:'',
             removeIndex:'',
             has_changes: false,
-            submit_alert: false
+            submit_alert: false,
+            showBigFileAlert: false,
+            showWrongFileTypeAlert: false,
+            showUndefinedImageAlert: false
         }
 
     }
@@ -94,24 +97,28 @@ export default class EditCategory extends Component {
         var eVal = e.target.value
 
         tempCat.category_name = eVal
-        this.setState({categoryFormat:tempCat,showEmptyCatAlert:false, has_changes: true})
+        this.setState({categoryFormat:tempCat,showEmptyCatAlert:false, showCatNameAlert: false, has_changes: true})
       
     }
 
     setCategoryPhoto() {
+        this.setState({showUndefinedImageAlert:false,showBigFileAlert:false,showWrongFileTypeAlert:false})
         const file = document.getElementById('inputGroupFile01').files
         //checks if file is properly defined
         if(file[0] === undefined) {
-            return
+            this.setState({showUndefinedImageAlert:true});
+            return;
         }
         //checks if file size is greater then 10 MB
         if(file[0].size > 10000000) {
-            return
+            this.setState({showBigFileAlert:true});
+            return;
         }
 
         //checks the type of file
         if(file[0].type !== "image/png" && file[0].type !== "image/jpeg")
         {
+            this.setState({showWrongFileTypeAlert:true})
             return
         }
 
@@ -127,17 +134,26 @@ export default class EditCategory extends Component {
             data : data
           };
 
-        var tempCat = this.state.categoryFormat
-        api(config)
-        .then(response =>{
-            tempCat.category_photo = response.data.data.link;
-            this.setState({platformFormat : tempCat})
-        })
-        .catch(function (error) {
-            console.log(error);
-        });
-
-        document.getElementById('inputGroupFile01').value = ""
+          var tempCat = this.state.categoryFormat
+          api(config)
+          .then(response =>{
+              tempCat.category_photo = response.data.data.link;
+  
+              api.post('/categoryFormat/update_category_photo', {categoryID: tempCat._id, newCategoryPhoto: response.data.data.link})
+              .then(temp =>{
+                  this.setState({categoryFormat : tempCat})
+              })
+              .catch(function (err) {
+                  console.log(err);
+              });
+  
+              //call update method for updating category photo in database 
+          })
+          .catch(function (error) {
+              console.log(error);
+          });
+  
+        //   document.getElementById('inputGroupFile01').value = ""
     }
 
     addPageToCategory(){
@@ -205,15 +221,20 @@ export default class EditCategory extends Component {
             return;
         }
         var tempCat = this.state.categoryFormat
-        if(tempCat.category_name === "")
+        if(tempCat.category_name.trim() === "")
         {
             this.setState({showEmptyCatAlert:true})
             return
         }
 
+        if(tempCat.category_name.trim().length > 25){
+            this.setState({showCatNameAlert:true})
+            return
+        }
+
         const newCat = {
             categoryID : this.state.categoryFormat._id,
-            newCategoryName : tempCat.category_name,
+            newCategoryName : tempCat.category_name.trim(),
             newCategoryPhoto : tempCat.category_photo,
         }
 
@@ -400,7 +421,10 @@ export default class EditCategory extends Component {
                 }
                 <Prompt when={this.state.has_changes} message="You have unsaved changes! Are you sure you want to leave this page?" />
                 <Alert style={{width: "25%", textAlign: "center", margin: "auto"}} show = {this.state.showEmptyCatAlert} variant = 'danger'>
-                    The Quiz Name can not be empty
+                    The Quiz Name cannot be empty
+                </Alert>
+                <Alert style={{width: "42%", textAlign: "center", margin: "auto"}} show = {this.state.showCatNameAlert} variant = 'danger'>
+                     The Quiz name cannot be greater than 25 characters long
                 </Alert>
                 <div style={{display: "flex", justifyContent: "center", marginTop: "3%", marginBottom: "3%"}}>
                     <button style={{color: "black", padding: "10px", borderRadius: "10px", border: "transparent", fontSize: "20px"}} onClick = {this.previewCategory}>Preview this Quiz</button>
@@ -432,8 +456,8 @@ export default class EditCategory extends Component {
                                                     return (
                                                         <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} style={{display: "flex"}}>
                                                             <div style={{fontSize: "20px", padding: "5px", color: "white"}}>
-                                                                {page.page_title}
-                                                                {/* <button style={{borderRadius: "10px", padding: "5px 15px 5px 15px"}} onClick={() => this.editPage(page._id)}>{page.page_title}</button> */}
+                                                                {/* {page.page_title} */}
+                                                                <button style={{borderRadius: "10px", padding: "5px 15px 5px 15px"}} onClick={() => this.editPage(page._id)}>{page.page_title} ({page.type})  <FontAwesomeIcon icon={faPencilAlt} /></button>
                                                             </div>
                                                             <div style={{marginLeft: "auto", fontSize: "20px", marginTop: "auto", marginBottom: "auto"}}>
                                                                 <button style={{color: "red", border: "transparent", background: "transparent"}} onClick= {() => this.revealRemovePage(page._id,page.page_title,index)} disabled = {this.state.allPagesInfo.length < 2 ? true : false}>X</button>
@@ -471,6 +495,15 @@ export default class EditCategory extends Component {
                             />
                             </div>
                         </div>
+                        {/* <Alert style={{textAlign: "center", margin: "auto", width: "70%"}} show = {this.state.showUndefinedImageAlert} variant = 'danger'>
+                            No file has been selected.
+                        </Alert> */}
+                        <Alert style={{textAlign: "center", margin: "auto", width: "70%"}} show = {this.state.showBigFileAlert} variant = 'danger'>
+                            The file selected is greater than 10 MB. 
+                        </Alert>
+                        <Alert style={{textAlign: "center", margin: "auto", width: "70%"}} show = {this.state.showWrongFileTypeAlert} variant = 'danger'>
+                            The file selected is not of type jpeg or png.
+                        </Alert>
                     </div>
                 </div>
 
@@ -489,7 +522,7 @@ export default class EditCategory extends Component {
                 </Modal.Header>
 
                 <Modal.Body>
-                    Are you sure you wish to delete the page {this.state.removeName}?
+                    Are you sure you wish to permanently delete the page {this.state.removeName}?
                 </Modal.Body>
 
                 <Modal.Footer>

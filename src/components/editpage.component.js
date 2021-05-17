@@ -779,7 +779,7 @@ render() {
                             <div>
                                 <div style={{display: "flex", justifyContent: "center", marginBottom: "2%", marginRight: "3%"}}>
                                     <div style={{marginLeft: "-1%", fontSize: "25px"}}>
-                                        Prompt:
+                                        Question:
                                     </div>
                                     <input style={{marginLeft: "1%", width: "41%", fontSize: "20px", borderRadius: "8px", padding: "5px"}} type="text" id="changePrompt" value = {this.state.pageFormat.prompt} placeholder= "Enter your multiple choice question: " onChange = {this.changePrompt}/>
                                 </div>
@@ -787,7 +787,7 @@ render() {
                                     {this.state.pageFormat.multiple_choices.map((choice,index) => (
                                         <div style={{display:"flex", justifyContent: "center", marginTop: "0.5%"}}>
                                             <div style={{marginLeft: "-1%", fontSize: "20px"}}>
-                                                Incorrect: 
+                                                Incorrect Option: 
                                             </div>
                                             <input style={{marginLeft: "1%", width: "40%", fontSize: "15px", borderRadius: "8px", padding: "5px"}} type="text" id={"changeMCC"+ index} value = {choice} onChange = {()=>this.changeMCC(index)}/>
                                             <button style = {{background: "red", border: "transparent", borderRadius: "8px", marginLeft: "1%"}} onClick={()=>this.removeMCC(index)} disabled = {this.state.pageFormat.multiple_choices.length < 2 ? true : false}>X</button>
@@ -888,7 +888,7 @@ render() {
                                     <div>
                                         <div style={{display: "flex", justifyContent: "center", marginBottom: "5%", marginRight: "3%"}}>
                                             <div style={{marginLeft: "-1%", fontSize: "25px"}}>
-                                                Prompt:
+                                                Question:
                                             </div>
                                             <input style={{marginLeft: "1%", width: "41%", fontSize: "20px", borderRadius: "8px", padding: "5px"}} type="text" id="changePrompt" value = {this.state.pageFormat.prompt} onChange = {this.changePrompt}/> 
                                         </div>
