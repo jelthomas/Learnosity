@@ -51,6 +51,8 @@ export default class TempEditPage extends Component {
         this.handleTimerEditClose = this.handleTimerEditClose.bind(this);
         this.updateEditTimer = this.updateEditTimer.bind(this);
         this.handleSubmitTimerEditModal = this.handleSubmitTimerEditModal.bind(this);
+        this.changeMinuteTime = this.changeMinuteTime.bind(this);
+        this.changeSecondTime = this.changeSecondTime.bind(this);
 
         this.state = {
             user_id: '',
@@ -80,7 +82,12 @@ export default class TempEditPage extends Component {
             showEmptyMCAAlert:false,
             showLessThanTwoAlert: false,
             has_changes: false,
-            submit_alert: false
+            submit_alert: false,
+            showQuestionNameAlert: false,
+            minuteTime : 0,
+            secondTime : 0,
+            showEmptyTimerAlert: false,
+            showEmptyAlert4: false
         }
     }
 
@@ -155,7 +162,7 @@ export default class TempEditPage extends Component {
         var eVal = e.target.value
         tempPage.page_title = eVal
 
-        this.setState({pageFormat:tempPage, showEmptyQuestion:false, has_changes: true})
+        this.setState({pageFormat:tempPage, showEmptyQuestion:false, showQuestionNameAlert: false, has_changes: true})
     }
 
     changePrompt(e){
@@ -355,7 +362,7 @@ export default class TempEditPage extends Component {
 
         tempPage.matching_pairs = tempArr
 
-        this.setState({pageFormat : tempPage})
+        this.setState({pageFormat : tempPage, has_changes: true})
 
         // var page_id = this.props.location.pathname.substring(60);
 
@@ -389,7 +396,10 @@ export default class TempEditPage extends Component {
     }
 
     submitFIB(){
-        console.log("MADE IT");
+        if(!this.state.has_changes){
+            return;
+        }
+
         var tempPage = this.state.pageFormat;
         var inputArr = this.state.fibArray;
         console.log(inputArr);
@@ -397,10 +407,15 @@ export default class TempEditPage extends Component {
         var newAnswers = {};
         var newKey = "";
 
-        if(tempPage.page_title=== "")
+        if(tempPage.page_title === "")
         {
             this.setState({showEmptyPromptTitleAlert:true})
             return
+        }
+
+        if(tempPage.page_title.trim().length > 25){
+            this.setState({showQuestionNameAlert: true});
+            return;
         }
 
         for(var i = 0; i < inputArr.length; i++)
@@ -413,6 +428,7 @@ export default class TempEditPage extends Component {
             //console.log('fibInput'+i,document.getElementById('fibInput'+i).value)
 
             var input = (document.getElementById('fibInput'+i).value).trim()
+            //showEmptyAlert4 is for prompts that are in between two blanks being empty
             if(input === "" && i !== 0 && i !== inputArr.length-1)
             {
                 this.setState({showEmptyAlert3:true})   
@@ -435,19 +451,7 @@ export default class TempEditPage extends Component {
 
                 if(i+1 !== inputArr.length)
                 {
-                    // if(i === 0 )
-                    // {
-                    //     newPrompt = newPrompt + " "
-
-                    // }
-                    // else 
-                    // {
-                    //     newPrompt = newPrompt + "  "
-                    // }
-                    // console.log("BLANK ADDED")
                     newPrompt = newPrompt + "  "
-
-                    // console.log(newPrompt)
                 }
             }
             else
@@ -472,27 +476,12 @@ export default class TempEditPage extends Component {
 
         api.post('/pageFormat/updateWholeFIBPage',newFIB)
         .then(response => {
-            console.log(response)
+            this.setState({has_changes: false, submit_alert: true});
+            setTimeout(() => {this.setState({submit_alert: false})}, 3000);
         })
         .catch(error => {
             console.log(error)
         });
-        // const newFIB = {
-        //     pageID : page_id,
-        //     newfibAnswers: newAnswers,
-        //     newfibPrompt: newPrompt
-        // }
-        
-        
-        // api.post('/pageFormat/updatefibPromptAnswer',newFIB)
-        // .then(response => {
-        //     console.log(response)
-        //     //updates page format so page is rendered properly
-        //     this.updatePageAndFIB();
-        // })
-        // .catch(error => {
-        //     console.log(error)
-        // });
 
     }
 
@@ -503,19 +492,11 @@ export default class TempEditPage extends Component {
         tempArr.push("")
 
         //update the 
-        this.setState({fibArray:tempArr})
+        this.setState({fibArray:tempArr, has_changes: true})
     }
 
     removeFIB(ind){
-        // var tempArr = this.state.pageFormat.fill_in_the_blank_answers
-
-        // var removeIndex = Math.round(ind/2) - 1
-
-        // var deleteKey = Object.keys(tempArr)[removeIndex]
-
-        // delete tempArr[deleteKey]
-
-        // console.log(tempArr)
+       
         var tempArr = this.state.fibArray
         var Val
 
@@ -545,26 +526,11 @@ export default class TempEditPage extends Component {
         }
 
 
-        this.setState({fibArray:tempArr})
+        this.setState({fibArray:tempArr, has_changes: true})
 
         console.log(tempArr)
 
         var page_id = this.props.location.pathname.substring(60);
-
-
-        // const newInfo = {
-        //     pageID : page_id,
-        //     newfibAnswers:tempArr,
-        // }
-
-        // api.post('/pageFormat/updatefibAnswer',newInfo)
-        // .then(response => {
-        //     //updates page format and fib state array
-        //     this.updatePageAndFIB();
-        // })
-        // .catch(error => {
-        //     console.log(error)
-        // });
 
     }
     
@@ -591,6 +557,11 @@ export default class TempEditPage extends Component {
             return;
         }
 
+        if(tempPage.page_title.trim().length > 25){
+            this.setState({showQuestionNameAlert: true});
+            return;
+        }
+
         //checks if choices are empty 
         for(var i = 0; i <tempPage.multiple_choices.length;i++)
         {
@@ -612,8 +583,8 @@ export default class TempEditPage extends Component {
         const newMCInfo = {
             pageID : page_id,
             newType : tempPage.type,
-            newPrompt : tempPage.prompt,
-            newPageTitle : tempPage.page_title,
+            newPrompt : tempPage.prompt.trim(),
+            newPageTitle : tempPage.page_title.trim(),
             newMCC : tempPage.multiple_choices,
             newMCA : tempPage.multiple_choice_answer
         }
@@ -636,7 +607,7 @@ export default class TempEditPage extends Component {
 
         tempArr[ind]=val;
 
-        this.setState({fibArray:tempArr,showEmptyAlert3:false,showBothEndsAlert:false})
+        this.setState({fibArray:tempArr,showEmptyAlert3:false,showBothEndsAlert:false, has_changes: true})
     }
 
     submitMatching(){
@@ -652,6 +623,11 @@ export default class TempEditPage extends Component {
         {
             this.setState({showEmptyPromptTitleAlert:true})
             return
+        }
+
+        if(tempPage.page_title.trim().length > 25){
+            this.setState({showQuestionNameAlert: true});
+            return;
         }
 
         if(tempPage.page_title.trim() === ""){
@@ -685,7 +661,7 @@ export default class TempEditPage extends Component {
     }
 
     updateTimerAnswer(e){
-        this.setState({showEmptyTimerAnswerInputAlert:false,showTimerAnswerExistAlert:false})
+        this.setState({showEmptyTimerAnswerInputAlert:false, showTimerAnswerExistAlert:false})
       
         var eVal = e.target.value
 
@@ -695,7 +671,7 @@ export default class TempEditPage extends Component {
     addTimerAnswer(){
         var val = document.getElementById('timerInput').value
         //checks if input is not empty 
-        if(val === "")
+        if(val.trim() === "")
         {
             this.setState({showEmptyTimerAnswerInputAlert:true})
             return 
@@ -708,12 +684,11 @@ export default class TempEditPage extends Component {
             return
         }
         //just appends value to array 
-        console.log(val)
 
         var tempPage =this.state.pageFormat
         tempPage.timer_answers.push(val)
 
-        this.setState({pageFormat:tempPage,timerInput:'',showEmptyTimerAnswersAlert:false})
+        this.setState({pageFormat:tempPage,timerInput:'',showEmptyTimerAnswersAlert:false, has_changes: true})
         
 
     }
@@ -722,33 +697,48 @@ export default class TempEditPage extends Component {
     editTimerAnswer(ind){
         var tempPage = this.state.pageFormat
 
-        var Val = tempPage.timer_answers[ind]
+        var Val = tempPage.timer_answers[ind].trim()
 
-        console.log(Val)
-
-        this.setState({editTimer:Val,editTimerIndex:ind})
-        
-        this.setState({showTimerEditModal:true})
+        this.setState({editTimer:Val, editTimerIndex:ind, showTimerEditModal:true, has_changes: true})
+    
     }
     
     removeTimerAnswer(ind){
         var tempPage = this.state.pageFormat
         tempPage.timer_answers.splice(ind,1)
 
-        console.log(tempPage.timer_answers)
-
-        this.setState({pageFormat:tempPage})
+        this.setState({pageFormat:tempPage, has_changes: true})
     }
+
     submitTimer(){
+        if(!this.state.has_changes){
+            return;
+        }
+
         console.log("SUBMITTED TIMER")
         var tempPage = this.state.pageFormat
         var page_id = this.props.location.pathname.substring(60)
 
         //check if prompt empty,page_title empty,timer_answers
-        if(tempPage.prompt === "" || tempPage.page_title=== "")
+        if(tempPage.prompt.trim() === "")
         {
             this.setState({showEmptyPromptTitleAlert:true})
             return
+        }
+
+        if(this.state.minuteTime == 0 && this.state.secondTime == 0){
+            this.setState({showEmptyTimerAlert:true})
+            return
+        }
+
+        if(tempPage.page_title.trim() === ""){
+            this.setState({showEmptyQuestion:true})
+            return
+        }
+
+        if(tempPage.page_title.trim().length > 25){
+            this.setState({showQuestionNameAlert: true});
+            return;
         }
 
         if(tempPage.timer_answers.length === 0)
@@ -757,18 +747,22 @@ export default class TempEditPage extends Component {
             return
         }
 
+        var newCVal = (parseInt(this.state.minuteTime) ) *60  + parseInt(this.state.secondTime);
+
         //create const
         const newTimer= {
             pageID : page_id,
             newType : tempPage.type,
-            newPageTitle : tempPage.page_title,
-            newPrompt : tempPage.prompt,
-            newTimer : tempPage.timer_answers
+            newPageTitle : tempPage.page_title.trim(),
+            newPrompt : tempPage.prompt.trim(),
+            newTimer : tempPage.timer_answers,
+            newClock : newCVal
         }
 
         api.post('/pageFormat/updateWholeTimerPage',newTimer)
         .then(response => {
-            console.log(response)
+            this.setState({has_changes: false, submit_alert: true})
+            setTimeout(() => {this.setState({submit_alert: false})}, 3000)
         })
         .catch(error => {
             console.log(error)
@@ -787,11 +781,18 @@ export default class TempEditPage extends Component {
     }
 
     handleSubmitTimerEditModal(){
-        if(this.state.editTimer === "")
+        if(this.state.editTimer.trim() === "")
         {
-            console.log("EMPTY NEED TO POP UP ALERT")
+            this.setState({showEmptyAlert:true})
             return
         }
+
+        if(this.state.editTimer.trim() === "")
+        {
+            this.setState({showEmptyAlert:true})
+            return
+        }
+
 
         var tempPage = this.state.pageFormat
         tempPage.timer_answers[this.state.editTimerIndex] = this.state.editTimer
@@ -801,7 +802,17 @@ export default class TempEditPage extends Component {
         this.handleTimerEditClose()
     }
 
+    changeMinuteTime(e){
+        var eVal = e.target.value
 
+        this.setState({minuteTime:eVal, has_changes: true, showEmptyTimerAlert: false})
+    }
+
+    changeSecondTime(e){
+        var eVal = e.target.value
+
+        this.setState({secondTime:eVal,has_changes:true, showEmptyTimerAlert: false})
+    }
 
     componentDidMount(){
         var token = localStorage.getItem('usertoken');
@@ -884,16 +895,21 @@ export default class TempEditPage extends Component {
 
                                 var endStr = fibPrompt.substring(num+1)
                                 tempArr.push(endStr)
-
-                                console.log(tempArr)
-
+                                
 
                                 this.setState({pageFormat : response.data,fibArray : tempArr})
                             }
+
+                            var min = Math.floor(response.data.clock/60);
+                            var sec = response.data.clock%60;
+                                
+                            this.setState({minuteTime:min,secondTime:sec})
+
                           })
                         .catch(error => {
                             console.log(error.response)
                         });
+                        
 
                     }
                     else{
@@ -948,28 +964,32 @@ render() {
                                     <option value="Timer">Timer</option>
                                 </select>
                             </div>
+
                             <button style={{margin: "auto", fontSize: "20px", borderRadius: "8px", padding: "5px", background: "white"}} onClick={this.addMCC} disabled = {this.state.pageFormat.multiple_choices.length > 4 ? true : false}>Add New Option</button>
                         </div>
                         <Prompt when={this.state.has_changes} message="You have unsaved changes! Are you sure you want to leave this page?" />
                         <Alert style={{textAlign: "center", margin: "auto", width:"fit-content", marginLeft: "16%", fontSize: "20px", marginBottom: "1%"}} show = {this.state.showEmptyQuestion} variant = 'danger'>
-                            The question name cannot be empty
+                            The Question name cannot be empty
                         </Alert> 
+                        <Alert style={{textAlign: "center", marginLeft: "16%", fontSize: "20px", width: "fit-content"}} show = {this.state.showQuestionNameAlert} variant = 'danger'>
+                            The Question name cannot be greater than 25 characters long
+                        </Alert>
                         <div style={{background: "#edd2ae", textAlign: "center", marginLeft: "5%", marginRight: "5%", borderRadius: "8px", padding: "5%"}}>
                             <div>
                                 <Alert style={{textAlign: "center", margin: "auto", width:"fit-content", marginBottom: "1%", fontSize: "20px"}} show = {this.state.showEmptyPromptTitleAlert} variant = 'danger'>
-                                    The question prompt cannot be empty
+                                    The Question prompt cannot be empty
                                 </Alert> 
-                                <div style={{display: "flex", justifyContent: "center", marginBottom: "2%", marginRight: "1%"}}>
+                                <div style={{display: "flex", justifyContent: "center", marginBottom: "2%"}}>
                                     <div style={{marginLeft: "-1%", fontSize: "25px"}}>
-                                        Prompt:
+                                        Question:
                                     </div>
                                     <input style={{marginLeft: "1%", width: "40.5%", fontSize: "20px", borderRadius: "8px", padding: "5px"}} type="text" id="changePrompt" value = {this.state.pageFormat.prompt} placeholder= "Enter your multiple choice question: " onChange = {(e)=>this.changePrompt(e)}/>
                                 </div>
                                 <div>
                                     {this.state.pageFormat.multiple_choices.map((choice,index) => (
-                                        <div style={{display:"flex", justifyContent: "center", marginTop: "0.5%"}}>
+                                        <div style={{display:"flex", justifyContent: "center", marginTop: "0.5%", marginRight: "5%"}}>
                                             <div style={{marginLeft: "-1%", fontSize: "25px"}}>
-                                                Incorrect: 
+                                                Incorrect Option: 
                                             </div>
                                             <input style={{marginLeft: "1%", width: "40%", fontSize: "20px", borderRadius: "8px", padding: "5px"}} type="text" id={"changeMCC"+ index} value = {choice} onChange = {(e)=>this.changeMCC(e,index)}/>
                                             <button style = {{background: "red", border: "transparent", borderRadius: "8px", marginLeft: "1%"}} onClick={()=>this.removeMCC(index)} disabled = {this.state.pageFormat.multiple_choices.length < 2 ? true : false}>X</button>
@@ -979,7 +999,7 @@ render() {
                                 <Alert style={{textAlign: "center", width: "fit-content", margin: "auto", marginTop: "1%", fontSize: "20px"}} show = {this.state.showEmptyMCCAlert} variant = 'danger'>
                                     The incorrect options cannot be empty 
                                 </Alert>  
-                                <div style={{display: "flex", justifyContent: "center", marginTop: "2%", marginRight: "7%"}}>
+                                <div style={{display: "flex", justifyContent: "center", marginTop: "2%", marginRight: "3%"}}>
                                     <div style={{marginLeft: "-1%", fontSize: "25px"}}>
                                         Correct Answer: 
                                     </div>
@@ -1029,10 +1049,16 @@ render() {
                                     </div>
                                     <button style={{margin: "auto", fontSize: "20px", borderRadius: "8px", padding: "5px", background: "white"}} onClick={this.insertBlank} disabled = {this.state.fibArray.length <11 ? false : true}>Insert Blank</button>
                                 </div>
+                                <Alert style={{textAlign: "center", marginLeft: "16%", fontSize: "20px", width: "fit-content"}} show = {this.state.showEmptyPromptTitleAlert} variant = 'danger'>
+                                        The Question Name cannot be empty
+                                    </Alert>     
+                                    <Alert style={{textAlign: "center", marginLeft: "16%", fontSize: "20px", width: "fit-content"}} show = {this.state.showQuestionNameAlert} variant = 'danger'>
+                                        The Question name cannot be greater than 25 characters long
+                                    </Alert>   
                                 <div style={{background: "#edd2ae", marginLeft: "5%", marginRight: "5%", borderRadius: "8px", padding: "2% 5% 5% 5%"}}>
                                     <div style={{display: "flex", flexWrap: "wrap"}}>
                                         <div style={{fontSize: "25px", marginTop: "2%"}}>
-                                            Prompt:
+                                            Question:
                                         </div>
                                         {this.state.fibArray.map((input,index) => (
                                             (index %2 === 0    
@@ -1047,18 +1073,26 @@ render() {
                                                 </div>
                                             )
                                         ))}
-                                    </div> 
-                                    <Alert show = {this.state.showEmptyPromptTitleAlert} variant = 'danger'>
-                                        The Question Name can not be empty
-                                    </Alert>           
-                                    <Alert show = {this.state.showEmptyAlert3} variant = 'danger'>
-                                        The text inputs can not be empty
+                                    </div>    
+                                    <Alert style={{width: "fit-content", margin: "auto"}} show = {this.state.showEmptyAlert3} variant = 'danger'>
+                                        The blank inputs cannot be empty
                                     </Alert>
-                                    <Alert show = {this.state.showBothEndsAlert} variant = 'danger'>
-                                        Front and End Prompt can not be empty when there is only one blank 
+                                    <Alert style={{width: "fit-content", margin: "auto"}} show = {this.state.showEmptyAlert4} variant = 'danger'>
+                                        Prompts that are in between two blanks cannot be empty
+                                    </Alert>
+                                    <Alert style={{width: "fit-content"}} show = {this.state.showBothEndsAlert} variant = 'danger'>
+                                        Front and End Prompt cannot be empty when there is only one blank 
                                     </Alert>
                                 </div>
                                 <Prompt when={this.state.has_changes} message="You have unsaved changes! Are you sure you want to leave this page?" />
+                                {this.state.submit_alert
+                                ?
+                                <div style={{color: "rgb(0,219,0", textAlign: "center", marginBottom: "1%"}}>
+                                    Your changes have successfully been saved!
+                                </div>
+                                :
+                                <p></p>
+                                }
                                 <div style={{textAlign: "center", marginTop: "2%"}}>
                                     <button style={{color: "white", background: "rgb(0,219,0)", padding: "10px", borderRadius: "10px", border: "transparent", fontSize: "20px"}} onClick={this.submitFIB}>Submit Changes</button>
                                 </div>
@@ -1092,19 +1126,28 @@ render() {
                                 </div>
                                 <Prompt when={this.state.has_changes} message="You have unsaved changes! Are you sure you want to leave this page?" />
                                 <Alert style={{textAlign: "center", marginLeft: "16%", fontSize: "20px", width: "fit-content"}} show = {this.state.showEmptyQuestion} variant = 'danger'>
-                                    The question name cannot be empty
+                                    The Question name cannot be empty
+                                </Alert>
+                                <Alert style={{textAlign: "center", marginLeft: "16%", fontSize: "20px", width: "fit-content"}} show = {this.state.showQuestionNameAlert} variant = 'danger'>
+                                    The Question name cannot be greater than 25 characters long
                                 </Alert>
                                 <div style={{background: "#edd2ae", textAlign: "center", marginLeft: "5%", marginRight: "5%", marginBottom: "2%", borderRadius: "8px", padding: "5%"}}>
                                     <div>
                                         <Alert style={{textAlign: "center", margin: "auto", marginBottom: "1%", fontSize: "20px", width: "fit-content"}} show = {this.state.showEmptyPromptTitleAlert} variant = 'danger'>
-                                            The question prompt cannot be empty
+                                            The Question prompt cannot be empty
                                         </Alert>
                                         <div style={{display: "flex", justifyContent: "center", marginBottom: "5%", marginRight: "3%"}}>
                                             <div style={{marginLeft: "-1%", fontSize: "25px"}}>
-                                                Prompt:
+                                                 Question:
                                             </div>
                                             <input style={{marginLeft: "1%", width: "41%", fontSize: "20px", borderRadius: "8px", padding: "5px"}} type="text" id="changePrompt" value = {this.state.pageFormat.prompt} onChange = {this.changePrompt}/> 
                                         </div>
+                                        {Object.keys(this.state.pageFormat.matching_pairs).length > 0
+                                        ?
+                                          <p style={{fontSize: "20px"}}>When playing, the element on the right side of the pair is the one that is draggable by the user </p>  
+                                        :
+                                        <p></p>
+                                        }
                                         <div style={{background: "white", width: "50%", margin: "auto", padding: "3%", borderRadius: "8px", border: "2px solid"}}>
                                             <div style={{width: "max-content", margin: "auto"}}>
                                                 {Object.keys(this.state.pageFormat.matching_pairs).map((key,index) => (
@@ -1157,7 +1200,7 @@ render() {
                                         <input type = "text" style = {{width: "90%", borderColor: "black"}} className = "form-control" id = "inputpair2" placeholder = "Enter Pair 2" required/>
                                     </div>
                                     <Alert style={{textAlign: "center"}} show = {this.state.showEmptyAlert} variant = 'danger'>
-                                        The text fields can not be empty
+                                        The text fields cannot be empty
                                     </Alert>
                                 </Modal.Body>
                                 <Modal.Footer>
@@ -1184,7 +1227,7 @@ render() {
                                             <input type = "text" style = {{width: "90%", borderColor: "black"}} id = "inputedit2" value={this.state.editVal} onChange = {e => this.changeEditVal(e.target.value)} required/>
                                         </div>
                                         <Alert style={{textAlign: "center"}} show = {this.state.showEmptyAlert2} variant = 'danger'>
-                                            The text fields can not be empty
+                                            The text fields cannot be empty
                                         </Alert>
                                     </Modal.Body>
                                     <Modal.Footer>
@@ -1219,37 +1262,79 @@ render() {
                                             <option value="Timer">Timer</option>
                                         </select>
                                     </div>
-                                </div>
+                                    <div style={{display: "flex", margin: "auto"}}>
+                                        <div style={{marginLeft: "-2%", fontSize: "25px", height: "fit-content"}}>
+                                            Minutes: 
+                                        </div>
+                                        <select style={{marginLeft: "4%", fontSize: "20px", borderRadius: "8px", padding: "5px"}} onChange = {(e)=>this.changeMinuteTime(e)} value = {this.state.minuteTime} id = "changeMin">
+                                            <option value="0">0</option>,<option value="1">1</option>,<option value="2">2</option>,<option value="3">3</option>,<option value="4">4</option>,,<option value="5">5</option>
+                                            <option value="6">6</option>,<option value="7">7</option>,<option value="8">8</option>,<option value="9">9</option>,<option value="10">10</option>
+                                        </select>
+                                        <div style={{marginLeft: "8%", fontSize: "25px", height: "fit-content"}}>
+                                            Seconds: 
+                                        </div>
+                                        <select style={{marginLeft: "4%", fontSize: "20px", borderRadius: "8px", padding: "5px"}} onChange = {(e)=>this.changeSecondTime(e)} value = {this.state.secondTime} id = "changeSec">
+                                            <option value="0">0</option>,<option value="1">1</option>,<option value="2">2</option>,<option value="3">3</option>,<option value="4">4</option>,,<option value="5">5</option>
+                                            <option value="6">6</option>,<option value="7">7</option>,<option value="8">8</option>,<option value="9">9</option>,<option value="10">10</option>,
+                                            <option value="11">11</option>,<option value="12">12</option>,<option value="13">13</option>,<option value="14">14</option>,<option value="15">15</option>
+                                            <option value="16">16</option>,<option value="17">17</option>,<option value="18">18</option>,<option value="19">19</option>,<option value="20">20</option>
+                                            <option value="21">21</option>,<option value="22">22</option>,<option value="23">23</option>,<option value="24">24</option>,<option value="25">25</option>
+                                            <option value="27">27</option>,<option value="28">28</option>,<option value="29">29</option>,<option value="30">30</option>,<option value="31">31</option>
+                                            <option value="32">32</option>,<option value="33">33</option>,<option value="34">34</option>,<option value="35">35</option>,<option value="36">36</option>
+                                            <option value="37">37</option>,<option value="38">38</option>,<option value="39">39</option>,<option value="40">40</option>,<option value="41">41</option>
+                                            <option value="42">42</option>,<option value="43">43</option>,<option value="44">44</option>,<option value="45">45</option>,<option value="46">46</option>
+                                            <option value="47">47</option>,<option value="48">48</option>,<option value="49">49</option>,<option value="50">50</option>,<option value="51">51</option>
+                                            <option value="52">52</option>,<option value="53">53</option>,<option value="54">54</option>,<option value="55">55</option>,<option value="56">56</option>
+                                            <option value="57">57</option>,<option value="58">58</option>,<option value="59">59</option>
+                                        </select>
+                                    </div>
+                                    </div>
+                                
+                                <Alert style={{width: "fit-content", marginLeft: '70%', fontSize: "20px"}} show = {this.state.showEmptyTimerAlert} variant = 'danger'>
+                                    Minutes and seconds cannot both be zero
+                                </Alert>
+                                <Alert style={{textAlign: "center", marginLeft: "16%", fontSize: "20px", width: "fit-content"}} show = {this.state.showEmptyQuestion} variant = 'danger'>
+                                    The Question name cannot be empty
+                                </Alert>
                                 <div style={{background: "#edd2ae", textAlign: "center", marginLeft: "5%", marginRight: "5%", borderRadius: "8px", padding: "5%"}}>
                                     <div>
                                         <div style={{display: "flex", justifyContent: "center", marginBottom: "2%", marginRight: "3%"}}>
                                             <div style={{marginLeft: "-1%", fontSize: "25px"}}>
-                                                Prompt:
+                                                Question:
                                             </div>
                                             <input style={{marginLeft: "1%", width: "41%", fontSize: "20px", borderRadius: "8px", padding: "5px"}} type="text" id="changePrompt" value = {this.state.pageFormat.prompt} placeholder= "Enter your multiple choice question: " onChange = {(e)=>this.changePrompt(e)}/>
+                                        </div>
+                                        <div>
+                                            <Alert style={{textAlign: "center", width: "fit-content", margin: "auto", marginBottom: "1%", fontSize: "20px"}} show = {this.state.showEmptyPromptTitleAlert} variant = 'danger'>
+                                                    The Question Prompt cannot be empty
+                                            </Alert>
                                         </div>
                                         <div>
                                             <input id = "timerInput" value= {this.state.timerInput} onChange={(e)=>this.updateTimerAnswer(e)}></input>
                                             <button onClick={this.addTimerAnswer} disabled = {this.state.pageFormat.timer_answers.length > 49 ? true : false}>Add Answer</button>
                                         </div>
                                         <div>
-                                            <Alert show = {this.state.showEmptyTimerAnswerInputAlert} variant = 'danger'>
-                                                The input can not be empty
+                                            <Prompt when={this.state.has_changes} message="You have unsaved changes! Are you sure you want to leave this page?" />
+                                            <Alert style={{width: "fit-content", margin: "auto", marginTop: "1%", fontSize: "20px"}} show = {this.state.showEmptyTimerAnswerInputAlert} variant = 'danger'>
+                                                The input cannot be empty
                                             </Alert>
-                                            <Alert show = {this.state.showTimerAnswerExistAlert} variant = 'danger'>
-                                                The answer has already been added
+                                            <Alert style={{width: "fit-content", fontSize: "20px", margin: "auto"}} show = {this.state.showTimerAnswerExistAlert} variant = 'danger'>
+                                                This answer already exists! Please add unique answers only
                                             </Alert>
-                                            <Alert show = {this.state.showEmptyTimerAnswersAlert} variant = 'danger'>
-                                                There are no answers entered
+                                            <Alert style={{width: "fit-content", fontSize: "20px", margin: "auto"}} show = {this.state.showEmptyTimerAnswersAlert} variant = 'danger'>
+                                                At least one answer is required before submitting
                                             </Alert>
                                         </div>
 
                                     </div>
-                                    <div>
-                                        <Alert show = {this.state.showEmptyPromptTitleAlert} variant = 'danger'>
-                                                The text fields can not be empty
-                                        </Alert>
+                                    {this.state.submit_alert
+                                    ?
+                                    <div style={{color: "rgb(0,219,0", textAlign: "center", marginBottom: "1%"}}>
+                                        Your changes have successfully been saved!
                                     </div>
+                                    :
+                                    <p></p>
+                                    }
                                     <div>
                                         <button onClick={this.submitTimer}>Submit Changes</button>
                                     </div>
@@ -1273,8 +1358,8 @@ render() {
                                         <label style = {{color: "black"}}>Answer:</label>
                                         <input type = "text" style = {{width: "90%", borderColor: "black"}} className = "form-control" value = {this.state.editTimer} id = "editTimer" onChange = {this.updateEditTimer} required/>
                                     </div>
-                                    <Alert show = {this.state.showEmptyAlert} variant = 'danger'>
-                                        The text field can not be empty
+                                    <Alert style={{textAlign: "center"}} show = {this.state.showEmptyAlert} variant = 'danger'>
+                                        The answer cannot be empty
                                     </Alert>
                                 </Modal.Body>
                                 <Modal.Footer>

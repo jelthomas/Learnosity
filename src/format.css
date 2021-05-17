@@ -392,8 +392,9 @@
   color: black;
   font-size: 40px;
   text-align: center;
-  margin-left: 1%;
-  margin-right: 1%;
+  margin-left: 5%;
+  margin-right: 5%;
+  overflow-wrap: anywhere;
 }
 
 .mc_choices {

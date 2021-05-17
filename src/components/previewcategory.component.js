@@ -1140,6 +1140,7 @@ export default class PreviewCategory extends Component {
                                             :
                                             <div>
                                                 <p className="mc_prompt">Start the clock to begin playing!</p>
+                                                <p className="mc_prompt">You do not have to press Enter to submit, your answer will automatically submit if it is correct.</p>
                                                 <div style={{textAlign: "center", fontSize: "25px", marginTop: "5%"}}>
                                                     <div style={{display: "flex", justifyContent: "center"}}>
                                                         <div style={{marginLeft: "-1%"}}>Time Remaining: {this.state.minutes}:{this.state.seconds < 10 ? `0${this.state.seconds}` : this.state.seconds}</div>

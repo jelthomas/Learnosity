@@ -26,6 +26,8 @@ const bell = new UIfx(
     }
   )
 
+export let from_use_category = {value: ""};
+
 require('dotenv').config();
 
 export default class UseCategory extends Component {
@@ -122,6 +124,7 @@ export default class UseCategory extends Component {
 
     escFunction(event){
         if(event.keyCode === 27) {
+            from_use_category.value = 'confirm';
             this.props.history.push("/platform/" + this.state.platformFormat.id)
         }
     }
@@ -975,7 +978,7 @@ export default class UseCategory extends Component {
             <div style={{height: "100vh", background: "#edd2ae", verticalAlign:"middle", overflowY:"auto"}}>
                 <ProgressBar style={{background: "rgb(139 139 139)"}} now={this.state.progressVal} />
                 <div>
-                    <button onClick={() => this.props.history.push("/platform/" + plat_id)} className="x_button">X</button>
+                    <button onClick={() => {from_use_category.value = 'confirm'; this.props.history.push("/platform/" + plat_id)}} className="x_button">X</button>
                 </div>
                 <Modal show={this.state.showReportModal} onHide={this.handleReportClose} backdrop="static" keyboard={true}>
                     <Modal.Header closeButton>
@@ -1506,6 +1509,7 @@ export default class UseCategory extends Component {
                                             :
                                             <div>
                                                 <p className="mc_prompt">Start the clock to begin playing!</p>
+                                                <p className="mc_prompt">You do not have to press Enter to submit, your answer will automatically submit if it is correct.</p>
                                                 <div style={{textAlign: "center", fontSize: "30px", marginTop: "5%"}}>
                                                     <div style={{display: "flex", justifyContent: "center"}}>
                                                         <div style={{marginLeft: "-1%"}}>Time Remaining: {this.state.minutes}:{this.state.seconds < 10 ? `0${this.state.seconds}` : this.state.seconds}</div>
