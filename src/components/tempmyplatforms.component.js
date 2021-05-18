@@ -112,6 +112,14 @@ export default class TempMyPlatforms extends Component {
             recent_plats.unshift(plat_id)
         }
 
+        api.post('/user/updateRecentlyPlayed',{userID:this.state.userFormat._id,recent_platforms:recent_plats})
+        .then(res=>{
+            this.props.history.push("/platform/"+plat_id);
+        })
+        .catch(err=>{
+            console.log(err.response)
+        })
+
     }
 
     unFavoritePlatform(ind)
@@ -323,7 +331,7 @@ export default class TempMyPlatforms extends Component {
                         (this.state.paginate_favorited_platforms.map((platform, index) => (
                             <Card className = "card_top itemsContainer">
                             <FontAwesomeIcon className="play_button" icon={faPlay} />
-                            <Card.Img variant="top" onClick={() => this.editPlatform(platform._id)} src={platform.cover_photo === "" ? DefaultCoverPhoto : platform.cover_photo} className = "card_image"/>
+                            <Card.Img variant="top" onClick={() => this.clickPlatform(platform._id)} src={platform.cover_photo === "" ? DefaultCoverPhoto : platform.cover_photo} className = "card_image"/>
                                 <Card.Body className = "card_body">
                                     <Card.Title className = "card_info">{platform.plat_name}</Card.Title>
                                     <Card.Text className = "card_info">
