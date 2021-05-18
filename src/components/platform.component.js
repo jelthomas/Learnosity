@@ -15,7 +15,7 @@ import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import Alert from "react-bootstrap/Alert";
 import { navigate } from "./tempdashboard.component"
-import { navigateBack } from "./tempmyplatforms.component"
+import { navigateBack, confirm_access2 } from "./tempmyplatforms.component"
 require('dotenv').config();
 
 
@@ -180,8 +180,9 @@ export default class Platform extends Component {
 
                             if(response.data[0].is_public){
                                 confirm_access.value = 'confirm';
+                                confirm_access2.value = 'confirm';
                             }
-                            else if(confirm_access.value !== 'confirm' && from_use_category.value !== 'confirm'){
+                            else if(confirm_access.value !== 'confirm' && confirm_access2.value !== 'confirm' && from_use_category.value !== 'confirm'){
                                 //Redirect back to where they came from
                                 correct_password = response.data[0].privacy_password;
                                 showPrivatePlatModal = true;
@@ -268,7 +269,7 @@ export default class Platform extends Component {
             sorted_categories = all_categories.sort((a, b) => (Date(a.createdAt) > Date(b.createdAt)) ? 1 : -1);
         }
         return(
-            <div style={{display: "flex", flexWrap: "wrap"}}>
+            <div style={{display: "flex", flexWrap: "wrap", marginBottom: "2%"}}>
                 {sorted_categories.map((category, index) => (
                         <Card className = "card_top itemsContainer">
                             <FontAwesomeIcon className="play_button" icon={faPlay} />
@@ -300,7 +301,7 @@ export default class Platform extends Component {
             sorted_categories = all_categories.sort((a, b) => (a.times_played < b.times_played) ? 1 : -1);
         }
         return(
-            <div style={{display: "flex", flexWrap: "wrap"}}>
+            <div style={{display: "flex", flexWrap: "wrap", marginBottom: "2%"}}>
                 {sorted_categories.map((category, index) => (
                         <Card className = "card_top itemsContainer">
                             <FontAwesomeIcon className="play_button" icon={faPlay} />
@@ -334,7 +335,7 @@ export default class Platform extends Component {
             }).sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
         }
         return(
-            <div style={{display: "flex", flexWrap: "wrap"}}>
+            <div style={{display: "flex", flexWrap: "wrap", marginBottom: "2%"}}>
                 {sorted_categories.length === 0
                 ?
                 <div style={{margin: "auto", marginTop: "1%", fontSize: "25px"}}>
@@ -375,7 +376,7 @@ export default class Platform extends Component {
             });
         }
         return(
-            <div style={{display: "flex", flexWrap: "wrap"}}>
+            <div style={{display: "flex", flexWrap: "wrap", marginBottom: "2%"}}>
                 {filter_categories.length === 0
                 ?
 
@@ -431,7 +432,7 @@ export default class Platform extends Component {
             });
         }
         return(
-            <div style={{display: "flex", flexWrap: "wrap"}}>
+            <div style={{display: "flex", flexWrap: "wrap", marginBottom: "2%"}}>
                 {filtered_categories.length === 0
                 ?
                 <div style={{margin: "auto", marginTop: "1%", fontSize: "25px"}}>
