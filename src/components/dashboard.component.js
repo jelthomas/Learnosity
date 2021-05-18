@@ -696,7 +696,6 @@ export default class Dashboard extends Component {
 
                     </div>
                     <div style={{display: "flex"}}>
-                        {console.log(this.state.recent_platforms)}
                         {this.state.recent_platforms.map((platform, index) => (
                             <Card className = "card_top itemsContainer">
                             <FontAwesomeIcon className="play_button" icon={faPlay} />

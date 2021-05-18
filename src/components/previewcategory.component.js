@@ -162,8 +162,6 @@ export default class PreviewCategory extends Component {
 
                         var category_format_id = this.props.location.pathname.substring(38);
 
-                        console.log(platform_format_id)
-                        console.log(category_format_id)
                         
                         // var plat_id = this.props.location.pathname.substring(13,37);
                         api.get('/categoryFormat/getSpecificCategoryFormat/'+category_format_id)
@@ -175,7 +173,7 @@ export default class PreviewCategory extends Component {
                             api.post('/pageFormat/getAllPages',{pages_id: pages_array})
                             .then(response => {
                                 var page_info_arr = response.data;
-                                console.log(page_info_arr)
+                              
                                 var current_page = page_info_arr[0]
 
                                 var arr = []
@@ -310,25 +308,6 @@ export default class PreviewCategory extends Component {
                 cat_id : this.state.cat_id
             }
 
-            // if(!this.state.is_completed){
-            //     //Divide accuracy by length of completed_pages
-            //     api.post('/categoryData/getAccuracy_and_completed_pages', {id: this.state.user_id, cat_id: this.state.cat_id})
-            //     .then((res) => {
-            //         var accuracy = res.data.accuracy;
-            //         var completed_pages = res.data.completed_pages;
-            //         console.log("Accuracy:");
-            //         console.log(accuracy);
-            //         api.post('/categoryData/divide_accuracy', {user_id: this.state.user_id, cat_id: this.state.cat_id, completed_pages_len: completed_pages.length, accuracy: accuracy})
-            //         .then(() => {
-            //             api.post('/categoryData/setCompletedTrue/',val)
-            //         })
-            //     .catch(err => console.log(err));
-            //     })
-            // }
-            // else{
-            //     api.post('/categoryData/setCompletedTrue/',val)
-            // }
-
         }
         else{
             current_page = this.state.allPages[this.state.pageIndex + 1];
@@ -403,27 +382,6 @@ export default class PreviewCategory extends Component {
         document.getElementById("mc"+index,).classList.remove("mc_button");
         document.getElementById("mc"+index,).classList.add("mc_button_submitted");
 
-        
-        //if platform has not been completed award experience 
-        // if(!this.state.is_completed && submitted_answer_bool){
-        //     //User got this MC question correct
-        //     //Increase accuracy by 100
-        //     api.post('/categoryData/increment_accuracy_by', {user_id : this.state.user_id, cat_id : this.state.cat_id, inc: 100})
-        //     .then()
-        //     .catch(err => console.log(err));
-        // }
-        // //else  
-        // const info = {
-        //     user_id : this.state.user_id,
-        //     cat_id : this.state.cat_id,
-        //     page_id : this.state.currentPage._id,   
-        // }
-
-
-        // // api.post('/categoryData/updateCompletedPage/',info)
-        // // api.post('/categoryData/updateCurrentProgress/',info)
-        // api.post('/categoryData/updatePageArrays/',info)
-
         this.setState({submittedAnswer:true, shouldShuffle: false, submitted_answer_bool: submitted_answer_bool});
     }
 
@@ -493,26 +451,6 @@ export default class PreviewCategory extends Component {
         else{
             submitted_fib = 'incorrect';
         }
-
-        if(!this.state.is_completed){
-            //Calculate increment value
-            var inc = (total_correct / users_correct.length).toFixed(2) * 100;
-            console.log("FIB Inc:");
-            console.log(inc);
-            // api.post('/categoryData/increment_accuracy_by', {user_id : this.state.user_id, cat_id : this.state.cat_id, inc: inc})
-            // .then()
-            // .catch(err => console.log(err));
-        }
-
-        //Update completed_pages
-        const info = {
-            user_id : this.state.user_id,
-            cat_id : this.state.cat_id,
-            page_id : this.state.currentPage._id,
-        }
-
-
-        // api.post('/categoryData/updatePageArrays/',info)
         
         this.setState({submittedAnswer: true, submitted_fib: submitted_fib})
     }
@@ -571,26 +509,7 @@ export default class PreviewCategory extends Component {
             submitted_fib = 'incorrect';
         }
 
-        if(!this.state.is_completed){
-            //Calculate increment value
-            var inc = (total_correct / users_correct.length).toFixed(2) * 100;
-            console.log("Incremement by: ");
-            console.log(inc);
-            // api.post('/categoryData/increment_accuracy_by', {user_id : this.state.user_id, cat_id : this.state.cat_id, inc: inc})
-            // .then()
-            // .catch(err => console.log(err));
-        }
-
         document.getElementById("matching_bottom").style.marginTop = '10%';
-
-
-        const info = {
-            user_id : this.state.user_id,
-            cat_id : this.state.cat_id,
-            page_id : this.state.currentPage._id,
-        }
-
-        // api.post('/categoryData/updatePageArrays/',info)
         
         this.setState({submittedAnswer: true, submitted_fib: submitted_fib})
     }
@@ -681,67 +600,11 @@ export default class PreviewCategory extends Component {
             status = 'incorrect';
         }
 
-        if(!this.state.is_completed){
-            //Calculate increment value
-            var inc = (total_correct / correct_answers.length).toFixed(2) * 100;
-            console.log("Timer Increment by: ");
-            console.log(inc);
-            // api.post('/categoryData/increment_accuracy_by', {user_id : this.state.user_id, cat_id : this.state.cat_id, inc: inc})
-            // .then()
-            // .catch(err => console.log(err));
-        }
-
-
-        const info = {
-            user_id : this.state.user_id,
-            cat_id : this.state.cat_id,
-            page_id : this.state.currentPage._id,
-        }
-
-        // api.post('/categoryData/updatePageArrays/',info);
-
         this.setState({clock_finished: true, status: status});
-    }
-
-//    timer_submit(){
-//         var correct_answers = this.state.timer_answers;
-//         var total_correct = this.state.user_timer_answers.length;
-//         var status = ''
-//         if(total_correct === correct_answers.length){
-//             status = 'correct';
-//         }
-//         else if(total_correct / correct_answers.length >= 0.5){
-//             status = 'almost';
-//         }
-//         else{
-//             status = 'incorrect';
-//         }
-
-//         if(!this.state.is_completed){
-//             //Calculate increment value
-//             var inc = (total_correct / correct_answers.length).toFixed(2) * 100;
-//             console.log("Timer Increment by: ");
-//             console.log(inc);
-//             api.post('/categoryData/increment_accuracy_by', {user_id : this.state.user_id, cat_id : this.state.cat_id, inc: inc})
-//             .then()
-//             .catch(err => console.log(err));
-//         }
-
-
-//         const info = {
-//             user_id : this.state.user_id,
-//             cat_id : this.state.cat_id,
-//             page_id : this.state.currentPage._id,
-//         }
-
-//         api.post('/categoryData/updatePageArrays/',info);
+    }         
 
 
     render() {
-
-        // return (
-        //     <p>Preview Platform Test</p>
-        // )
 
 
         return (

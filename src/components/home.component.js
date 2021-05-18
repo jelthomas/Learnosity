@@ -64,7 +64,7 @@ export default class Home extends Component {
     onSubmit(e){
         e.preventDefault();
         api.get('/user')
-            .then(res => console.log(res.data));
+            .then(res => {});
         // window.location = "/";
     }
 
