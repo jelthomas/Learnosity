@@ -1027,7 +1027,7 @@ render() {
                         </div>
                         {this.state.submit_alert
                             ?
-                                <div style={{color: "rgb(0,219,0", textAlign: "center", marginTop: "1%"}}>
+                                <div style={{color: "rgb(0,219,0", textAlign: "center", marginTop: "1%", fontSize: "20px"}}>
                                     Your changes have successfully been saved!
                                 </div>
                             :
@@ -1099,7 +1099,7 @@ render() {
                                 <Prompt when={this.state.has_changes} message="You have unsaved changes! Are you sure you want to leave this page?" />
                                 {this.state.submit_alert
                                 ?
-                                <div style={{color: "rgb(0,219,0", textAlign: "center", marginBottom: "1%"}}>
+                                <div style={{color: "rgb(0,219,0", textAlign: "center", marginTop: "1%", fontSize: "20px"}}>
                                     Your changes have successfully been saved!
                                 </div>
                                 :
@@ -1187,7 +1187,7 @@ render() {
                                 </div>
                                 {this.state.submit_alert
                                 ?
-                                <div style={{color: "rgb(0,219,0", textAlign: "center", marginBottom: "1%"}}>
+                                <div style={{color: "rgb(0,219,0", textAlign: "center", marginBottom: "1%", fontSize: '20px'}}>
                                     Your changes have successfully been saved!
                                 </div>
                                 :
@@ -1308,7 +1308,7 @@ render() {
                                 <Alert style={{textAlign: "center", marginLeft: "16%", fontSize: "20px", width: "fit-content"}} show = {this.state.showEmptyQuestion} variant = 'danger'>
                                     The Question name cannot be empty
                                 </Alert>
-                                <div style={{background: "#edd2ae", textAlign: "center", marginLeft: "5%", marginRight: "5%", borderRadius: "8px", padding: "5%"}}>
+                                <div style={{background: "#edd2ae", textAlign: "center", marginLeft: "5%", marginRight: "5%", borderRadius: "8px", padding: "5%", paddingBottom: "2%"}}>
                                     <div>
                                         <div style={{display: "flex", justifyContent: "center", marginBottom: "2%", marginRight: "3%"}}>
                                             <div style={{marginLeft: "-1%", fontSize: "25px"}}>
@@ -1321,9 +1321,16 @@ render() {
                                                     The Question Prompt cannot be empty
                                             </Alert>
                                         </div>
-                                        <div>
-                                            <input id = "timerInput" value= {this.state.timerInput} onChange={(e)=>this.updateTimerAnswer(e)}></input>
-                                            <button onClick={this.addTimerAnswer} disabled = {this.state.pageFormat.timer_answers.length > 49 ? true : false}>Add Answer</button>
+                                        <div style={{display: "flex", marginLeft: "32%"}}>
+                                            <div style={{fontSize: "25px", marginLeft: "-1%", marginTop: "-0.5%"}}>
+                                                Enter a new correct answer: 
+                                            </div>
+                                            <div style={{marginLeft: "1%"}}>
+                                                <input id = "timerInput" value= {this.state.timerInput} onChange={(e)=>this.updateTimerAnswer(e)}></input>
+                                            </div>
+                                            <div style={{marginLeft: "1%"}}>
+                                                <button style={{borderRadius: "5px", background: "rgb(0,219,0)"}} onClick={this.addTimerAnswer} disabled = {this.state.pageFormat.timer_answers.length > 50 ? true : false}>Add Answer</button>
+                                            </div>
                                         </div>
                                         <div>
                                             <Prompt when={this.state.has_changes} message="You have unsaved changes! Are you sure you want to leave this page?" />
@@ -1339,26 +1346,32 @@ render() {
                                         </div>
 
                                     </div>
-                                    {this.state.submit_alert
-                                    ?
-                                    <div style={{color: "rgb(0,219,0", textAlign: "center", marginBottom: "1%"}}>
-                                        Your changes have successfully been saved!
+                                    <div style={{marginTop: "1%", fontSize: "25px", fontWeight: "600", textDecoration: 'underline'}}>
+                                        Correct Answers: 
                                     </div>
-                                    :
-                                    <p></p>
-                                    }
-                                    <div>
-                                        <button onClick={this.submitTimer}>Submit Changes</button>
-                                    </div>
-                                    <div>
+                                    <div className="user_timer_answers">
+                                        <div style={{display: "flex", flexWrap: "wrap", marginLeft: "0.5%", marginRight: "0.5%", overflowY: "auto", height: "100%"}}>
                                         {this.state.pageFormat.timer_answers.map((answer,index) => (
-                                            <div style={{display: "flex", justifyContent: "center"}}>
+                                            <div style={{background: "white", color: "black", padding: "10px", border: "1px solid black", borderRadius: "10px", marginTop: "1%", marginRight: "1%", minWidth: "100px"}}>
                                                 <p>{answer}</p>
-                                                <button onClick={()=>this.editTimerAnswer(index)}>Edit</button>
-                                                <button onClick={()=>this.removeTimerAnswer(index)} disabled = {this.state.pageFormat.timer_answers.length < 2 ? true : false}>X</button>
+                                                <button  style={{background: "rgb(0,219,0)", border: "1px solid", borderRadius: "8px", marginLeft: "15%", padding: "5px"}} onClick={()=>this.editTimerAnswer(index)}>Edit</button>
+                                                <button style = {{background: "red", border: "transparent", borderRadius: "8px", marginLeft: "5%", padding: "5px"}} onClick={()=>this.removeTimerAnswer(index)} disabled = {this.state.pageFormat.timer_answers.length < 2 ? true : false}>X</button>
                                             </div>
                                         ))}
+                                        </div>
                                     </div>
+
+                                </div>
+                                {this.state.submit_alert
+                                ?
+                                <div style={{color: "rgb(0,219,0", textAlign: "center", marginTop: "1%", marginBottom: "1%", fontSize: "20px"}}>
+                                    Your changes have successfully been saved!
+                                </div>
+                                :
+                                <p></p>
+                                }
+                                <div style={{textAlignLast: "center", marginBottom: "2%"}}>
+                                    <button style={{color: "white", background: "rgb(0,219,0)", padding: "10px", borderRadius: "10px", border: "transparent", fontSize: "20px"}} onClick= {this.submitTimer}>Submit Changes</button>
                                 </div>
 
                                 <Modal show={this.state.showTimerEditModal} onHide={this.handleTimerEditClose} backdrop="static" keyboard={true}>

@@ -288,6 +288,11 @@
   margin: auto;
 }
 
+#settings_profile{
+  border: 1px solid white;
+  background-color: white;
+}
+
 .name {
   position: relative;
   display: inline-block;

@@ -3,9 +3,8 @@ import {api} from "../axios_api.js";
 import jwt from 'jsonwebtoken';
 import jwt_decode from 'jwt-decode'
 import "../format.css";
-import Card from "react-bootstrap/Card"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faStar, faPlay, faAngleRight, faAngleLeft } from "@fortawesome/free-solid-svg-icons";
+import { faEyeSlash} from "@fortawesome/free-regular-svg-icons";
 import LoggedInNav from "./loggedInNav.component";
 import DefaultProfilePicture from "../images/userIcon.png"
 import Alert from "react-bootstrap/Alert";
@@ -21,16 +20,77 @@ export default class Settings extends Component {
         this.deleteAccount = this.deleteAccount.bind(this);
         this.revealRemoveUserModal = this.revealRemoveUserModal.bind(this);
         this.handleCloseRemoveUser = this.handleCloseRemoveUser.bind(this);
-        
+        this.handleNewPasswordOnChange = this.handleNewPasswordOnChange.bind(this);
+        this.handleConfirmPasswordOnChange = this.handleConfirmPasswordOnChange.bind(this);
+        this.toggle_password_vis = this.toggle_password_vis.bind(this);
+        this.savePassword = this.savePassword.bind(this);
+        this.toggle_confirm_password_vis = this.toggle_confirm_password_vis.bind(this);
 
         this.state = {
             userFormat: "",
             showRemoveUserModal:false,
             showBigFileAlert: false,
             showWrongFileTypeAlert: false,
-            showUndefinedImageAlert: false
+            showUndefinedImageAlert: false,
+            showPasswordMatchAlert: false,
+            showPasswordValidAlert: false,
+            new_password: '',
+            confirm_password: '',
+            hidden: false,
+            hiddenConfirm: false,
+            saved_password: false,
+            showSamePasswordAlert: false
         }
 
+    }
+
+    savePassword(){
+        if(this.state.new_password.length === 0 || this.state.new_password.match(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d\w\W]{8,}$/) === null)
+        {
+            this.setState({showPasswordValidAlert: true})
+            return;
+        }
+
+        if(this.state.new_password !== this.state.confirm_password){
+            this.setState({showPasswordMatchAlert: true});
+            return;
+        }
+
+        console.log(this.state.confirm_password);
+        //Save password
+        api.post('/user/changePassword/', {password: this.state.new_password, confirm_password: this.state.userFormat.password, identifier: this.state.userFormat.username})
+        .then(response => {
+            document.getElementById('new_password').value = '';
+            document.getElementById('confirm_password').value = '';
+            if(response.data.value === 'invalid'){
+                this.setState({showSamePasswordAlert: true});
+            }
+            else{
+                this.setState({saved_password: true});
+                setTimeout(() => {this.setState({saved_password: false})}, 3000);
+            }
+        })
+        .catch(error => {
+            console.log(error)
+        });
+    }
+
+
+    toggle_password_vis(){
+        this.setState({ hidden: !this.state.hidden });
+    }
+
+    toggle_confirm_password_vis(){
+        this.setState({ hiddenConfirm: !this.state.hiddenConfirm });
+    }
+
+
+    handleNewPasswordOnChange(e){
+        this.setState({new_password: e.target.value, showPasswordMatchAlert: false, showPasswordValidAlert: false, showSamePasswordAlert: false});
+    }
+
+    handleConfirmPasswordOnChange(e){
+        this.setState({confirm_password: e.target.value, showPasswordMatchAlert: false, showPasswordValidAlert: false, showSamePasswordAlert: false});
     }
 
     handleCloseRemoveUser() {
@@ -242,32 +302,88 @@ export default class Settings extends Component {
         return (
             <div>
                 <LoggedInNav props={this.props}/>
-                <p>Settings Page</p>
-                <img  
-                src={this.state.userFormat.profile_picture === "" ? DefaultProfilePicture : this.state.userFormat.profile_picture} 
-                width = {200}
-                alt="profilepicture"
-                />
-                <div className="input-group mb-3">
-                    <div className="custom-file">
-                    <input
-                        type="file"
-                        id="inputGroupFile01"
-                        accept="image/*"
-                        onChange={this.setUserProfilePicture}
-                    />
-                    {/* <label className="custom-file-label" htmlFor="inputGroupFile01">
-                        {this.state.fileName === "" ? "Choose an image file" : this.state.fileName}
-                    </label> */}
-                    </div>
+                <div style={{display:"flex", marginLeft: "5%", marginRight: "5%", paddingTop: "15px"}}>
+                    <div style={{textAlign: "center", width: "100%", fontSize: "35px"}} id="dash">Settings</div>
                 </div>
-                <Alert style={{textAlign: "center", margin: "auto", width: "70%"}} show = {this.state.showBigFileAlert} variant = 'danger'>
+                <div style={{marginLeft: "2.5%", marginRight: "2.5%"}} className="block">
+                    <div className="top_block" style={{display: "flex"}}>
+                        <div className="white_text">
+                            Change password
+                        </div>
+                    </div>
+                    <div style={{display:"flex", margin: "auto", width: "fit-content"}}>
+                        <div style={{fontSize: "25px", color: "white", marginLeft: "-1%"}}>
+                            New Password:
+                        </div>
+                        <input type={this.state.hidden ? 'text' : 'password'} style={{width: "250px", borderRadius: "10px", marginLeft: "1%"}} id="new_password" placeholder="Enter new password:" onChange = {(e) => this.handleNewPasswordOnChange(e)}/>
+                        <button onClick = {() => this.toggle_password_vis()} style={{border: "transparent", background: "transparent", transform: "translate(-35px)"}}><FontAwesomeIcon icon={faEyeSlash} /></button>
+                    </div>
+
+                    <div style={{display:"flex", marginLeft: "36.5%", width: "fit-content", marginTop: "2%"}}>
+                        <div style={{fontSize: "25px", color: "white", marginLeft: "-1%"}}>
+                            Confirm Password:
+                        </div>
+                        <input type={this.state.hiddenConfirm ? 'text' : 'password'} style={{width: "250px", borderRadius: "10px", marginLeft: "1%"}} id="confirm_password" placeholder="Confirm password:" onChange = {(e) => this.handleConfirmPasswordOnChange(e)}/>
+                        <button onClick = {() => this.toggle_confirm_password_vis()} style={{border: "transparent", background: "transparent", transform: "translate(-35px)"}}><FontAwesomeIcon icon={faEyeSlash} /></button>
+                    </div> 
+                    <Alert style={{textAlign: "center", margin: "auto", width: "fit-content", marginTop: "2%"}} show = {this.state.showPasswordMatchAlert} variant = 'danger'>
+                        Passwords do not match.
+                    </Alert>
+                    <Alert style={{textAlign: "center", margin: "auto", width: "fit-content", marginTop: "2%"}} show = {this.state.showPasswordValidAlert} variant = 'danger'>
+                        Password needs a minimum of 8 characters.
+                        It must include at least one lowercase letter, one uppercase letter, and one number.
+                    </Alert>
+                    <Alert style={{textAlign: "center", margin: "auto", width: "fit-content", marginTop: "2%"}} show = {this.state.showSamePasswordAlert} variant = 'danger'>
+                        Your password should be different than your current password!
+                    </Alert>
+                    {this.state.saved_password
+                    ?
+                    <div style={{fontSize: "20px", color: "rgb(0,219,0)", width: "fit-content", margin: "auto"}}>
+                        You have successfully changed your password!
+                    </div>
+                    :
+                    <p></p>
+                    }
+                    <div style={{margin: "auto", marginTop: "1%", width: "fit-content"}}>
+                        <button style={{background: "white", padding: "10px", borderRadius: "10px", fontSize: "20px"}} onClick ={() => this.savePassword()}>Save Password</button>
+                    </div>
+
+                </div>
+                <div style={{marginLeft: "2.5%", marginRight: "2.5%"}} className="block">
+                    <div className="top_block" style={{display: "flex"}}>
+                        <div className="white_text">
+                            Change Profile Picture
+                        </div>
+                    </div>
+                    <div style={{marginLeft: "45%"}}>
+                            
+                            <img id="settings_profile"
+                            src={this.state.userFormat.profile_picture === "" ? DefaultProfilePicture : this.state.userFormat.profile_picture} 
+                            width = {200}
+                            alt="profilepicture"
+                            />
+                
+                            <div style={{color: "white"}} className="input-group mb-3">
+                                <div className="custom-file">
+                                <input
+                                    type="file"
+                                    id="inputGroupFile01"
+                                    accept="image/*"
+                                    onChange={this.setUserProfilePicture}
+                                />
+                                </div>
+                            </div>
+                        </div>
+                </div>
+                <Alert style={{textAlign: "center", margin: "auto", width: "fit-content"}} show = {this.state.showBigFileAlert} variant = 'danger'>
                     The file selected is greater than 10 MB. 
                 </Alert>
-                <Alert style={{textAlign: "center", margin: "auto", width: "70%"}} show = {this.state.showWrongFileTypeAlert} variant = 'danger'>
+                <Alert style={{textAlign: "center", margin: "auto", width: "fit-content"}} show = {this.state.showWrongFileTypeAlert} variant = 'danger'>
                     The file selected is not of type jpeg or png.
                 </Alert>
-                <button onClick={this.revealRemoveUserModal} class="btn btn-danger">Delete Account</button>
+                <div style={{width: "fit-content", margin: "auto", marginTop: "2%", marginBottom: "2%"}}>
+                    <button style={{fontSize: "20px"}} onClick={this.revealRemoveUserModal} class="btn btn-danger">Delete Account</button>
+                </div>
 
                 <Modal
                 show={this.state.showRemoveUserModal}
@@ -279,10 +395,10 @@ export default class Settings extends Component {
                     <Modal.Title>Delete Account</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    Are you sure you want to delete your account?
+                    Are you sure you want to permanently delete your account? This will permanently delete all platforms and quizzes you have created
                 </Modal.Body>
                 <Modal.Footer>
-                <Button variant="secondary" onClick={this.handleClose}>
+                <Button variant="secondary" onClick={this.handleCloseRemoveUser}>
                     Cancel
                 </Button>
                 <Button variant="primary" onClick = {this.deleteAccount}>Confirm</Button>
