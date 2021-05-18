@@ -139,7 +139,12 @@ export default class LoggedInNav extends Component {
               }
             </li>
             <li className="navbar-item">
+            {this.props.current === 'myplatform'
+              ?
+              <Link to ="/myplatforms" className="navbarDropdown logged_link"  style={{padding: '5px',color:'#00db00',fontFamily:"Quando",fontSize:'30px', paddingRight: "55px", color: "rgb(0, 219, 0) !imporant", textDecoration: "underline", textUnderlinePosition: "under"}} >My Platforms</Link>
+              :
               <Link to ="/myplatforms" className="navbarDropdown logged_link"  style={{padding: '5px',color:'#00db00',fontFamily:"Quando",fontSize:'30px', paddingRight: "55px", color: "rgb(0, 219, 0) !imporant"}}  >My Platforms</Link>
+              }
             </li>
           </div>
             <Dropdown style={{margin:'auto', height: "fit-content"}}>
