@@ -8,6 +8,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faStar, faPlay, faAngleRight, faAngleLeft,faPencilAlt} from "@fortawesome/free-solid-svg-icons";
 import LoggedInNav from "./loggedInNav.component";
 import DefaultCoverPhoto from "../images/defaultCoverPhoto.png"
+export let navigateBack = {value: ""};
 require('dotenv').config();
 
 
@@ -114,6 +115,7 @@ export default class TempMyPlatforms extends Component {
 
         api.post('/user/updateRecentlyPlayed',{userID:this.state.userFormat._id,recent_platforms:recent_plats})
         .then(res=>{
+            navigateBack.value = "myplatforms";
             this.props.history.push("/platform/"+plat_id);
         })
         .catch(err=>{
@@ -222,6 +224,7 @@ export default class TempMyPlatforms extends Component {
                                 {
                                     pagFavorited = res3.data
                                 }
+                                navigateBack.value = '';
                                 this.setState({
                                                 all_created_platforms:res2.data,
                                                 all_favorited_platforms:res3.data,

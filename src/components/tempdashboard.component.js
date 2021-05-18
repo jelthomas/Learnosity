@@ -14,6 +14,7 @@ import Alert from "react-bootstrap/Alert";
 require('dotenv').config();
 
 export let confirm_access = {value: ""};
+export let navigate = {value: ""};
 
 function FavoriteButton(props) {
     const isfavorited = props.isfavorited;
@@ -165,6 +166,7 @@ export default class TempDashboard extends Component {
                                     }
                                 }
                                
+                                navigate.value = '';
                                 this.setState({
                                     all_platforms: platform_formats, 
                                     recent_platforms: recent_platforms,
@@ -546,6 +548,7 @@ export default class TempDashboard extends Component {
         api.post('/user/updateRecentlyPlayed/', {userID: this.state.id, recent_platforms: this.state.users_recent_platforms})
         .then()
 
+        navigate.value = 'dashboard';
         this.props.history.push("/platform/"+plat_id);
     }
 

@@ -14,6 +14,8 @@ import Tabs from 'react-bootstrap/Tabs';
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import Alert from "react-bootstrap/Alert";
+import { navigate } from "./tempdashboard.component"
+import { navigateBack } from "./tempmyplatforms.component"
 require('dotenv').config();
 
 
@@ -30,6 +32,7 @@ export default class Platform extends Component {
         this.updatePlatformPass = this.updatePlatformPass.bind(this);
         this.verify_password = this.verify_password.bind(this);
         this.handleCloseModal = this.handleCloseModal.bind(this);
+        this.navigateBack = this.navigateBack.bind(this);
 
         this.state = {
             username: "",
@@ -42,6 +45,20 @@ export default class Platform extends Component {
             showIncorrectPass: false
         }
 
+    }
+
+    navigateBack(){
+        console.log(navigate);
+        console.log(navigateBack);
+        if(navigate.value === 'dashboard'){
+            this.props.history.push("/dashboard");
+        }
+        else if(navigateBack.value === 'myplatforms'){
+            this.props.history.push("/myplatforms")
+        }
+        else{
+            this.props.history.push("/dashboard");
+        }
     }
 
     handleCloseModal(){
@@ -457,7 +474,7 @@ export default class Platform extends Component {
         return (
             <div style={{height: "100vh", background: "#edd2ae", verticalAlign:"middle", overflowY:"auto"}}>
                 <div style={{width: "fit-content"}}>
-                    <button style = {{margin: "auto", display: "flex", background: "transparent", border: "transparent", fontSize: "30px"}} onClick={() => this.props.history.push("/dashboard")}><FontAwesomeIcon icon={faArrowLeft} /></button>
+                    <button style = {{margin: "auto", display: "flex", background: "transparent", border: "transparent", fontSize: "30px"}} onClick={() => this.navigateBack()}><FontAwesomeIcon icon={faArrowLeft} /></button>
                 </div>
                 <div style={{fontSize: "55px", textAlign: "center", textDecoration: "underline", fontFamily: "bold"}}> {this.state.platformFormat.plat_name}</div>
                 <div>
