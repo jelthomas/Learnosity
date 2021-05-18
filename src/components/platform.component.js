@@ -111,7 +111,7 @@ export default class Platform extends Component {
                     category_format_id : cat_id,
                 }
                 api.post('/categoryData/clearCurrentProgress/', values)
-                .then(res => console.log(res))
+                .then()
                 .catch(err=>{
                     console.log(err.response);
                 })

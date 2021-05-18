@@ -99,7 +99,6 @@ export default class UseCategory extends Component {
     }
     
     handleSubmitReport(){
-        console.log(this.state.reportMessage);
         //check the value of reportMessage
         if(this.state.reportMessage.trim() === ''){
             this.setState({showEmptyReportAlert: true});
@@ -536,9 +535,6 @@ export default class UseCategory extends Component {
     }
 
     shuffleArray(array) {
-        
-        console.log("Before shuffle:")
-        console.log(array);
         var shuffled_arr = array.slice();
         for (var i = shuffled_arr.length - 1; i > 0; i--) {
             var j = Math.floor(Math.random() * (i + 1));
@@ -546,7 +542,6 @@ export default class UseCategory extends Component {
             shuffled_arr[i] = shuffled_arr[j];
             shuffled_arr[j] = temp;
         }
-        console.log("Shuffled");
         return shuffled_arr;
     }
 

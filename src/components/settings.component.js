@@ -56,7 +56,6 @@ export default class Settings extends Component {
             return;
         }
 
-        console.log(this.state.confirm_password);
         //Save password
         api.post('/user/changePassword/', {password: this.state.new_password, confirm_password: this.state.userFormat.password, identifier: this.state.userFormat.username})
         .then(response => {
@@ -104,14 +103,9 @@ export default class Settings extends Component {
     deleteAccount() {
         var tempUser = this.state.userFormat
 
-        // const removeUser = {
-        //     created_platform_ids  : tempUser.created_platforms
-        // }
-
         //grabs platformformats for every plat_id in created_platforms 
         api.post('/platformFormat/getAllPlatforms', {created_platform_ids: tempUser.created_platforms})
         .then(allPlats => {
-            console.log(allPlats.data)
             var all_categories = [];
             for(var i = 0; i < allPlats.data.length; i++)
             {
@@ -120,9 +114,7 @@ export default class Settings extends Component {
 
             }
 
-            console.log(all_categories)
             //grabs category formats for all category ids 
-            var all_pages = [];
             api.post('/categoryFormat/getAllCategories', {categories_id: all_categories})
             .then(categories => {
 
@@ -134,8 +126,6 @@ export default class Settings extends Component {
                     var categorys_pages = category_formats[i].pages;
                     all_pages = all_pages.concat(categorys_pages);
                 }
-
-                console.log(all_pages)
 
                 const removeUser = {
                     user_format_id : tempUser._id,
@@ -171,7 +161,6 @@ export default class Settings extends Component {
             console.log(err.response)
         })
 
-        console.log("delete")
     }
 
     setUserProfilePicture() {
@@ -195,10 +184,8 @@ export default class Settings extends Component {
             return
         }
     
-            console.log("Gets Pasts Checks For Image")
-    
             const data = new FormData()
-            console.log(file[0])
+
             data.append('image', file[0]);
     
             var config = {
@@ -216,7 +203,6 @@ export default class Settings extends Component {
             var tempUser = this.state.userFormat
             api(config)
             .then(response =>{
-                console.log((response.data.data.link));
                 tempUser.profile_picture = response.data.data.link;
                 // this.setState({userFormat : tempUser})
 
@@ -227,7 +213,7 @@ export default class Settings extends Component {
                
                 api.post('/user/updateProfilePicture/',updatePic)
                 .then(res =>{
-                    console.log(res)
+                   
                     this.setState({userFormat : tempUser})
                     window.location.reload();
                 })

@@ -110,7 +110,6 @@ export default class TempEditPage extends Component {
                         
         api.get('/pageFormat/getSpecificPage/'+page_id)
         .then(response => {
-            console.log(response.data)
             if(Object.keys(response.data.fill_in_the_blank_answers)[0] === "0" && Object.values(response.data.fill_in_the_blank_answers)[0] === "")
             {
                 this.setState({pageFormat : response.data,fibArray : ["","",""]})
@@ -126,7 +125,7 @@ export default class TempEditPage extends Component {
                 {
                     var pos = Object.keys(response.data.fill_in_the_blank_answers)[j];
                     pos = parseInt(pos, 10)
-                    console.log(num,pos)
+                   
                     var str="";
                     if(num === 0)
                     {
@@ -144,9 +143,6 @@ export default class TempEditPage extends Component {
 
                 var endStr = fibPrompt.substring(num+1)
                 tempArr.push(endStr)
-
-                console.log(tempArr)
-
 
                 this.setState({fibArray : tempArr,pageFormat : response.data})
             }
@@ -187,7 +183,7 @@ export default class TempEditPage extends Component {
 
         var tempPage = this.state.pageFormat
         var eVal = e.target.value
-        console.log(eVal,ind)
+      
         tempPage.multiple_choices[ind]=eVal
 
         this.setState({pageFormat:tempPage,showEmptyMCCAlert:false, has_changes: true})
@@ -217,20 +213,6 @@ export default class TempEditPage extends Component {
 
         this.setState({pageFormat : tempPage, has_changes: true})
 
-        // const newMCC = {
-        //     page_format_id : page_id,
-        //     value : "New Choice " + Questions
-        // }
-
-        // api.post('/pageFormat/addToMCC',newMCC)
-        // .then(response => {
-        //     //console.log(response)
-        //     //updates page format so page is rendered properly
-        //     this.updatePageFormat();
-        // })
-        // .catch(error => {
-        //     console.log(error)
-        // });
     }
 
     removeMCC(ind) {
@@ -255,13 +237,11 @@ export default class TempEditPage extends Component {
     }
 
     handleSubmitModal() {
-        console.log("submitting modal ")
-
         var inputP1 = document.getElementById('inputpair1').value
         var inputP2 = document.getElementById('inputpair2').value
         //checks if either field is empty 
         if (inputP1 === "" || inputP2 === ""){
-            console.log("EMPTY INPUTS")
+
             //need to make empty alert become false after some time 
             this.setState({
                 showEmptyAlert: true
@@ -287,8 +267,6 @@ export default class TempEditPage extends Component {
         // tempArr[removeKey] = undefined
 
         delete tempArr.matching_pairs[removeKey]
-
-        console.log(tempArr)
 
         this.setState({pageFormat:tempArr, has_changes: true})
 
@@ -340,10 +318,6 @@ export default class TempEditPage extends Component {
         }   
         else 
         {
-            console.log(this.state.editKey)
-            console.log(this.state.editVal)
-
-
             var convertArr = Object.entries(this.state.pageFormat.matching_pairs)
 
             convertArr.splice(this.state.editIndex,0,[this.state.editKey.trim(),this.state.editVal.trim()])
@@ -352,46 +326,24 @@ export default class TempEditPage extends Component {
 
             delete changedArr[this.state.originalKey]
 
-            console.log(changedArr)
-
             tempArr = changedArr
 
         }
 
-        console.log(tempArr)
 
         tempPage.matching_pairs = tempArr
 
         this.setState({pageFormat : tempPage, has_changes: true})
-
-        // var page_id = this.props.location.pathname.substring(60);
-
-        // const newMP= {
-        //     pageID : page_id,
-        //     newMatching: tempArr
-        // }
-
-        // api.post('/pageFormat/updateMatchingPair',newMP)
-        // .then(response => {
-        //     console.log(response)
-        //     //updates page format so page is rendered properly
-        //     this.updatePageFormat();
-        // })
-        // .catch(error => {
-        //     console.log(error)
-        // });
         
     
         this.handleEditClose();
     }
 
     changeEditKey(val){
-        console.log(val)
         this.setState({editKey : val})
     }
 
     changeEditVal(val){
-        console.log(val)
         this.setState({editVal : val})
     }
 
@@ -402,7 +354,7 @@ export default class TempEditPage extends Component {
 
         var tempPage = this.state.pageFormat;
         var inputArr = this.state.fibArray;
-        console.log(inputArr);
+        
         var newPrompt = "";
         var newAnswers = {};
         var newKey = "";
@@ -425,7 +377,6 @@ export default class TempEditPage extends Component {
                 this.setState({showBothEndsAlert:true});
                 return;
             } 
-            //console.log('fibInput'+i,document.getElementById('fibInput'+i).value)
 
             var input = (document.getElementById('fibInput'+i).value).trim()
             //showEmptyAlert4 is for prompts that are in between two blanks being empty
@@ -472,8 +423,6 @@ export default class TempEditPage extends Component {
             }
         }
 
-        console.log(newPrompt)
-        console.log(newAnswers)
         
         var page_id = this.props.location.pathname.substring(60);
 
@@ -509,21 +458,17 @@ export default class TempEditPage extends Component {
 
     removeFIB(ind){
        
-        var tempArr = this.state.fibArray
-        var Val
-
-        console.log("THIS IS THE INDEX " +ind)
+        var tempArr = this.state.fibArray;
+        var Val;
 
         if(ind === 1)
         {
             Val = tempArr[0]
             tempArr[2] = Val + tempArr[2]
-
-            console.log(tempArr)
             tempArr.splice(0, 1)
-            //console.log("One Remove " + tempArr)
+            
             tempArr.splice(0, 1)
-            //console.log("Two Remove " + tempArr)
+           
         }
         else
         {
@@ -531,16 +476,14 @@ export default class TempEditPage extends Component {
             tempArr[ind-1] = tempArr[ind-1] + Val 
 
             tempArr.splice(ind,1)
-            //console.log("One Remove " + tempArr)
+           
             tempArr.splice(ind, 1)
-            //console.log("Two Remove " + tempArr)
+           
 
         }
 
 
         this.setState({fibArray:tempArr, has_changes: true})
-
-        console.log(tempArr)
 
         var page_id = this.props.location.pathname.substring(60);
 
@@ -552,7 +495,6 @@ export default class TempEditPage extends Component {
             return;
         }
         //NEED TO ADD CHECKS FOR ALL THESE FIELDS 
-        console.log("SUBMIT MC")
         var tempPage = this.state.pageFormat
         var page_id = this.props.location.pathname.substring(60)
 
@@ -727,7 +669,6 @@ export default class TempEditPage extends Component {
             return;
         }
 
-        console.log("SUBMITTED TIMER")
         var tempPage = this.state.pageFormat
         var page_id = this.props.location.pathname.substring(60)
 
@@ -860,7 +801,6 @@ export default class TempEditPage extends Component {
                         
                         api.get('/pageFormat/getSpecificPage/'+page_id)
                         .then(response => {
-                            console.log(response.data)
 
                             //create temp array that will be stored as state variable 
                             
@@ -879,7 +819,7 @@ export default class TempEditPage extends Component {
                                 {
                                     var pos = Object.keys(response.data.fill_in_the_blank_answers)[j];
                                     pos = parseInt(pos, 10)
-                                    console.log(num,pos)
+                                  
                                     var str="";
                                     if(num === 0 && j === 0)
                                     {
@@ -896,9 +836,7 @@ export default class TempEditPage extends Component {
                                             str = fibPrompt.substring(num+1,pos-1)
                                         }
                                     }
-                                    console.log(fibPrompt)
-                                    console.log("PROMPT "+ str)
-                                    console.log("BLANK "+ Object.values(response.data.fill_in_the_blank_answers)[j])
+                               
                                     tempArr.push(str)
                                     tempArr.push(Object.values(response.data.fill_in_the_blank_answers)[j])
                                     num = pos;

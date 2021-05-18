@@ -75,7 +75,6 @@ export default class EditPage extends Component {
                         
         api.get('/pageFormat/getSpecificPage/'+page_id)
         .then(response => {
-            console.log(response.data)
             if(Object.keys(response.data.fill_in_the_blank_answers)[0] === "0" && Object.values(response.data.fill_in_the_blank_answers)[0] === "")
             {
                 this.setState({pageFormat : response.data,fibArray : ["","",""]})
@@ -91,7 +90,7 @@ export default class EditPage extends Component {
                 {
                     var pos = Object.keys(response.data.fill_in_the_blank_answers)[j];
                     pos = parseInt(pos, 10)
-                    console.log(num,pos)
+                 
                     var str="";
                     if(num === 0)
                     {
@@ -110,7 +109,7 @@ export default class EditPage extends Component {
                 var endStr = fibPrompt.substring(num+1)
                 tempArr.push(endStr)
 
-                console.log(tempArr)
+              
 
 
                 this.setState({fibArray : tempArr,pageFormat : response.data})
@@ -189,7 +188,7 @@ export default class EditPage extends Component {
     }
 
     changePageType(){
-        console.log("page Type changed")
+      
         var pageType = document.getElementById('pType').value
 
         const newPageType = {

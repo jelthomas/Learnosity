@@ -112,38 +112,6 @@ export default class TempMyPlatforms extends Component {
             recent_plats.unshift(plat_id)
         }
 
-        console.log(recent_plats)
-
-        // api.post('/user/updateRecentlyPlayed',{userID:this.state.userFormat._id,recent_platforms:recent_plats})
-        // .then(res=>{
-        //     this.props.history.push("/platform/"+plat_id);
-        // })
-        // .catch(err=>{
-        //     console.log(err.response)
-        // })
-
-
-
-        // if (!this.state.users_recent_platforms.includes(plat_id)){
-        //     this.setState({
-        //         users_recent_platforms: this.state.users_recent_platforms.unshift(plat_id)
-        //     })
-        // }
-        // else {
-        //     // console.log("BEFORE", this.state.users_recent_platforms)
-        //     var temp = this.state.users_recent_platforms;
-        //     var index = temp.indexOf(plat_id);
-        //     temp.splice(index, 1);
-        //     temp.unshift(plat_id);
-        //     this.setState({
-        //         users_recent_platforms: temp
-        //     })
-        //     // console.log("AFTER", temp)
-        // }
-        // api.post('/user/updateRecentlyPlayed/', {userID: this.state.id, recent_platforms: this.state.users_recent_platforms})
-        // .then()
-
-        // this.props.history.push("/platform/"+plat_id);
     }
 
     unFavoritePlatform(ind)
@@ -153,21 +121,15 @@ export default class TempMyPlatforms extends Component {
         var tempAllFavorited = this.state.all_favorited_platforms
         var pagFavInd = this.state.favorited_paginate_index
 
-        console.log(tempAllFavorited)
-
 
         //grabs the particular id 
         var id = tempPagFavorite[ind]._id
-
-        //console.log(id)
 
         //filters the all favorited to remove the id 
         //used to set the favorited in database 
         tempAllFavorited  = tempAllFavorited .filter(function( obj ) {
             return obj._id !== id;
         });
-
-        console.log(tempAllFavorited)
         
         //need to remake the paginate index based on removed tempAllFavorited
         //theres a chance that we will need to readjust the index if values dont exist at that index 
@@ -179,7 +141,6 @@ export default class TempMyPlatforms extends Component {
             pagFavInd = pagFavInd - 1 
             newPagFav = tempAllFavorited.slice(pagFavInd * 5, (pagFavInd+ 1)*5)
         }
-        console.log(newPagFav)
 
         //update Backend Favorited Array
         //setStates inside 
@@ -229,11 +190,10 @@ export default class TempMyPlatforms extends Component {
 
                         api.post('/platformFormat/getAllPlatforms',{created_platform_ids: created_platforms})
                         .then(res2=>{
-                            console.log(res2.data)
+                            
                             // this.setState({all_created_platforms:res2.data})
                             api.post('/platformFormat/getAllPlatforms',{created_platform_ids: favorite_platforms})
                             .then(res3=>{
-                                console.log(res3.data)
 
                                 var pagCreated;
                                 var pagFavorited;
@@ -272,16 +232,6 @@ export default class TempMyPlatforms extends Component {
                         .catch(err2=>{
                             console.log(err2.response)
                         })
-
-                        // this.state.setState({all_created_platforms:temp})
-                        // api.post('/platformFormat/getAllPlatforms',{created_platform_ids: favorite_platforms})
-                        // .then(res3=>{
-                        //     console.log(res3.data)
-                        //     //this.setState({all_favorited_platforms:res3.data})
-                        // })
-                        // .catch(err3=>{
-                        //     console.log(err3.response)
-                        // })
                     }
                     else{
                         //Fake ID...
@@ -368,7 +318,9 @@ export default class TempMyPlatforms extends Component {
 
                     </div>
                     <div style={{display: "flex", flexWrap: "wrap"}}>
-                        {this.state.paginate_favorited_platforms.map((platform, index) => (
+                        {this.state.paginate_favorited_platforms.length > 0
+                        ?
+                        (this.state.paginate_favorited_platforms.map((platform, index) => (
                             <Card className = "card_top itemsContainer">
                             <FontAwesomeIcon className="play_button" icon={faPlay} />
                             <Card.Img variant="top" onClick={() => this.editPlatform(platform._id)} src={platform.cover_photo === "" ? DefaultCoverPhoto : platform.cover_photo} className = "card_image"/>
@@ -382,7 +334,12 @@ export default class TempMyPlatforms extends Component {
                                     </div>
                                 </Card.Body>
                             </Card>
-                        ))}
+                        )))
+                        :
+                            <div style={{fontSize: "25px", width: "fit-content", color: "white", marginLeft: "3%"}}>
+                                You have not favorited any platforms yet! Click on the star button to favorite one
+                            </div>
+                        }
                         </div>
                 </div>
             </div>

@@ -119,15 +119,13 @@ export default class TempDashboard extends Component {
 
                             var canPaginateRightRecent
                             var index_dict = {};
-                            // console.log("USER FAVORITE PLATFORMS", favorite_platforms, platform_formats)
+                            
                             var temp = user_recent_platforms.slice(0,5);
-                            // temp = [id1, id2, id3, id4, id5]
+                            
                             for (var i = 0; i < temp.length; i++){
                                 index_dict[temp[i]] = i
                             }
-                            //index_dict = {id1: 0, id2: 1, id3: 2, id4: 3, id5: 4}
-
-                            // console.log("INDEX DICT", index_dict)
+                            
                             //Start of getting recent platforms
                             var recent_platforms = [];
                             api.post('/platformFormat/returnFormats/', {ids: user_recent_platforms.slice(0, 6)})
@@ -178,7 +176,6 @@ export default class TempDashboard extends Component {
                                     canPaginateRightAll: canPaginateRightAll
                                 })
                                 
-                                // console.log("AHAHHAHHAH". this.state.recent_platforms[0])
                                 
                             })
 
@@ -356,7 +353,6 @@ export default class TempDashboard extends Component {
             for (var i = 0; i < recent_platform_formats.length; i++){
                 correct_index = index_dict[recent_platform_formats[i]._id];
                 recent_platforms[correct_index] = recent_platform_formats[i];
-                // console.log("CORRECT INDEX", correct_index, recent_platforms)
             }
 
             for(var i = 0; i < recent_platforms.length; i++){
@@ -524,17 +520,10 @@ export default class TempDashboard extends Component {
         if(!plat_visible)
         {
             //when its false
-            console.log(plat_visible)
             this.setState({showPrivatePlatModal:true, usePlatID:plat_id})
             return
         }
         confirm_access.value="confirm";
-        // else
-        // {
-        //     //when its true
-        //     console.log(plat_visible)
-        //     return
-        // }
         
         //need to check if platform is private and if we need to enter pass to enter 
         if (!this.state.users_recent_platforms.includes(plat_id)){
@@ -543,7 +532,7 @@ export default class TempDashboard extends Component {
             })
         }
         else {
-            // console.log("BEFORE", this.state.users_recent_platforms)
+            
             var temp = this.state.users_recent_platforms;
             var index = temp.indexOf(plat_id);
             temp.splice(index, 1);
@@ -551,7 +540,7 @@ export default class TempDashboard extends Component {
             this.setState({
                 users_recent_platforms: temp
             })
-            // console.log("AFTER", temp)
+         
         }
         api.post('platformFormat/increment_times_played', {plat_id: plat_id})
         api.post('/user/updateRecentlyPlayed/', {userID: this.state.id, recent_platforms: this.state.users_recent_platforms})
@@ -575,7 +564,7 @@ export default class TempDashboard extends Component {
         //checks if password matches with database
         api.get('platformFormat/getSpecificPlatformFormat/'+plat_id)
         .then(res => {
-            console.log(res.data[0])
+            
             if(inputPass !== res.data[0].privacy_password)
             {
                 this.setState({showIncorrectPass:true,platformPass:""})
@@ -584,29 +573,14 @@ export default class TempDashboard extends Component {
             else
             {
                 if (!temp_recent.includes(plat_id)){
-                
                     temp_recent.unshift(plat_id)
-                    // this.setState({
-                    //     users_recent_platforms: this.state.users_recent_platforms.unshift(plat_id)
-                    // })
-
                 }
                 else {
-                    // console.log("BEFORE", this.state.users_recent_platforms)
-                    // var temp = this.state.users_recent_platforms;
-                    // var index = temp.indexOf(plat_id);
                     var index = temp_recent.indexOf(plat_id);
                     temp_recent.splice(index, 1);
                     temp_recent.unshift(plat_id);
-                    // temp.splice(index, 1);
-                    // temp.unshift(plat_id);
-                    // this.setState({
-                    //     users_recent_platforms: temp
-                    // })
-                    // console.log("AFTER", temp)
                 }
 
-                // this.setState({showPrivatePlatModal:false})
 
                 api.post('platformFormat/increment_times_played', {plat_id: plat_id})
                 .then(res2 =>{
@@ -637,7 +611,6 @@ export default class TempDashboard extends Component {
         var eVal = e.target.value
 
         this.setState({platformPass:eVal,showEmptyAlert:false})
-        console.log(eVal)
     }
 
     render() {

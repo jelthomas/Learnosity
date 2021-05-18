@@ -32,7 +32,6 @@ export default class EditCategory extends Component {
         this.previewCategory = this.previewCategory.bind(this);
         this.revealRemovePage = this.revealRemovePage.bind(this);
         this.handleRemovePageClose = this.handleRemovePageClose.bind(this);
-        this.handleOnDragEnd = this.handleOnDragEnd.bind(this);
 
 
         this.state = {
@@ -368,26 +367,6 @@ export default class EditCategory extends Component {
 
     }
 
-    handleOnDragEnd(result){
-        
-        if(!result.destination){
-            return;
-        }
-        if(result.source.droppableId === result.destination.droppableId){
-            //User is rearranging inside of the same area
-            if(result.destination.droppableId === "all_values"){
-                console.log("BEFORE:")
-                console.log(this.state.allPagesInfo);
-                var copied_vals = this.state.allPagesInfo.slice();
-                var [removed] = copied_vals.splice(result.source.index, 1);
-                copied_vals.splice(result.destination.index, 0, removed);
-                console.log("AFTER:");
-                console.log(copied_vals);
-                this.setState({allPagesInfo: copied_vals});
-            }
-        }
-    }
-
     render() {
         
         return (
@@ -435,44 +414,33 @@ export default class EditCategory extends Component {
 
             <div style={{display: "flex", marginLeft: "20%", marginRight: "20%", marginTop: "1%", marginBottom: "2%"}}>
                 
-            <DragDropContext onDragEnd={(result) => this.handleOnDragEnd(result)}>
-                        <Droppable droppableId={"all_values"} key={"all_values"}>
-                            {(provided, snapshot) => {
-                                return (
-                                    <div {...provided.droppableProps} ref={provided.innerRef} style={{background: "black", width: "45%", borderRadius: "10px", maxHeight: "633px", overflowY: "auto"}}>
-                                        <div style={{color: "white", fontSize: "25px", padding: "20px 20px 5px 20px", borderBottom: "1px solid rgb(0,219,0)", display: "flex"}}>
-                                            <div style={{margin: "auto"}}>
-                                                Pages: 
-                                            </div>
-                                            <div>
-                                                <button style={{color: "white", border: "transparent", borderRadius: "25px", background: "blue", fontSize: "20px"}} onClick={this.addPageToCategory}><FontAwesomeIcon icon={faPlus} /></button>
-                                            </div>
-                                        </div>
-                    
-                                        <div style={{padding: "20px"}}>
-                                            {this.state.allPagesInfo.map((page,index) => (
-                                                <Draggable key={"key_id"+ index} draggableId={"key_id"+ index} index = {index}>
-                                                {(provided, snapshot) => {
-                                                    return (
-                                                        <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} style={{display: "flex"}}>
-                                                            <div style={{fontSize: "20px", padding: "5px", color: "white"}}>
-                                                                {/* {page.page_title} */}
-                                                                <button style={{borderRadius: "10px", padding: "5px 15px 5px 15px"}} onClick={() => this.editPage(page._id)}>{page.page_title} ({page.type})  <FontAwesomeIcon icon={faPencilAlt} /></button>
-                                                            </div>
-                                                            <div style={{marginLeft: "auto", fontSize: "20px", marginTop: "auto", marginBottom: "auto"}}>
-                                                                <button style={{color: "red", border: "transparent", background: "transparent"}} onClick= {() => this.revealRemovePage(page._id,page.page_title,index)} disabled = {this.state.allPagesInfo.length < 2 ? true : false}>X</button>
-                                                            </div>
-                                                            {provided.placeholder}
-                                                        </div>
-                                                    )}}
-                                                </Draggable>
-                                            ))}
-                                        </div>
-                                        {provided.placeholder}
+            <div style={{background: "black", width: "45%", borderRadius: "10px", maxHeight: "633px", overflowY: "auto"}}>
+                <div style={{color: "white", fontSize: "25px", padding: "20px 20px 5px 20px", borderBottom: "1px solid rgb(0,219,0)", display: "flex"}}>
+                    <div style={{margin: "auto"}}>
+                        Pages: 
+                    </div>
+                    <div>
+                        <button style={{color: "white", border: "transparent", borderRadius: "25px", background: "blue", fontSize: "20px"}} onClick={this.addPageToCategory}><FontAwesomeIcon icon={faPlus} /></button>
+                    </div>
+                </div>
+
+                <div style={{padding: "20px"}}>
+                    {this.state.allPagesInfo.map((page,index) => (
+                        
+                                <div style={{display: "flex"}}>
+                                    <div style={{fontSize: "20px", padding: "5px", color: "white"}}>
+                                        <button style={{borderRadius: "10px", padding: "5px 15px 5px 15px"}} onClick={() => this.editPage(page._id)}>{page.page_title} ({page.type})  <FontAwesomeIcon icon={faPencilAlt} /></button>
                                     </div>
-                                 )}}    
-                                 </Droppable>
-                            </DragDropContext>
+                                    <div style={{marginLeft: "auto", fontSize: "20px", marginTop: "auto", marginBottom: "auto"}}>
+                                        <button style={{color: "red", border: "transparent", background: "transparent"}} onClick= {() => this.revealRemovePage(page._id,page.page_title,index)} disabled = {this.state.allPagesInfo.length < 2 ? true : false}>X</button>
+                                    </div>
+                                </div>
+                            
+                        
+                    ))}
+                </div>
+                
+            </div>       
                 <div style={{background: "black", width: "fit-content", borderRadius: "10px", marginLeft: "auto"}}>
                     <div style={{color: "white", fontSize: "25px", padding: "20px 20px 5px 20px", borderBottom: "1px solid rgb(0,219,0)", display: "flex"}}>
                         <div style={{margin: "auto"}}>
