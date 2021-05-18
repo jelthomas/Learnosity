@@ -14,6 +14,7 @@ export default class Leaderboard extends Component {
 
         this.paginateRight = this.paginateRight.bind(this);
         this.paginateLeft = this.paginateLeft.bind(this);
+        this.return_user_stats = this.return_user_stats.bind(this);
 
         this.state = {
             username: "",
@@ -37,7 +38,7 @@ export default class Leaderboard extends Component {
                 all_users = all_users.sort((a, b) => (a.completed_quizzes < b.completed_quizzes) ? 1 : -1)
             } 
             else if (e.value === "total_accuracy"){
-                all_users = all_users.sort((a, b) => (a.total_accuracy < b.total_accuracy) ? 1 : -1)
+                all_users = all_users.sort(function(a, b){return ((parseFloat(b.total_accuracy) / b.completed_quizzes).toFixed(2)  - (parseFloat(a.total_accuracy) / a.completed_quizzes).toFixed(2))})
             }
 
             for(var i = 0; i < all_users.length; i++){
@@ -57,6 +58,61 @@ export default class Leaderboard extends Component {
         }
     }
 
+    return_user_stats(){
+        var e = document.getElementById("sort_by");
+        var all_users = this.state.all_users;
+        if (e !== null) {
+            if (e.value === "experience"){
+                all_users = all_users.sort((a, b) => (a.experience_points < b.experience_points) ? 1 : -1)
+            }
+            else if (e.value === "quizzes"){
+                all_users = all_users.sort((a, b) => (a.completed_quizzes < b.completed_quizzes) ? 1 : -1)
+            } 
+            else if (e.value === "total_accuracy"){
+                all_users = all_users.sort(function(a, b){return ((parseFloat(b.total_accuracy) / b.completed_quizzes).toFixed(2)  - (parseFloat(a.total_accuracy) / a.completed_quizzes).toFixed(2))})
+            }
+
+            for(var i = 0; i < all_users.length; i++){
+                all_users[i].position = i+1;
+            }
+            
+            var username = this.state.username;
+            var users_exp = '';
+            var users_accuracy = '';
+            var users_completed_quizzes = '';
+            var users_position = '';
+
+            for(var i = 0; i < all_users.length; i++){
+                if(all_users[i].username === username){
+                    users_exp = all_users[i].experience_points;
+                    users_accuracy = all_users[i].total_accuracy;
+                    users_completed_quizzes = all_users[i].completed_quizzes;
+                    users_position = all_users[i].position;
+                    break;
+                }
+            }
+            
+            return (
+                <div style={{marginLeft: "4%", marginRight: "4%", marginTop: "-2%", marginBottom: "4%", background: "black", borderRadius: "5px", border: "1px solid #AFAFAF", fontSize: "20px"}}>
+                    <div style = {{color: "rgb(0,219,0)"}} className = "row">
+                        <div className = "name">
+                            {users_position}. {username}
+                        </div>
+                        <div className = "experience" style={{}}>
+                            {users_exp}
+                        </div>
+                        <div className = "completed_quizzes" style={{}}>
+                            {users_completed_quizzes}
+                        </div>
+                        <div className = "total_accuracy" style={{}}>
+                            {users_completed_quizzes === 0 ? 0 : (users_accuracy / users_completed_quizzes).toFixed(2)}%
+                        </div>
+                    </div>
+                </div>
+            )
+        }
+    }
+
     paginateRight(){
         var e = document.getElementById("sort_by");
         var all_users = this.state.all_users;
@@ -68,7 +124,7 @@ export default class Leaderboard extends Component {
                 all_users = all_users.sort((a, b) => (a.completed_quizzes < b.completed_quizzes) ? 1 : -1)
             } 
             else if (e.value === "total_accuracy"){
-                all_users = all_users.sort((a, b) => (a.total_accuracy < b.total_accuracy) ? 1 : -1)
+                all_users = all_users.sort(function(a, b){return ((parseFloat(b.total_accuracy) / b.completed_quizzes).toFixed(2)  - (parseFloat(a.total_accuracy) / a.completed_quizzes).toFixed(2))})
             }
 
             for(var i = 0; i < all_users.length; i++){
@@ -181,7 +237,7 @@ export default class Leaderboard extends Component {
                 all_users = all_users.sort((a, b) => (a.completed_quizzes < b.completed_quizzes) ? 1 : -1)
             } 
             else if (e.value === "total_accuracy"){
-                all_users = all_users.sort((a, b) => (a.total_accuracy < b.total_accuracy) ? 1 : -1)
+                all_users = all_users.sort(function(a, b){return ((parseFloat(b.total_accuracy) / b.completed_quizzes).toFixed(2)  - (parseFloat(a.total_accuracy) / a.completed_quizzes).toFixed(2))})
             }
 
             for(var i = 0; i < all_users.length; i++){
@@ -223,27 +279,6 @@ export default class Leaderboard extends Component {
             this.setState({paginated_users: paginated_users, paginate_index: 0, canPaginateRight: paginated_users.length > 15})
         
     }
-
-    // retrieveAllPlatforms(argumentForAllPlatforms, filterBy, searchBy) {
-    //     var favorite_platforms = this.state.users_favorite_platforms;
-    //         api.post('/platformFormat/getNonUserPlatforms/'+ this.state.username, {index: this.state.paginate_all_index, max: 21, argumentForAllPlatforms: argumentForAllPlatforms, filterBy: filterBy, userSearch: searchBy})
-    //         .then(all_plat_ids => {
-    //             var platform_formats = all_plat_ids.data
-                
-    //             for(var i = 0; i < platform_formats.length; i++){
-    //                 if (favorite_platforms.includes(platform_formats[i])){
-    //                     platform_formats[i].is_favorited = true;
-    //                 }
-    //                 else {
-    //                     platform_formats[i].is_favorited = false;
-    //                 }
-    //             }
-    //             var platforms = platform_formats.slice();
-    //             this.setState({
-    //                 all_platforms: platforms
-    //             })
-    //         })
-    // }
 
 
     render() {
@@ -298,8 +333,10 @@ export default class Leaderboard extends Component {
                     </div>
                 </div>
                 <div style={{marginLeft: "4%", marginRight: "4%", marginTop: "2%", marginBottom: "4%", background: "black", borderRadius: "5px", border: "1px solid #AFAFAF", fontSize: "20px"}}>
-                    <div>
-                            {this.state.paginated_users.map((user, index) => (
+                        <div>
+                            {this.state.paginated_users.length > 0
+                            ?
+                            (this.state.paginated_users.map((user, index) => (
                                 (user.position < 4
                                 ?
                                 <div className = "row" style={{color: "gold", fontWeight: "700"}}>
@@ -333,11 +370,22 @@ export default class Leaderboard extends Component {
                                     </div>
                                 </div>
                                 )
-                            ))}
+                            )))
+                        
+                            :
+                            <div style={{margin: "auto", width: "fit-content", color: "white", fontSize: "25px"}}>
+                                No users were found
                             </div>
-
+                            }
+                        </div>
                 </div>
-
+                {this.state.paginated_users.some(obj => obj.username === this.state.username)
+                            
+                ?
+                <br></br>
+                :
+                    this.return_user_stats()
+                }
             </div>
 
 
