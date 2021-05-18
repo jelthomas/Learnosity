@@ -270,7 +270,7 @@ export default class Platform extends Component {
             sorted_categories = all_categories.sort((a, b) => (Date(a.createdAt) > Date(b.createdAt)) ? 1 : -1);
         }
         return(
-            <div style={{display: "flex", flexWrap: "wrap"}}>
+            <div style={{display: "flex", flexWrap: "wrap", marginBottom: "2%"}}>
                 {sorted_categories.map((category, index) => (
                         <Card className = "card_top itemsContainer">
                             <FontAwesomeIcon className="play_button" icon={faPlay} />
@@ -302,7 +302,7 @@ export default class Platform extends Component {
             sorted_categories = all_categories.sort((a, b) => (a.times_played < b.times_played) ? 1 : -1);
         }
         return(
-            <div style={{display: "flex", flexWrap: "wrap"}}>
+            <div style={{display: "flex", flexWrap: "wrap", marginBottom: "2%"}}>
                 {sorted_categories.map((category, index) => (
                         <Card className = "card_top itemsContainer">
                             <FontAwesomeIcon className="play_button" icon={faPlay} />
@@ -336,7 +336,7 @@ export default class Platform extends Component {
             }).sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
         }
         return(
-            <div style={{display: "flex", flexWrap: "wrap"}}>
+            <div style={{display: "flex", flexWrap: "wrap", marginBottom: "2%"}}>
                 {sorted_categories.length === 0
                 ?
                 <div style={{margin: "auto", marginTop: "1%", fontSize: "25px"}}>
@@ -377,7 +377,7 @@ export default class Platform extends Component {
             });
         }
         return(
-            <div style={{display: "flex", flexWrap: "wrap"}}>
+            <div style={{display: "flex", flexWrap: "wrap", marginBottom: "2%"}}>
                 {filter_categories.length === 0
                 ?
 
@@ -433,7 +433,7 @@ export default class Platform extends Component {
             });
         }
         return(
-            <div style={{display: "flex", flexWrap: "wrap"}}>
+            <div style={{display: "flex", flexWrap: "wrap", marginBottom: "2%"}}>
                 {filtered_categories.length === 0
                 ?
                 <div style={{margin: "auto", marginTop: "1%", fontSize: "25px"}}>

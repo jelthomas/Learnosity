@@ -633,7 +633,7 @@ render() {
                             Quizzes: 
                         </div>
                         <div>
-                            <button style={{color: "white", border: "transparent", borderRadius: "25px", background: "blue", fontSize: "20px"}} onClick={this.addCategoryToPlatform}><FontAwesomeIcon icon={faPlus} /></button>
+                            <button disabled={this.state.allCategoriesInfo.length > 14 ? true : false} style={{color: "white", border: "transparent", borderRadius: "25px", background: "blue", fontSize: "20px"}} onClick={this.addCategoryToPlatform}><FontAwesomeIcon icon={faPlus} /></button>
                         </div>
                     </div>
                     <div style={{padding: "20px"}}>
