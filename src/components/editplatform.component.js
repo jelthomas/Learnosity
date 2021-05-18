@@ -124,7 +124,7 @@ export default class EditPlatform extends Component {
             type:"Multiple Choice",
             prompt : "Default Question",
             audio_file : "",
-            page_title : "Default Page",
+            page_title : "Default Question",
             multiple_choices : ["Choice"],
             multiple_choice_answer : "Answer",
             matching_pairs: {"PairA":"PairB","Pair1":"Pair2"},
