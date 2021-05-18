@@ -8,9 +8,13 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faStar, faPlay, faAngleRight, faAngleLeft,faPencilAlt} from "@fortawesome/free-solid-svg-icons";
 import LoggedInNav from "./loggedInNav.component";
 import DefaultCoverPhoto from "../images/defaultCoverPhoto.png"
+import Button from "react-bootstrap/Button";
+import Modal from "react-bootstrap/Modal";
+import Alert from "react-bootstrap/Alert";
 export let navigateBack = {value: ""};
 require('dotenv').config();
 
+export let confirm_access2 = {value: ""};
 
 function FavoriteButton(props) {
     const isfavorited = props.isfavorited;
@@ -32,6 +36,9 @@ export default class TempMyPlatforms extends Component {
         this.editPlatform = this.editPlatform.bind(this);
         this.clickPlatform = this.clickPlatform.bind(this);
         this.unFavoritePlatform = this.unFavoritePlatform.bind(this);
+        this.handleCloseModal = this.handleCloseModal.bind(this);
+        this.accessPrivatePlat = this.accessPrivatePlat.bind(this);
+        this.updatePlatformPass = this.updatePlatformPass.bind(this);
 
         this.state = {
             userFormat:'',
@@ -43,7 +50,11 @@ export default class TempMyPlatforms extends Component {
             created_paginate_index:0,
             favorited_paginate_index:0,
             canPaginateRightCreated:false,
-            canPaginateRightFavorited:false
+            canPaginateRightFavorited:false,
+            showPrivatePlatModal:false,
+            usePlatID:'',
+            platformPass:'',
+            showIncorrectPass:false,
         }
 
     }
@@ -99,8 +110,17 @@ export default class TempMyPlatforms extends Component {
         this.props.history.push("/editplatform/"+plat_id);
     }
 
-    clickPlatform(plat_id){
+    clickPlatform(plat_id,plat_visible){
         //need to check if platform is private and if we need to enter pass to enter 
+        if(!plat_visible)
+        {
+            //when its false
+            this.setState({showPrivatePlatModal:true, usePlatID:plat_id})
+            return
+        }
+
+        confirm_access2.value ="confirm";
+
         var recent_plats = this.state.recent_played_platforms
         if(!recent_plats.includes(plat_id))
         {
@@ -163,6 +183,69 @@ export default class TempMyPlatforms extends Component {
             console.log(err.response)
         })
        
+    }
+
+    handleCloseModal()
+    {
+        this.setState({showPrivatePlatModal:false, platformPass:'', showIncorrectPass: false})
+    }
+
+    updatePlatformPass(e){
+        var eVal = e.target.value
+
+        this.setState({platformPass:eVal,showIncorrectPass:false})
+    }
+
+    accessPrivatePlat()
+    {
+        var inputPass = this.state.platformPass
+        var plat_id = this.state.usePlatID
+        var temp_recent = this.state.recent_played_platforms
+
+        confirm_access2.value = "confirm";
+
+        api.get('platformFormat/getSpecificPlatformFormat/'+plat_id)
+        .then(res => {
+            
+            if(inputPass !== res.data[0].privacy_password)
+            {
+                this.setState({showIncorrectPass:true,platformPass:""})
+                
+            }
+            else
+            {
+                if (!temp_recent.includes(plat_id)){
+                    temp_recent.unshift(plat_id)
+                }
+                else {
+                    var index = temp_recent.indexOf(plat_id);
+                    temp_recent.splice(index, 1);
+                    temp_recent.unshift(plat_id);
+                }
+
+
+                api.post('platformFormat/increment_times_played', {plat_id: plat_id})
+                .then(res2 =>{
+                    api.post('/user/updateRecentlyPlayed/', {userID: this.state.userFormat._id, recent_platforms:temp_recent})
+                    .then(res3 => {
+                        navigateBack.value = "myplatforms";
+                        this.props.history.push("/platform/"+plat_id);
+                    })
+                    .catch(err3 =>{
+                        console.log(err3.response)
+                    })
+                })
+                .catch(err2=>{
+                    console.log(err2.response)
+                })
+
+            }
+
+        })
+        .catch(err =>{
+            console.log(err.response)
+        })
+
     }
     
     
@@ -334,7 +417,7 @@ export default class TempMyPlatforms extends Component {
                         (this.state.paginate_favorited_platforms.map((platform, index) => (
                             <Card className = "card_top itemsContainer">
                             <FontAwesomeIcon className="play_button" icon={faPlay} />
-                            <Card.Img variant="top" onClick={() => this.clickPlatform(platform._id)} src={platform.cover_photo === "" ? DefaultCoverPhoto : platform.cover_photo} className = "card_image"/>
+                            <Card.Img variant="top" onClick={() => this.clickPlatform(platform._id,platform.is_public)} src={platform.cover_photo === "" ? DefaultCoverPhoto : platform.cover_photo} className = "card_image"/>
                                 <Card.Body className = "card_body">
                                     <Card.Title className = "card_info">{platform.plat_name}</Card.Title>
                                     <Card.Text className = "card_info">
@@ -353,6 +436,28 @@ export default class TempMyPlatforms extends Component {
                         }
                         </div>
                 </div>
+                <Modal show={this.state.showPrivatePlatModal} onHide={this.handleCloseModal} backdrop="static" keyboard={true}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Enter Password for Platform</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <div className = "form-group" style={{marginLeft: "10%"}}>
+                        <label style = {{color: "black"}}>Password:</label>
+                        <input type = "text" style = {{width: "90%", borderColor: "black"}} className = "form-control" value = {this.state.platformPass} id = "platformPassInput" onChange = {(e)=>this.updatePlatformPass(e)} required/>
+                    </div>
+                    <Alert style = {{textAlign: "center"}} show = {this.state.showIncorrectPass} variant = 'danger'>
+                        The password is incorrect
+                    </Alert>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={this.handleCloseModal}>
+                        Close
+                    </Button>
+                    <Button variant="primary" onClick={this.accessPrivatePlat}>
+                        Submit
+                    </Button>
+                </Modal.Footer>
+                </Modal>
             </div>
         )
     }

@@ -584,7 +584,6 @@ export default class TempDashboard extends Component {
                     temp_recent.unshift(plat_id);
                 }
 
-
                 api.post('platformFormat/increment_times_played', {plat_id: plat_id})
                 .then(res2 =>{
                     api.post('/user/updateRecentlyPlayed/', {userID: this.state.id, recent_platforms: this.state.users_recent_platforms})
@@ -613,7 +612,7 @@ export default class TempDashboard extends Component {
     updatePlatformPass(e){
         var eVal = e.target.value
 
-        this.setState({platformPass:eVal,showEmptyAlert:false})
+        this.setState({platformPass:eVal,showEmptyAlert:false,showIncorrectPass:false})
     }
 
     render() {

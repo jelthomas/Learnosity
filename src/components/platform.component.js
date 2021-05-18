@@ -48,8 +48,6 @@ export default class Platform extends Component {
     }
 
     navigateBack(){
-        console.log(navigate);
-        console.log(navigateBack);
         if(navigate.value === 'dashboard'){
             this.props.history.push("/dashboard");
         }
