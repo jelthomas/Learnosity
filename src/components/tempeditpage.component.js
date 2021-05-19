@@ -1290,7 +1290,7 @@ render() {
                                     <div className="user_timer_answers">
                                         <div style={{display: "flex", flexWrap: "wrap", marginLeft: "0.5%", marginRight: "0.5%", overflowY: "auto", height: "100%"}}>
                                         {this.state.pageFormat.timer_answers.map((answer,index) => (
-                                            <div style={{background: "white", color: "black", padding: "10px", border: "1px solid black", borderRadius: "10px", marginTop: "1%", marginRight: "1%", minWidth: "100px"}}>
+                                            <div style={{background: "white", color: "black", padding: "10px", border: "1px solid black", borderRadius: "10px", marginTop: "1%", marginRight: "1%", minWidth: "100px", height: "110px"}}>
                                                 <p>{answer}</p>
                                                 <button  style={{background: "rgb(0,219,0)", border: "1px solid", borderRadius: "8px", marginLeft: "15%", padding: "5px"}} onClick={()=>this.editTimerAnswer(index)}>Edit</button>
                                                 <button style = {{background: "red", border: "transparent", borderRadius: "8px", marginLeft: "5%", padding: "5px"}} onClick={()=>this.removeTimerAnswer(index)} disabled = {this.state.pageFormat.timer_answers.length < 2 ? true : false}>X</button>
