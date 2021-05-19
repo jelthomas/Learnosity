@@ -58,6 +58,8 @@ export default class Login extends Component {
                 .then(response => {
                     if (response) {
                         //Valid user
+                        registered.value = '';
+                        myObject.value = '';    
                         this.props.history.push(`/dashboard`);
                     }
                     else{
@@ -77,7 +79,7 @@ export default class Login extends Component {
                 message: myObject.value
             })
         }
-        if (registered.value !== "") {
+        else if (registered.value !== "") {
             this.setState({
                 message: registered.value
             })
@@ -102,6 +104,8 @@ export default class Login extends Component {
                         algorithm: "HS256"
                     })      
                     localStorage.setItem('usertoken', user_token);
+                    registered.value = '';
+                    myObject.value = '';
                     this.props.history.push(`/dashboard`);
                 }
                 else{
@@ -111,6 +115,8 @@ export default class Login extends Component {
             })
             .catch(err => {
                 localStorage.removeItem('usertoken');
+                registered.value = '';
+                myObject.value = '';
                 this.props.history.push('/login');
             });
         // window.location = "/";
@@ -124,7 +130,8 @@ export default class Login extends Component {
             <div className ="custom_container" style={{background: "rgb(59, 59, 59)"}}>
                 <div className = "custom_col mt-5 mx-auto">
                     <form onSubmit={this.handleLogin} style = {{backgroundColor: "white", padding: "0px 20px 20px 20px", borderStyle: "solid", borderRadius: "28px", fontSize: "25px"}}> 
-                        <Link to="/" className="navbar-brand">
+                        <Link onClick={() => {registered.value = '';
+                    myObject.value = '';}} to="/" className="navbar-brand">
                             <img width = {60} src = {Logo} alt =""/>
                         </Link>
                         <div style = {{textAlign: "center", color: 'rgb(0, 219, 0)', width: "max-content", margin: "auto", fontSize: "55px", padding: "3px", marginTop:"-75px"}}>
@@ -143,7 +150,8 @@ export default class Login extends Component {
                             </div>
                         </div>
                         <div>
-                            <Link to="/forgot" style={{color: "#007bff", justifyContent: "center", display: "flex"}}>Forgot Password?</Link>
+                            <Link to="/forgot" onClick={() => {registered.value = '';
+                    myObject.value = '';}} style={{color: "#007bff", justifyContent: "center", display: "flex"}}>Forgot Password?</Link>
                         </div>
                         <button type= "submit" style = {{margin: "auto", marginTop: "10px", display: "block", backgroundColor: "limegreen", fontSize: "25px", borderStyle: "solid", borderRadius: "20px", borderColor: "grey", borderWidth: "1px", width: "45%", paddingBottom: "1.5%", paddingTop: "0.5%", color: "white"}}>
                             Login
@@ -151,7 +159,8 @@ export default class Login extends Component {
                         <div style = {{color: "black", textAlign: "center", fontSize: "20px", marginTop: "10px"}} className = "form-group">
                             Don't have an account?
                         </div>
-                        <Link to="/signup" className="btn btn-primary" style = {{justifyContent: "center", display: "flex", color: "black", background: "white", width: "45%", borderStyle: "solid", borderRadius: "20px", margin: "auto", fontSize: "20px", borderColor: "grey"}}>Sign Up</Link>
+                        <Link onClick={() => {registered.value = '';
+                    myObject.value = '';}} to="/signup" className="btn btn-primary" style = {{justifyContent: "center", display: "flex", color: "black", background: "white", width: "45%", borderStyle: "solid", borderRadius: "20px", margin: "auto", fontSize: "20px", borderColor: "grey"}}>Sign Up</Link>
                     </form>
                 </div>
             </div>

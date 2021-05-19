@@ -199,7 +199,7 @@ export default class ForgotPassword extends Component {
                                 <div className = "form-group" style={{marginLeft: "10%"}}>
                                     Security Question:
                                     <br></br>
-                                    <div style={{border: '1px', borderColor: 'black', width: '90%', borderStyle: 'solid', borderRadius: '.25rem', height: '40px', paddingTop: '5px', paddingLeft: '5px'}}>
+                                    <div style={{border: '1px', borderColor: 'black', width: '90%', borderStyle: 'solid', borderRadius: '.25rem', height: 'auto', paddingTop: '5px', paddingLeft: '5px'}}>
                                         {this.state.security_question}
                                     </div>
                                 </div>
