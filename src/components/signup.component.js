@@ -12,6 +12,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEyeSlash} from "@fortawesome/free-regular-svg-icons";
 require('dotenv').config();
 
+export let registered = {value: ""};
+
 export default class SignUp extends Component {
     constructor(props){
         super(props);
@@ -180,6 +182,7 @@ export default class SignUp extends Component {
             favorited_platforms: []
         }
 
+        registered.value = "You have successfully registered your account"
         api.post('/user/signup',(user));
         this.props.history.push('/login');
     }

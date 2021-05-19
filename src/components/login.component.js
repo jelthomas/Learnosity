@@ -5,7 +5,8 @@ import { Link } from 'react-router-dom';
 import Logo from "../images/LearnLogo.png";
 import jwt_decode from 'jwt-decode';
 import "../format.css";
-import { myObject } from "./forgot_password.component"
+import { myObject } from "./forgot_password.component";
+import { registered } from "./signup.component";
 import Navbar from "./navbar.component";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEyeSlash} from "@fortawesome/free-regular-svg-icons";
@@ -74,6 +75,11 @@ export default class Login extends Component {
         if (myObject.value !== "") {
             this.setState({
                 message: myObject.value
+            })
+        }
+        if (registered.value !== "") {
+            this.setState({
+                message: registered.value
             })
         }
     }
