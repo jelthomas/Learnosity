@@ -662,7 +662,7 @@ export default class TempDashboard extends Component {
                                 </Card>
                             )))
                             :
-                             <div style={{color: "white", marginLeft: "3%"}}>
+                             <div style={{color: "white", marginLeft: "3%", fontSize: "25px"}}>
                                 You have no recently played platforms! Click on one below to begin learning
                             </div>
                             }

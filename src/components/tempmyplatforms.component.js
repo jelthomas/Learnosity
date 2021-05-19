@@ -377,7 +377,9 @@ export default class TempMyPlatforms extends Component {
                     
                     </div>
                     <div style={{display: "flex", flexWrap: "wrap"}}>
-                            {this.state.paginate_created_platforms.map((platform, index) => (
+                            {this.state.paginate_created_platforms.length > 0
+                            ?
+                            (this.state.paginate_created_platforms.map((platform, index) => (
                                 <Card className = "card_top itemsContainer">
                                 <FontAwesomeIcon className="play_button" icon={faPencilAlt} />
                                 <Card.Img variant="top" onClick={() => this.editPlatform(platform._id)} src={platform.cover_photo === "" ? DefaultCoverPhoto : platform.cover_photo} className = "card_image"/>
@@ -388,7 +390,12 @@ export default class TempMyPlatforms extends Component {
                                         </Card.Text>
                                     </Card.Body>
                                 </Card>
-                            ))}
+                            )))
+                            :
+                            <div style={{color: "white", marginLeft: "3%", fontSize: "25px"}}>
+                                You have not created any platforms yet!
+                            </div>
+                            }
                     </div>
                 </div>
                 <div style={{marginLeft: "2.5%", marginRight: "2.5%",marginBottom:"5%"}} className="block">
