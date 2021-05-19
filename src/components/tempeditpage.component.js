@@ -64,6 +64,7 @@ export default class TempEditPage extends Component {
             showEmptyAlert3:false,
             showBothEndsAlert:false,
             showTimerEditModal:false,
+            showSymbolAlert: false,
             editKey:'',
             editVal:'',
             originalKey:'',
@@ -232,7 +233,7 @@ export default class TempEditPage extends Component {
 
     handleClose(e) {
         this.setState({
-            showModal: false
+            showModal: false, showEmptyAlert: false, showSymbolAlert: false
         })
     }
 
@@ -245,6 +246,14 @@ export default class TempEditPage extends Component {
             //need to make empty alert become false after some time 
             this.setState({
                 showEmptyAlert: true
+            })
+
+            return
+        }
+
+        if (inputP1.includes(".") || inputP1.includes("$")){
+            this.setState({
+                showSymbolAlert: true
             })
 
             return
@@ -290,7 +299,7 @@ export default class TempEditPage extends Component {
 
     handleEditClose(){
         this.setState({
-            showEditModal: false
+            showEditModal: false, showEmptyAlert: false, showSymbolAlert: false
         })
     }
 
@@ -316,6 +325,13 @@ export default class TempEditPage extends Component {
             tempArr = this.state.pageFormat.matching_pairs
             tempArr[this.state.editKey.trim()] = this.state.editVal.trim()
         }   
+        else if(this.state.editKey.includes(".") || this.state.editKey.includes("$")){
+            this.setState({
+                showSymbolAlert: true
+            })
+
+            return;
+        }
         else 
         {
             var convertArr = Object.entries(this.state.pageFormat.matching_pairs)
@@ -340,11 +356,11 @@ export default class TempEditPage extends Component {
     }
 
     changeEditKey(val){
-        this.setState({editKey : val})
+        this.setState({editKey : val, showEmptyAlert: false, showSymbolAlert: false})
     }
 
     changeEditVal(val){
-        this.setState({editVal : val})
+        this.setState({editVal : val, showEmptyAlert: false})
     }
 
     submitFIB(){
@@ -1152,6 +1168,9 @@ render() {
                                     <Alert style={{textAlign: "center"}} show = {this.state.showEmptyAlert} variant = 'danger'>
                                         The text fields cannot be empty
                                     </Alert>
+                                    <Alert style={{textAlign: "center"}} show = {this.state.showSymbolAlert} variant = 'danger'>
+                                        The first pair value cannot contain a '$' or a '.' character
+                                    </Alert>
                                 </Modal.Body>
                                 <Modal.Footer>
                                     <Button variant="secondary" onClick={this.handleClose}>
@@ -1178,6 +1197,9 @@ render() {
                                         </div>
                                         <Alert style={{textAlign: "center"}} show = {this.state.showEmptyAlert2} variant = 'danger'>
                                             The text fields cannot be empty
+                                        </Alert>
+                                        <Alert style={{textAlign: "center"}} show = {this.state.showSymbolAlert} variant = 'danger'>
+                                            The first pair value cannot contain a '$' or a '.' character
                                         </Alert>
                                     </Modal.Body>
                                     <Modal.Footer>
