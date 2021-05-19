@@ -717,21 +717,29 @@ export default class TempDashboard extends Component {
                     </div>
                     <div>
                             <div style={{display: "flex", flexWrap: "wrap"}}>
-                            {this.state.all_platforms.map((platform, index) => (
-                                <Card className = "card_top itemsContainer">
-                                <FontAwesomeIcon className="play_button" icon={faPlay} />
-                                <Card.Img variant="top" onClick={() => this.clickPlatform(platform._id,platform.is_public)} src={platform.cover_photo === "" ? DefaultCoverPhoto : platform.cover_photo} className = "card_image"/>
-                                    <Card.Body className = "card_body">
-                                        <Card.Title className = "card_info">{platform.plat_name}</Card.Title>
-                                        <Card.Text className = "card_info">
-                                        {platform.owner}
-                                        </Card.Text>
-                                        <div style={{width: "fit-content"}} onClick={() => this.toggleFavoriteAll(index)}>
-                                            <FavoriteButton isfavorited={platform.is_favorited}/>
-                                        </div>
-                                    </Card.Body>
-                                </Card>
-                            ))}
+                                {this.state.all_platforms.length > 0
+                                ?
+                                (this.state.all_platforms.map((platform, index) => (
+                                    <Card className = "card_top itemsContainer">
+                                    <FontAwesomeIcon className="play_button" icon={faPlay} />
+                                    <Card.Img variant="top" onClick={() => this.clickPlatform(platform._id,platform.is_public)} src={platform.cover_photo === "" ? DefaultCoverPhoto : platform.cover_photo} className = "card_image"/>
+                                        <Card.Body className = "card_body">
+                                            <Card.Title className = "card_info">{platform.plat_name}</Card.Title>
+                                            <Card.Text className = "card_info">
+                                            {platform.owner}
+                                            </Card.Text>
+                                            <div style={{width: "fit-content"}} onClick={() => this.toggleFavoriteAll(index)}>
+                                                <FavoriteButton isfavorited={platform.is_favorited}/>
+                                            </div>
+                                        </Card.Body>
+                                    </Card>
+                                )))
+                            
+                                :
+                                <div style={{color: "white", marginLeft: "3%", fontSize: "25px", marginTop: "1%"}}>
+                                    No platforms were found
+                                </div>
+                                }
                             </div>
                         </div>
                 </div>

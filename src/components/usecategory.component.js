@@ -1003,7 +1003,7 @@ export default class UseCategory extends Component {
                         <div style={{textAlign: "center", margin: "auto", fontSize: "40px", padding: "155px"}}>
                             <p>Congratulations you have finished the quiz!</p>
                             <p>Click below to continue learning from {plat_name}</p>
-                            <Link className = "explore_more" to={"/platform/" + plat_id}>Explore More</Link>
+                            <Link onClick={() => from_use_category.value = 'confirm'} className = "explore_more" to={"/platform/" + plat_id}>Explore More</Link>
                         </div>
                     :
                         (this.state.currentPage !== ''
