@@ -352,14 +352,36 @@ export default class EditPlatform extends Component {
             newPlatPassword : tempPlat.privacy_password
         }
 
-        api.post('/platformFormat/updateWholePlat',newPlat)
-        .then(response => {
-            this.setState({has_changes: false, submit_alert: true})
-            setTimeout(() => {this.setState({submit_alert: false})}, 3000)
-            })
-        .catch(error => {
-            console.log(error.response)
-        });
+        if(tempPlat.is_published === false)
+        {
+            //calls remove platFromAllUsers s
+            api.post('/platformFormat/updateWholePlat',newPlat)
+            .then(response => {
+
+                api.post('/user/removePlatformFromUsers',{platformID : this.state.platformFormat._id})
+                .then(res2 =>{
+                    this.setState({has_changes: false, submit_alert: true})
+                    setTimeout(() => {this.setState({submit_alert: false})}, 3000)
+                    })
+                })
+                .catch(err2=>{
+                    console.log(err2)
+                })
+            .catch(error => {
+                console.log(error.response)
+            });
+        }
+        else
+        {
+            api.post('/platformFormat/updateWholePlat',newPlat)
+            .then(response => {
+                this.setState({has_changes: false, submit_alert: true})
+                setTimeout(() => {this.setState({submit_alert: false})}, 3000)
+                })
+            .catch(error => {
+                console.log(error.response)
+            });
+        }
     }
 
     removeCategory(){
@@ -643,7 +665,7 @@ render() {
                                     <button style={{borderRadius: "10px", padding: "5px 15px 5px 15px"}} onClick={() => this.editCategory(category._id)}>{category.category_name}  <FontAwesomeIcon icon={faPencilAlt} /></button>
                                 </div>   
                                 <div style={{marginLeft: "auto", fontSize: "20px", marginTop: "auto", marginBottom: "auto"}}>
-                                    <button style={{color: "red", border: "transparent", background: "transparent"}} onClick ={()=>this.revealRemoveCategory(category._id,category.category_name,index)} id={"removeCategory" + index}>X</button>
+                                    <button disabled = {this.state.allCategoriesInfo.length < 2 ? true : false} style={{color: "red", border: "transparent", background: "transparent"}} onClick ={()=>this.revealRemoveCategory(category._id,category.category_name,index)} id={"removeCategory" + index}>X</button>
                                 </div>
                             </div>
                         ))}
